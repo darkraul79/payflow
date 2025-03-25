@@ -21,6 +21,15 @@
     --color-zinc-800: var(--color-slate-800);
     --color-zinc-900: var(--color-slate-900);
     --color-zinc-950: var(--color-slate-950);
+    --color-azul-sea: #003C6B;
+    --color-azul-mist: #1A598C;
+    --color-azul-wave: #36A0BF;
+    --color-azul-swan: #F4FDFF;
+    --color-azul-cobalt: #D4DDE5;
+    --color-azul-sapphire: #3D7EB4;
+    --color-azul-gray: #AEBECC;
+    --color-amarillo: #FFD857
+
 }
 
 @theme {
