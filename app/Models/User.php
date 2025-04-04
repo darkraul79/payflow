@@ -11,13 +11,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-class User extends Authenticatable implements FilamentUser
+class user extends authenticatable implements filamentuser
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    /** @use hasfactory<userfactory> */
+    use hasfactory, notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * the attributes that are mass assignable.
      *
      * @var list<string>
      */
@@ -28,7 +28,7 @@ class User extends Authenticatable implements FilamentUser
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * the attributes that should be hidden for serialization.
      *
      * @var list<string>
      */
@@ -38,30 +38,30 @@ class User extends Authenticatable implements FilamentUser
     ];
 
     /**
-     * Get the user's initials
+     * get the user's initials
      */
     public function initials(): string
     {
-        return Str::of($this->name)
+        return str::of($this->name)
             ->explode(' ')
-            ->map(fn (string $name) => Str::of($name)->substr(0, 1))
+            ->map(fn(string $name) => str::of($name)->substr(0, 1))
             ->implode('');
     }
 
-    public function canAccessPanel(Panel $panel): bool
+    public function canaccesspanel(panel $panel): bool
     {
-        return $this->isAdmin();
+        return $this->isadmin();
 
     }
 
-    protected function isAdmin(): bool
+    protected function isadmin(): bool
     {
         return $this->email === 'info@raulsebastian.es' || $this->email === 'dtertre@surf3.es';
 
     }
 
     /**
-     * Get the attributes that should be cast.
+     * get the attributes that should be cast.
      *
      * @return array<string, string>
      */
