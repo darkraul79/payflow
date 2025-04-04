@@ -1,0 +1,9 @@
+@reference 'tailwindcss';
+
+.home {
+    .items {
+        img {
+            @apply mx-auto;
+        }
+    }
+}

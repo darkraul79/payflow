@@ -1,10 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Teachers:ital,wght@0,400..800;1,400..800&display=swap');
+
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import 'flowbite/src/themes/default.css';
+
+@plugin "flowbite/plugin";
 
 @source "../views";
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+@source "../../node_modules/flowbite";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -21,15 +27,26 @@
     --color-zinc-800: var(--color-slate-800);
     --color-zinc-900: var(--color-slate-900);
     --color-zinc-950: var(--color-slate-950);
-    --color-azul-sea: #003C6B;
-    --color-azul-mist: #1A598C;
-    --color-azul-wave: #36A0BF;
-    --color-azul-swan: #F4FDFF;
-    --color-azul-cobalt: #D4DDE5;
-    --color-azul-sapphire: #3D7EB4;
-    --color-azul-gray: #AEBECC;
-    --color-amarillo: #FFD857
+    --color-azul-sea: #003c6b;
+    --color-azul-mist: #1a598c;
+    --color-azul-wave: #36a0bf;
+    --color-azul-swan: #f4fdff;
+    --color-azul-cobalt: #d4dde5;
+    --color-azul-sapphire: #3d7eb4;
+    --color-azul-gray: #aebecc;
+    --color-azul-sky: #d1f6ff;
+    --color-amarillo: #ffd857;
+    --font-body: Inter, sans-serif;
+    --font-sans: Inter, sans-serif;
+    --font-teacher: 'Teachers', sans-serif;
+    --font-weight-semibold: 550;
 
+    --boton-primary-bg: var(--color-azul-sapphire);
+    --boton-primary-bg-hover: var(--color-azul-mist);
+    --boton-primary-text: white;
+    --boton-primary-text-hover: white;
+
+    --max-width: var(--container-7xl);
 }
 
 @theme {
@@ -44,4 +61,135 @@
         --color-accent-content: var(--color-sky-400);
         --color-accent-foreground: var(--color-white);
     }
+}
+
+@layer base {
+    html,
+    body {
+        @apply text-azul-sea w-full font-light;
+    }
+
+    .container {
+        @apply mx-auto px-4 md:px-0;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply text-azul-sea font-semibold;
+
+        &.subtitle {
+            @apply font-teacher text-[16px] tracking-[.35em];
+        }
+
+        &.title {
+            @apply font-teacher text-[38px] leading-10;
+        }
+
+        &.title2 {
+        }
+    }
+
+    section {
+        @apply mx-auto;
+
+        &:not(:first-of-type) {
+            @apply py-10 lg:py-[72px];
+        }
+    }
+
+    h4 {
+        @apply text-xl;
+    }
+
+    img.icon {
+        @apply h-12 w-12;
+    }
+
+    p {
+        @apply mb-4;
+    }
+
+    .banner {
+        @apply bg-cover;
+
+        .fondo {
+            @apply relative overflow-hidden;
+        }
+    }
+
+    .footer-nav {
+        h6 {
+            @apply mb-4;
+        }
+
+        nav {
+            @apply flex flex-col gap-1;
+        }
+
+        .actividades {
+            @apply grid grid-cols-3 gap-2 lg:grid-cols-3;
+
+            a {
+                @apply w-full overflow-hidden rounded-xl;
+
+                img {
+                    @apply w-full object-cover transition-all ease-out hover:scale-110;
+                }
+            }
+        }
+    }
+
+    .sponsor-image {
+        @apply overflow-hidden;
+
+        &.small {
+            @apply h-auto w-full max-w-[64px];
+        }
+
+        &.medium {
+            @apply h-auto w-full max-w-[88px];
+        }
+
+        &.large {
+            @apply h-auto w-full max-w-[160px];
+        }
+
+        img {
+        }
+    }
+}
+
+@utility btn {
+    @apply w-fit rounded-3xl px-5 py-3 no-underline;
+
+    &.btn-small {
+        @apply text-sm;
+    }
+
+    &.btn-secondary {
+        @apply bg-(--boton-primary-bg) text-(--boton-primary-text);
+
+        &:hover,
+        &:focus,
+        &:active {
+            @apply bg-(--boton-primary-bg-hover) text-(--boton-primary-text-hover) no-underline;
+        }
+    }
+
+    &.btn-primary {
+        @apply bg-azul-mist text-white;
+
+        &:hover,
+        &:focus,
+        &:active {
+            @apply bg-azul-sapphire text-white no-underline;
+        }
+    }
+}
+@utility card {
+    @apply border-azul-cobalt block rounded-lg border bg-white p-4 shadow-md;
 }

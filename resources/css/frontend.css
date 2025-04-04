@@ -1,0 +1,44 @@
+@reference 'tailwindcss';
+
+@layer base {
+    .sponsorship {
+        .flip-card {
+            @apply h-[404px] w-[396px] bg-transparent perspective-distant;
+
+            h4 {
+                @apply mb-3 block;
+            }
+
+            a {
+                @apply my-6 block;
+            }
+
+            img {
+                @apply h-full max-h-[290px] object-cover;
+            }
+
+            span.position {
+                @apply font-light text-[#828282];
+            }
+
+            .flip-card-inner {
+                @apply relative h-full w-full bg-white transition-transform duration-[0.6s] transform-3d;
+
+                .flip-card-front,
+                .flip-card-back {
+                    @apply absolute h-full w-full bg-white p-6! shadow-lg backface-hidden;
+                }
+
+                .flip-card-back {
+                    @apply rotate-y-180;
+                }
+            }
+
+            &:hover {
+                .flip-card-inner {
+                    @apply rotate-y-180;
+                }
+            }
+        }
+    }
+}
