@@ -44,11 +44,11 @@ class user extends authenticatable implements filamentuser
     {
         return str::of($this->name)
             ->explode(' ')
-            ->map(fn(string $name) => str::of($name)->substr(0, 1))
+            ->map(fn (string $name) => str::of($name)->substr(0, 1))
             ->implode('');
     }
 
-    public function canaccesspanel(panel $panel): bool
+    public function canAccessPanel(panel $panel): bool
     {
         return $this->isadmin();
 
