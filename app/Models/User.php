@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-class user extends authenticatable implements filamentuser
+class User extends authenticatable implements filamentuser
 {
     /** @use hasfactory<userfactory> */
     use hasfactory, notifiable;
@@ -44,7 +44,7 @@ class user extends authenticatable implements filamentuser
     {
         return str::of($this->name)
             ->explode(' ')
-            ->map(fn (string $name) => str::of($name)->substr(0, 1))
+            ->map(fn(string $name) => str::of($name)->substr(0, 1))
             ->implode('');
     }
 
