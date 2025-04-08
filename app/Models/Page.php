@@ -14,7 +14,7 @@ use Statikbe\FilamentFlexibleContentBlocks\Models\Concerns\HasPageAttributesTrai
 
 class Page extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes, HasPageAttributesTrait, InteractsWithMedia;
+    use HasFactory, SoftDeletes, InteractsWithMedia;
 
     protected $fillable = [
         'title',
