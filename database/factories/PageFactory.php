@@ -15,7 +15,7 @@ class PageFactory extends Factory
 
     public function definition(): array
     {
-        $title = $this->faker->word();
+        $title = $this->faker->unique()->word();
 
         return [
             'title' => $title,
