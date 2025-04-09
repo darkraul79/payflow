@@ -1,9 +1,12 @@
 <!DOCTYPE html>
+<!--suppress HtmlRequiredTitleElement -->
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
-        @yield('vite')
+        @stack('vite')
         @stack('css')
+        @stack('scripts')
+
         @fluxAppearance
     </head>
     <body
@@ -11,7 +14,7 @@
     >
         @include('frontend.elements.header')
 
-        <main class="@container container">
+        <main class="@container">
             @yield('main')
         </main>
 

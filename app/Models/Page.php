@@ -3,32 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use Statikbe\FilamentFlexibleContentBlocks\Models\Concerns\HasPageAttributesTrait;
 
-class Page extends Model implements HasMedia
+class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
 {
-    use HasFactory, SoftDeletes, InteractsWithMedia;
+    use HasFactory, InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
         'title',
         'slug',
+        'blocks',
+        'is_home',
+        'parent_id',
         'published_at',
     ];
 
-    public function contents(): HasMany
-    {
-        return $this->hasMany(PageContent::class);
-
-    }
-
-    public function registerMediaConversions(Media|null $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this
             ->addMediaConversion('preview')

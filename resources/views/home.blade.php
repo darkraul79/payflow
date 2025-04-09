@@ -10,13 +10,30 @@
 @endpush
 
 @section('main')
-    <div class="w-full">
-        @include('frontend.elements.carrousel')
-    </div>
+    @foreach ($page->blocks as $block)
+        @switch($block['type'])
+            @case('slider')
+                <x-filament-fabricator.page-blocks.slider
+                    :sliders="$block['data']['sliders']"
+                />
 
-    @include('frontend.home.intro')
+                @break
+            @case('texto-dos-columnas')
+                <x-filament-fabricator.page-blocks.texto-dos-columnas
+                    :title="$block['data']['title']"
+                    :subtitle="$block['data']['subtitle']"
+                    text="{!! $block['data']['text'] !!}"
+                />
 
-    @include('frontend.home.items')
+                @break
+            @case('items')
+                <x-filament-fabricator.page-blocks.items
+                    :items="$block['data']['items']"
+                />
+
+                @break
+        @endswitch
+    @endforeach
 
     @include('frontend.home.numbers')
 

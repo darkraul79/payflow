@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/css/home.css',
                 'resources/js/app.js',
+                'resources/js/carousel.js',
             ],
             refresh: [`resources/views/**/*`],
         }),
