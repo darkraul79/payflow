@@ -1,5 +1,7 @@
-@include('frontend.elements.quotes')
+@if (! $page->is_home)
+    @include('frontend.elements.quotes')
 
-@include('frontend.elements.title')
+    @include('frontend.elements.title')
 
-<x-breadcrumbs />
+    <x-breadcrumbs />
+@endif

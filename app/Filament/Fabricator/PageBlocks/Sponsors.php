@@ -5,14 +5,14 @@ namespace App\Filament\Fabricator\PageBlocks;
 use Filament\Forms\Components\Builder\Block;
 use Z3d0X\FilamentFabricator\PageBlocks\PageBlock;
 
-class TextoDosColumnas extends PageBlock
+class Sponsors extends PageBlock
 {
     public static function getBlockSchema(): Block
     {
-        return Block::make('texto-dos-columnas')
+        return Block::make('sponsors')
             ->schema([
-                //
                 Reusable::Basic(),
+                Reusable::BotonFields()
             ]);
     }
 

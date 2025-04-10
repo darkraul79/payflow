@@ -50,9 +50,9 @@
         </a>
     </div>
 </flux:header>
-
-@includeIf('sub-header', [Route::currentRouteName() != 'home'])
-
+<div class="container">
+    @includeIf('sub-header', [Route::currentRouteName() != 'home'])
+</div>
 <flux:sidebar
     sticky="true"
     stashable="true"

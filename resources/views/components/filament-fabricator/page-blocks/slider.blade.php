@@ -15,8 +15,8 @@
                 'text' => 'text-right',
             ],
             default => [
-                'block' => 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-                'text' => 'text-center',
+                'block' => 'top-1/2 left-24 -translate-x-0 -translate-y-1/2',
+                'text' => 'text-left',
             ],
         };
     }
@@ -42,7 +42,7 @@
                 />
 
                 <div
-                    class="{{ getAlignClasses([$item['align']])['block'] }} absolute max-w-2/5 transform text-white"
+                    class="{{ getAlignClasses([$item['align']])['block'] }} absolute max-w-[539px] transform text-white"
                 >
                     <h6
                         class="{{ getAlignClasses([$item['align']])['text'] }} font-teacher mb-4 inline-block text-4xl leading-8 font-bold text-pretty text-white md:text-lg md:leading-14 lg:text-6xl"

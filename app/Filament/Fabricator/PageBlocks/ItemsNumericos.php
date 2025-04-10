@@ -4,17 +4,19 @@ namespace App\Filament\Fabricator\PageBlocks;
 
 use App\Models\Page;
 use Filament\Forms\Components\Builder\Block;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TextInput;
 use Z3d0X\FilamentFabricator\PageBlocks\PageBlock;
 
-class Items extends PageBlock
+class ItemsNumericos extends PageBlock
 {
     public static function getBlockSchema(): Block
     {
-        return Block::make('items')
+        return Block::make('items-numericos')
             ->schema([
                 Repeater::make('items')
                     ->label('Item')
@@ -31,21 +33,34 @@ class Items extends PageBlock
                                     ->multiple(false),
 
                                 Group::make()
-                                    ->columns(1)
                                     ->columnSpan(3)
                                     ->schema([
-                                        Reusable::Basic(['subtitle'])
+                                        Group::make()
+                                            ->columns()
+                                            ->schema([
+                                                TextInput::make('number')
+                                                    ->columnSpan(1)
+                                                    ->label('Número')
+                                                    ->numeric()
+                                                    ->required(),
+                                                ColorPicker::make('color')
+                                                    ->columnSpan(1)
+                                                    ->label('Color de fondo'),
+
+                                            ]),
+                                        TextInput::make('title')
+                                            ->columnSpanFull()
+                                            ->label('Título')
+                                            ->required(),
+
                                     ]),
                             ]),
-                        Reusable::BotonFields(),
-
                     ])->model(Page::class)
                     ->itemLabel(fn(array $state): ?string => 'Item - ' . $state['title'] ?? null),
 
                 //
             ]);
     }
-
 
     public static function mutateData(array $data): array
     {

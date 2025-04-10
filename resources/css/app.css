@@ -46,7 +46,7 @@
     --boton-primary-text: white;
     --boton-primary-text-hover: white;
 
-    --max-width: var(--container-7xl);
+    --max-width: 1440px;
 }
 
 @theme {
@@ -70,7 +70,7 @@
     }
 
     .container {
-        @apply mx-auto px-4 md:px-0;
+        @apply mx-auto max-w-[var(--max-width)] px-4 md:px-0;
     }
 
     h1,
@@ -94,9 +94,9 @@
     }
 
     section {
-        @apply mx-auto;
+        @apply mx-auto py-10 lg:py-[72px];
 
-        &:not(:first-of-type) {
+        &:not(.first) {
             @apply py-10 lg:py-[72px];
         }
     }

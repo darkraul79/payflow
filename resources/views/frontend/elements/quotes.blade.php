@@ -1,5 +1,5 @@
 <div
-    class="bg-azul-wave font-teacher text-azul-wave z-10 mb-2 flex w-full items-end overflow-hidden bg-cover bg-center px-5 text-center max-md:pt-8 md:container md:mx-auto md:mb-6 md:min-h-[200px]"
+    class="bg-azul-wave font-teacher text-azul-wave z-10 mb-2 flex w-full items-end overflow-hidden bg-cover bg-center px-5 text-center max-md:pt-8 md:mx-auto md:mb-6 md:min-h-[200px]"
     style="background-image: url({{ asset('images/bg-draw.webp') }})"
 >
     <blockquote

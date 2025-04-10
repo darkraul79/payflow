@@ -14,7 +14,7 @@
     >
         @include('frontend.elements.header')
 
-        <main class="@container">
+        <main class="@container container">
             @yield('main')
         </main>
 
