@@ -2,9 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\ContentTypes;
 use App\Models\Page;
-use App\Models\PageContent;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -40,30 +38,4 @@ class PageFactory extends Factory
         ]);
     }
 
-    public function configure(): static
-    {
-        return $this->afterMaking(function (Page $page) {
-            PageContent::factory()->make([
-                'page_id' => $page->id,
-                'type' => ContentTypes::Basic,
-                'content' => $this->generateBasicContent(),
-            ]);
-        })->afterCreating(function (Page $page) {
-            PageContent::factory()->create([
-                'page_id' => $page->id,
-                'type' => ContentTypes::Basic,
-                'content' => $this->generateBasicContent(),
-            ]);
-        });
-    }
-
-    public function generateBasicContent(): string
-    {
-        $content = "<h1>" . fake()->text(10) . "</h1>";
-        $content .= "<h2>" . fake()->text(20) . "</h2>";
-        $content .= "<p>" . fake()->text(100) . "</p>";
-        $content .= "<p>" . fake()->text(60) . "</p>";
-        return $content;
-
-    }
 }
