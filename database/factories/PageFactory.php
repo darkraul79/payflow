@@ -15,7 +15,7 @@ class PageFactory extends Factory
 
     public function definition(): array
     {
-        $title = $this->faker->unique()->word();
+        $title = fake()->unique()->word();
 
         return [
             'title' => $title,
@@ -59,10 +59,10 @@ class PageFactory extends Factory
 
     public function generateBasicContent(): string
     {
-        $content = "<h1>" . $this->faker->text(10) . "</h1>";
-        $content .= "<h2>" . $this->faker->text(20) . "</h2>";
-        $content .= "<p>" . $this->faker->text(100) . "</p>";
-        $content .= "<p>" . $this->faker->text(60) . "</p>";
+        $content = "<h1>" . fake()->text(10) . "</h1>";
+        $content .= "<h2>" . fake()->text(20) . "</h2>";
+        $content .= "<p>" . fake()->text(100) . "</p>";
+        $content .= "<p>" . fake()->text(60) . "</p>";
         return $content;
 
     }

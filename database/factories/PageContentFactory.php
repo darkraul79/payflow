@@ -14,8 +14,8 @@ class PageContentFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => $this->faker->word(),
-            'content' => $this->faker->words(),
+            'type' => fake()->word(),
+            'content' => fake()->words(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
             'page_id' => Page::factory(),
