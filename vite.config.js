@@ -8,6 +8,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/css/home.css',
+                'resources/css/frontend.css',
                 'resources/js/app.js',
                 'resources/js/carousel.js',
             ],
