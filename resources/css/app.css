@@ -93,11 +93,19 @@
         }
     }
 
+    .full-container {
+        @apply mx-auto w-full max-w-[var(--max-width)];
+    }
+
     section {
         @apply mx-auto py-10 lg:py-[72px];
 
         &:first-of-type {
-            @apply py-0;
+            @apply py-0 pt-7;
+        }
+
+        &:not(.full) {
+            @apply px-4 lg:px-[72px];
         }
     }
 

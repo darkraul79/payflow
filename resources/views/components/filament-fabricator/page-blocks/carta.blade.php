@@ -1,4 +1,4 @@
-<section class="carta mt-4 mb-8">
+<section class="carta mb-8">
     <div class="flex flex-col items-start justify-between gap-8 md:flex-row">
         <img
             src="{{ asset($attributes['image']) }}"

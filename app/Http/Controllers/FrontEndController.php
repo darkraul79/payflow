@@ -8,7 +8,7 @@ class FrontEndController extends Controller
 {
     public function index()
     {
-        $page = Page::where('is_home', true)->first();
+        $page = Page::with('children')->where('is_home', true)->first();
 
         return view('home', compact('page'));
 

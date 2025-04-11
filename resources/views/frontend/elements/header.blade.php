@@ -1,6 +1,6 @@
 <flux:header
     container="true"
-    class="@container flex md:container md:mx-auto lg:h-[92px]"
+    class="@container full-container flex lg:h-[92px]"
 >
     <div class="flex flex-wrap items-center justify-between">
         <x-logo-fundacion
@@ -20,7 +20,7 @@
         class="flex h-full w-full flex-grow flex-col items-center justify-end font-light lg:flex-row"
     >
         <flux:navbar class="-mb-px max-lg:hidden">
-            @foreach (App\Models\Page::published()->firstLevel()->get() as $navItem)
+            @foreach (App\Models\Page::with('children')->published()->firstLevel()->get() as $navItem)
                 @if ($navItem->children->isNotEmpty())
                     <flux:dropdown>
                         <flux:navbar.item icon:trailing="chevron-down">
@@ -53,7 +53,7 @@
         </a>
     </div>
 </flux:header>
-<div class="container">
+<div class="full-container">
     @includeIf('sub-header', [Route::currentRouteName() != 'home'])
 </div>
 <flux:sidebar

@@ -1,4 +1,6 @@
-<footer class="bg-azul-sky w-full pt-8 lg:px-[72px] lg:pt-14 lg:pb-10">
+<footer
+    class="bg-azul-sky full-container container pt-8 lg:px-[72px] lg:pt-14 lg:pb-10"
+>
     <div class="@container container">
         <div
             class="flex w-full flex-col justify-between gap-5 gap-y-8 md:flex-row lg:gap-y-0"

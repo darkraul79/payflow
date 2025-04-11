@@ -6,4 +6,8 @@
             @apply mx-auto;
         }
     }
+
+    section:first-of-type {
+        @apply pt-0;
+    }
 }

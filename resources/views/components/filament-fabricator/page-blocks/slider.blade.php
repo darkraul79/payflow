@@ -3,7 +3,7 @@
     {
         return match ($align) {
             'left' => [
-                'block' => 'top-1/2 left-10 -translate-y-1/2',
+                'block' => 'top-1/2 left-5 -translate-x-0 -translate-y-1/2 md:left-10 md:max-w-1/2 lg:left-24 lg:max-w-[450px]',
                 'text' => 'text-left',
             ],
             'center' => [
@@ -11,18 +11,18 @@
                 'text' => 'text-center',
             ],
             'right' => [
-                'block' => 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+                'block' => 'top-1/2 right-5 -translate-x-0 -translate-y-1/2 md:right-10 md:max-w-1/2 lg:right-24 lg:max-w-[450px]',
                 'text' => 'text-right',
             ],
             default => [
-                'block' => 'top-1/2 left-24 -translate-x-0 -translate-y-1/2',
+                'block' => 'top-1/2 left-5 -translate-x-0 -translate-y-1/2 md:left-10 md:max-w-1/2 lg:left-24 lg:max-w-[450px]',
                 'text' => 'text-left',
             ],
         };
     }
 @endphp
 
-<section class="slider mb-4">
+<section class="slider full mb-4">
     <div
         id="indicators-carousel"
         class="relative overflow-hidden"
@@ -43,16 +43,16 @@
                     />
 
                     <div
-                        class="{{ getAlignClasses([$item['align']])['block'] }} absolute max-w-[450px] transform text-white"
+                        class="{{ getAlignClasses($item['align'])['block'] }} absolute max-w-2/3 transform text-white"
                     >
                         <h6
-                            class="{{ getAlignClasses([$item['align']])['text'] }} font-teacher mb-4 inline-block text-4xl leading-8 font-bold text-pretty text-white md:text-lg md:leading-14 lg:text-6xl"
+                            class="{{ getAlignClasses($item['align'])['text'] }} font-teacher mb-4 inline-block w-full text-4xl leading-8 font-bold text-pretty text-white md:leading-14 lg:text-6xl"
                         >
                             {{ $item['title'] }}
                         </h6>
 
                         <span
-                            class="{{ getAlignClasses([$item['align']])['text'] }} text-xs leading-5 md:text-base"
+                            class="{{ getAlignClasses($item['align'])['text'] }} text-xs leading-5 md:text-base"
                         >
                             {!! $item['content'] !!}
                         </span>
