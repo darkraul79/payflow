@@ -20,17 +20,28 @@
         class="flex h-full w-full flex-grow flex-col items-center justify-end font-light lg:flex-row"
     >
         <flux:navbar class="-mb-px max-lg:hidden">
-            <flux:navbar.item href="/">Home</flux:navbar.item>
-            <flux:dropdown class="max-lg:hidden">
-                <flux:navbar.item icon:trailing="chevron-down">
-                    Quiénes somos
-                </flux:navbar.item>
-                <flux:navmenu>
-                    <flux:navmenu.item href="/quienes-somos/fundacion">
-                        Fundación
-                    </flux:navmenu.item>
-                </flux:navmenu>
-            </flux:dropdown>
+            @foreach (App\Models\Page::published()->firstLevel()->get() as $navItem)
+                @if ($navItem->children->isNotEmpty())
+                    <flux:dropdown>
+                        <flux:navbar.item icon:trailing="chevron-down">
+                            {{ $navItem->title }}
+                        </flux:navbar.item>
+                        <flux:navmenu>
+                            @foreach ($navItem->children as $child)
+                                <flux:navmenu.item
+                                    href="{{ $child->getUrl() }}"
+                                >
+                                    {{ $child->title }}
+                                </flux:navmenu.item>
+                            @endforeach
+                        </flux:navmenu>
+                    </flux:dropdown>
+                @else
+                    <flux:navbar.item href="{{ $navItem->getUrl() }}">
+                        {{ $navItem->title }}
+                    </flux:navbar.item>
+                @endif
+            @endforeach
         </flux:navbar>
 
         <a

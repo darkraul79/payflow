@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Image\Enums\Fit;
@@ -28,6 +30,34 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
             ->addMediaConversion('preview')
             ->fit(Fit::Contain, 300, 300)
             ->nonQueued();
+    }
+
+    /**
+     * Scope a query to only include popular users.
+     */
+    #[Scope]
+    protected function firstLevel(Builder $query): void
+    {
+        $query->where('parent_id', null);
+    }
+
+    /**
+     * Scope a query to only include popular users.
+     */
+    #[Scope]
+    protected function isHome(Builder $query): void
+    {
+        $query->where('is_home', true);
+    }
+
+
+    /**
+     * Scope a query to only include popular users.
+     */
+    #[Scope]
+    protected function published(Builder $query): void
+    {
+        $query->where('published_at', '<>', null);
     }
 
 }

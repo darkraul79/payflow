@@ -6,7 +6,7 @@
 @endsection
 
 @push('css')
-    @if ($page->is_home)
+    @if ($page?->is_home)
         @vite('resources/css/home.css')
     @elseif ($page)
         @vite('resources/css/frontend.css')
@@ -18,5 +18,5 @@
         'page',
     ])
 
-    <x-filament-fabricator::page-blocks :blocks="$page->blocks" />
+    <x-filament-fabricator::page-blocks :blocks="$page?->blocks" />
 @endsection
