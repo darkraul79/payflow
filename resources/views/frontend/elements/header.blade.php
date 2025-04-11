@@ -20,8 +20,8 @@
         class="flex h-full w-full flex-grow flex-col items-center justify-end font-light lg:flex-row"
     >
         <flux:navbar class="-mb-px max-lg:hidden">
-            @foreach (App\Models\Page::with('children')->published()->firstLevel()->get() as $navItem)
-                @if ($navItem->children->isNotEmpty())
+            @foreach ($menu as $navItem)
+                @if ($navItem->has('children'))
                     <flux:dropdown>
                         <flux:navbar.item icon:trailing="chevron-down">
                             {{ $navItem->title }}

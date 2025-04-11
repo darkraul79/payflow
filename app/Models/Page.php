@@ -11,9 +11,16 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+
+/**
+ * Post
+ *
+ * @mixin Builder
+ */
 class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
 {
     use HasFactory, InteractsWithMedia, SoftDeletes;
+
 
     protected $fillable = [
         'title',
@@ -24,6 +31,7 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
         'published_at',
     ];
 
+
     public function registerMediaConversions(?Media $media = null): void
     {
         $this
@@ -33,7 +41,8 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
     }
 
     /**
-     * Scope a query to only include popular users.
+     * @param Builder $query
+     * @return void
      */
     #[Scope]
     protected function firstLevel(Builder $query): void
@@ -42,7 +51,8 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
     }
 
     /**
-     * Scope a query to only include popular users.
+     * @param Builder $query
+     * @return void
      */
     #[Scope]
     protected function isHome(Builder $query): void
@@ -52,7 +62,8 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
 
 
     /**
-     * Scope a query to only include popular users.
+     * @param Builder $query
+     * @return void
      */
     #[Scope]
     protected function published(Builder $query): void

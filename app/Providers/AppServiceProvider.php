@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
-        Model::shouldBeStrict();
+        Model::shouldBeStrict(!$this->app->isProduction());
         FilamentFabricator::registerStyles([
             app(Vite::class)([
                 'resources/css/app.css',

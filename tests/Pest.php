@@ -11,9 +11,14 @@
 |
 */
 
+use App\Providers\Filament\AdminPanelProvider;
+
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature', 'Unit');
+
+arch()->preset()->laravel()
+    ->ignoring(AdminPanelProvider::class);
 
 /*
 |--------------------------------------------------------------------------
