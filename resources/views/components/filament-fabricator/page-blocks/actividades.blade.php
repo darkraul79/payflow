@@ -1,8 +1,12 @@
 <section {{ $attributes->merge(['class' => 'actividades']) }}>
-    <h2 class="subtitle text-center">{{ $attributes['title'] }}</h2>
-    <h3 class="title text-center">
-        {{ $attributes['subtitle'] }}
-    </h3>
+    <x-basic
+        :title="$attributes['title']"
+        :subtitle="$attributes['subtitle']"
+        :text="$attributes['text']"
+        subtitleClass="text-center"
+        titleClass="text-center"
+        class=""
+    />
     <div
         class="{{ $attributes['classGrid'] }} my-12 grid grid-cols-1 space-y-8 md:gap-6 md:space-y-0 lg:gap-12"
     >

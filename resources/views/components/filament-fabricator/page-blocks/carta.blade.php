@@ -6,11 +6,14 @@
             class="max-h-40 w-full object-cover md:max-h-fit md:max-w-fit"
         />
         <div class="w-full flex-grow md:max-w-2/3">
-            <h2 class="subtitle mb-1">{{ $attributes['subtitle'] }}</h2>
-            <h3 class="title mb-4">{{ $attributes['title'] }}</h3>
-            <div class="mt-4 gap-6 leading-5 md:columns-2">
-                {!! html_entity_decode($attributes['text']) !!}
-            </div>
+            <x-basic
+                :title="$attributes['title']"
+                :subtitle="$attributes['subtitle']"
+                :text="$attributes['text']"
+                subtitle-class="mb-1"
+                title-class="mb-4"
+                text-class="mt-4 gap-6 leading-5 md:columns-2"
+            />
         </div>
     </div>
 </section>

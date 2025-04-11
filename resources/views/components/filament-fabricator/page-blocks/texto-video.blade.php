@@ -1,14 +1,17 @@
 <section class="mission">
-    <div class="flex w-full gap-x-24">
-        <div class="w-2/5">
-            <h2 class="subtitle">{{ $attributes['subtitle'] }}</h2>
-            <h3 class="title mb-6">{{ $attributes['title'] }}</h3>
-
-            <div class="richtext">
-                {!! html_entity_decode($attributes['text']) !!}
-            </div>
+    <div
+        class="flex w-full flex-col items-end justify-end gap-x-24 lg:flex-row"
+    >
+        <div class="w-full lg:w-2/5">
+            <x-basic
+                :title="$attributes['title']"
+                :subtitle="$attributes['subtitle']"
+                :text="$attributes['text']"
+                title-class="mb-6"
+                text-class="richtext"
+            />
         </div>
-        <div class="w-3/5">
+        <div class="w-full lg:w-3/5">
             <iframe
                 width="100%"
                 height="315"

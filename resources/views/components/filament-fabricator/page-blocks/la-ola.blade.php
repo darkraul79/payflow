@@ -3,10 +3,14 @@
         class="flex flex-col items-stretch gap-10 md:flex-row md:justify-between"
     >
         <div class="flex min-w-2xs flex-col">
-            <h2 class="subtitle block">{{ $attributes['subtitle'] }}</h2>
-            <h3 class="title mb-8 block">{{ $attributes['title'] }}</h3>
+            <x-basic
+                :title="$attributes['title']"
+                :subtitle="$attributes['subtitle']"
+                subtitle-class="block"
+                title-class="block"
+            />
             <div
-                class="card bg-azul-sky flex w-full items-center p-10 shadow-sm"
+                class="card bg-azul-sky flex h-full w-full items-center p-10 shadow-sm"
             >
                 <img
                     src="{{ asset($attributes['image']) }}"

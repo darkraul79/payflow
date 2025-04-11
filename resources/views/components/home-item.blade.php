@@ -8,7 +8,5 @@
     <p>
         {!! $description !!}
     </p>
-    <a href="{{ $link }}" class="btn btn-primary btn-small mx-auto my-4">
-        {{ $linkText }}
-    </a>
+    <x-boton :buttonText="$linkText" :buttonLink="$link" class="mx-auto" />
 </div>

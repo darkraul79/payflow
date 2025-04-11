@@ -41,10 +41,10 @@ class Reusable
         $fields = [
             TextInput::make('subtitle')
                 ->label('Subtitular')
-                ->required(),
+            ,
             TextInput::make('title')
                 ->label('Titular')
-                ->required(),
+            ,
             RichEditor::make('text')
                 ->label('Texto')
             ,

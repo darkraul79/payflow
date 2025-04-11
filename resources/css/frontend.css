@@ -3,7 +3,7 @@
 @layer base {
     .sponsorship {
         .flip-card {
-            @apply h-[404px] w-[396px] bg-transparent perspective-distant;
+            @apply min-h-[404px] w-full bg-transparent perspective-distant;
 
             h4 {
                 @apply mb-3 block;

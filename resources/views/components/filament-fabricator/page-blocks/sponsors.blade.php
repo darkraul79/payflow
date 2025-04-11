@@ -2,8 +2,11 @@
     class="patrocinio mx-auto flex flex-col items-center justify-center md:flex-row md:gap-20"
 >
     <div class="w-full md:w-1/3">
-        <h2 class="subtitle">{{ $attributes['subtitle'] }}</h2>
-        <h3 class="title">{{ $attributes['title'] }}</h3>
+        <x-basic
+            :title="$attributes['title']"
+            :subtitle="$attributes['subtitle']"
+            :text="$attributes['description']"
+        />
 
         <x-boton
             class="my-8"
