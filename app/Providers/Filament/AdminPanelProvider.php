@@ -2,10 +2,12 @@
 
 namespace App\Providers\Filament;
 
+use Exception;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -21,6 +23,9 @@ use Z3d0X\FilamentFabricator\FilamentFabricatorPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
+    /**
+     * @throws Exception
+     */
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -57,6 +62,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentFabricatorPlugin::make(),
+            ])
+            ->navigationGroups([
+                NavigationGroup::make()
+                    ->label('Configuración')
+                    ->icon('heroicon-o-wrench-screwdriver'),
             ]);
     }
 }
