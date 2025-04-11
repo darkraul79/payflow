@@ -13,8 +13,7 @@
         class="{{ Route::currentRouteName() }} flex min-h-screen flex-col bg-white"
     >
         @include('frontend.elements.header')
-
-        <main class="@container container">
+        <main class="@container {{ $page->slug }} container">
             @yield('main')
         </main>
 

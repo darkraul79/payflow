@@ -96,8 +96,8 @@
     section {
         @apply mx-auto py-10 lg:py-[72px];
 
-        &:not(.first) {
-            @apply py-10 lg:py-[72px];
+        &:first-of-type {
+            @apply py-0;
         }
     }
 
@@ -159,6 +159,17 @@
         }
 
         img {
+        }
+    }
+
+    .richtext {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            @apply mb-3;
         }
     }
 }
