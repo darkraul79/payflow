@@ -17,25 +17,17 @@
     </div>
 
     <div
-        class="flex h-full w-full flex-grow flex-col items-center justify-end lg:flex-row"
+        class="flex h-full w-full flex-grow flex-col items-center justify-end font-light lg:flex-row"
     >
         <flux:navbar class="-mb-px max-lg:hidden">
-            <flux:navbar.item href="#" current>Home</flux:navbar.item>
-            <flux:navbar.item href="#">Qué hacemos</flux:navbar.item>
-            <flux:navbar.item href="#">Quiénes somos</flux:navbar.item>
-            <flux:navbar.item href="#">Colabora</flux:navbar.item>
-            <flux:separator vertical="true" variant="subtle" class="my-2" />
+            <flux:navbar.item href="/">Home</flux:navbar.item>
             <flux:dropdown class="max-lg:hidden">
                 <flux:navbar.item icon:trailing="chevron-down">
-                    Favorites
+                    Quiénes somos
                 </flux:navbar.item>
                 <flux:navmenu>
-                    <flux:navmenu.item href="#">
-                        Marketing site
-                    </flux:navmenu.item>
-                    <flux:navmenu.item href="#">Android app</flux:navmenu.item>
-                    <flux:navmenu.item href="#">
-                        Brand guidelines
+                    <flux:navmenu.item href="/quienes-somos/fundacion">
+                        Fundación
                     </flux:navmenu.item>
                 </flux:navmenu>
             </flux:dropdown>
