@@ -1,6 +1,6 @@
 <flux:header
     container="true"
-    class="@container full-container flex lg:h-[92px]"
+    class="@container full-container flex shadow-lg lg:h-[92px]"
 >
     <div class="flex flex-wrap items-center justify-between">
         <x-logo-fundacion

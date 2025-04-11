@@ -66,7 +66,7 @@
 @layer base {
     html,
     body {
-        @apply text-azul-sea w-full font-light;
+        @apply text-azul-sea w-full bg-white leading-[22px] font-light text-pretty;
     }
 
     .container {

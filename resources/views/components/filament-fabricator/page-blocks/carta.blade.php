@@ -12,7 +12,7 @@
                 :text="$attributes['text']"
                 subtitle-class="mb-1"
                 title-class="mb-4"
-                text-class="mt-4 gap-6 leading-5 md:columns-2"
+                text-class="mt-4 gap-x-10 md:columns-2"
             />
         </div>
     </div>

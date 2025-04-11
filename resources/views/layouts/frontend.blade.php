@@ -9,11 +9,11 @@
 
         @fluxAppearance
     </head>
-    <body
-        class="{{ Route::currentRouteName() }} flex min-h-screen flex-col bg-white"
-    >
+    <body class="{{ Route::currentRouteName() }} flex min-h-screen flex-col">
         @include('frontend.elements.header')
-        <main class="@container {{ $page->slug }} full-container">
+        <main
+            class="@container {{ $page->slug }} full-container bg-white shadow-lg"
+        >
             @yield('main')
         </main>
 

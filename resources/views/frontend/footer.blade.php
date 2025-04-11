@@ -1,7 +1,7 @@
 <footer
-    class="bg-azul-sky full-container container pt-8 lg:px-[72px] lg:pt-14 lg:pb-10"
+    class="@container bg-azul-sky full-container flex pt-8 shadow-lg lg:px-[72px] lg:pt-14 lg:pb-10"
 >
-    <div class="@container container">
+    <div class="@container full-container">
         <div
             class="flex w-full flex-col justify-between gap-5 gap-y-8 md:flex-row lg:gap-y-0"
         >
@@ -59,7 +59,7 @@
             </div>
         </div>
 
-        <div class="my-8 flex w-full items-end justify-between">
+        <div class="mt-8 flex w-full items-end justify-between">
             <div class="flex gap-2 lg:gap-3">
                 <x-rss-icon
                     title="Facebook"
