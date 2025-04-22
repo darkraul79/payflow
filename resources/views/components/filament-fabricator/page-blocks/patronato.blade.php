@@ -12,7 +12,7 @@
                 <div class="flip-card-inner">
                     <div class="flip-card-front card overflow-hidden">
                         <img
-                            src="{{ asset($item['image']) }}"
+                            src="{{ asset('storage/' . $item['image'], true) }}"
                             alt="{{ $item['name'] }}"
                             class="mb-2 w-full rounded-lg object-cover object-center"
                         />

@@ -1,7 +1,7 @@
 <section class="carta mb-8">
     <div class="flex flex-col items-start justify-between gap-8 md:flex-row">
         <img
-            src="{{ asset($attributes['image']) }}"
+            src="{{ asset('storage/' . $attributes['image'], true) }}"
             alt="{{ $attributes['title'] }}"
             class="max-h-40 w-full object-cover md:max-h-fit md:max-w-fit"
         />

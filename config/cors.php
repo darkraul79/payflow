@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['*', 'https://192.168.0.15:2043/', 'https://fundacion.raulsebastian.es'],
 
     'allowed_origins_patterns' => [],
 
