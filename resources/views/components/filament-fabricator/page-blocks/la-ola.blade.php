@@ -13,7 +13,7 @@
                 class="card bg-azul-sky flex h-full w-full items-center p-10 shadow-sm"
             >
                 <img
-                    src="{{ asset($attributes['image']) }}"
+                    src="{{ asset('storage/' . $attributes['image']) }}"
                     class="mx-auto"
                     alt="La ola"
                 />
