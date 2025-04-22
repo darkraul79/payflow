@@ -21,7 +21,7 @@
     >
         <flux:navbar class="-mb-px max-lg:hidden">
             @foreach ($menu as $navItem)
-                @if ($navItem->has('children'))
+                @if ($navItem->has('children') && $navItem->title != 'Home')
                     <flux:dropdown>
                         <flux:navbar.item icon:trailing="chevron-down">
                             {{ $navItem->title }}
@@ -37,7 +37,9 @@
                         </flux:navmenu>
                     </flux:dropdown>
                 @else
-                    <flux:navbar.item href="{{ $navItem->getUrl() }}">
+                    <flux:navbar.item
+                        href="{{ $navItem->getUrl() == '/home' ? '/' : $navItem->getUrl() }}"
+                    >
                         {{ $navItem->title }}
                     </flux:navbar.item>
                 @endif
