@@ -37,7 +37,7 @@
                     id="carousel-item-{{ $index + 1 }}"
                 >
                     <img
-                        src="{{ asset($item['image']) }}"
+                        src="{{ asset('storage/' . $item['image'], true) }}"
                         class="h-full w-full object-cover"
                         alt="{{ $item['title'] }}"
                     />

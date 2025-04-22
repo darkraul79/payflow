@@ -1,7 +1,7 @@
 <section {{ $attributes->merge(['class' => 'banner']) }}>
     <div class="fondo">
         <img
-            src="{{ $attributes['image'] }}"
+            src="{{ 'storage/'.$attributes['image'] }}"
             alt="{{ $attributes['title'] }}"
             class="relative z-0 h-full w-full object-cover lg:absolute lg:top-0"
         />

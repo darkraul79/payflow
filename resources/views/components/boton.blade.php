@@ -17,7 +17,7 @@
     >
         @if ($icon)
             <img
-                src="{{ asset($icon) }}"
+                src="{{ asset("storage/" . $icon) }}"
                 class="icon me-2"
                 alt="{{ $buttonText }}"
             />

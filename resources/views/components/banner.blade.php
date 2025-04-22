@@ -1,7 +1,7 @@
 <section {{ $attributes->class(['banner']) }}>
     <div class="fondo">
         <img
-            src="{{ $image }}"
+            src="{{ .$image }}"
             alt="{{ $title }}"
             class="relative z-0 h-full w-full object-cover lg:absolute lg:top-0"
         />
