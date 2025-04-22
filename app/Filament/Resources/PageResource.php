@@ -28,9 +28,6 @@ class PageResource extends Resource
 {
     protected static ?string $model = Page::class;
 
-    protected static ?string $pluralLabel = 'Paginas';
-
-    protected static ?string $slug = 'pages';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
