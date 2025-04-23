@@ -24,7 +24,7 @@
 </header>
 
 @if ($text)
-    <div class="{{ $textClass }} text-balance">
+    <div class="{{ $textClass }} text-pretty">
         {!! html_entity_decode($text) !!}
     </div>
 @endif

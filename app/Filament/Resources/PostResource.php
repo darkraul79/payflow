@@ -1,0 +1,179 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\PostResource\Pages;
+use App\Models\Post;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\Split;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+
+class PostResource extends Resource
+{
+    protected static ?string $model = Post::class;
+
+    protected static ?string $slug = 'posts';
+
+    protected static ?string $label = "Actividad";
+    protected static ?string $pluralLabel = "Actividades";
+
+
+    protected static ?string $navigationIcon = 'heroicon-o-calendar-date-range';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Split::make([
+                    Group::make([
+
+                        TextInput::make('title')
+                            ->label('Titulo')
+                            ->columnSpanFull()
+                            ->required(),
+                        TextInput::make('slug')
+                            ->label('Slug')
+                            ->helperText('URL amigable')
+                            ->required()
+                            ->unique(Post::class, 'slug', ignoreRecord: true)
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+
+
+                        RichEditor::make('content')
+                            ->label('Contenido')
+                            ->required(),
+
+                        TextInput::make('resume')
+                            ->label('Resumen')
+                        ,
+
+
+                    ])->columns(1),
+                    Group::make([
+                        Toggle::make('published')->label('Publicado')
+                            ->helperText('Será visible en la web')
+                            ->inline(true)
+                            ->default(false)
+                            ->columnSpan(1),
+                        SpatieMediaLibraryFileUpload::make('image')->nullable()
+                            ->disk('public')->directory('actividades'),
+
+                        Section::make('')
+                            ->label(false)
+                            ->description('Información del evento')
+                            ->schema([
+
+                                Textarea::make('address')
+                                    ->label('Dirección')
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
+
+                                DateTimePicker::make('date')
+                                    ->label('Fecha')
+                                    ->nullable()
+                                    ->columnSpan(1),
+                                Toggle::make('donacion')->label('Donación')
+                                    ->helperText('¿Es una actividad de donación?')
+                                    ->default(false)
+                                    ->columnSpan(1),
+                            ]),
+
+
+                        Placeholder::make('created_at')
+                            ->label('Fecha creación')
+                            ->inlineLabel()
+                            ->columnSpanFull()
+                            ->content(fn(?Post $record): string => $record?->created_at?->diffForHumans() ?? '-'),
+
+                        Placeholder::make('updated_at')
+                            ->label('Fecha modificación')
+                            ->inlineLabel()
+                            ->columnSpanFull()
+                            ->content(fn(?Post $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
+                    ])->columnSpanFull()->grow(false),
+                ])->from('md')
+                    ->columnSpanFull(),
+
+
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('title')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('slug')
+                    ->label('URL amigable')
+                    ->searchable()
+                    ->sortable(),
+
+
+                TextColumn::make('resume'),
+            ])
+            ->filters([
+                TrashedFilter::make(),
+            ])
+            ->actions([
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListPosts::route('/'),
+            'create' => Pages\CreatePost::route('/create'),
+            'edit' => Pages\EditPost::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['title'];
+    }
+}

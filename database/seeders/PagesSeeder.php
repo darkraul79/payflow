@@ -29,11 +29,12 @@ class PagesSeeder extends Seeder
             'firma1.png' => 'Rge1Tb7xzKSsfUnaZJ9OIi7KITMEyUxt0Ae0oDNU.png',
             'bea.webp' => '01JRJ53KQ84F4N2T7DR6073S9P.webp',
             'fundacion.pdf' => '01JRJ9VRXZ1P2J3R7RP829QJCP.pdf',
+            'investigacion.jpg' => 'lRO7zXI26QjvK4Y5xExpcfHSvxGo2OTuHDS4Ntp5.jpg',
         ];
 
         // Copio estas imágenes a la carpeta de storage
         foreach ($images as $name => $image) {
-            copy(base_path('public/images/'.$name), public_path('storage/'.$image));
+            copy(base_path('public/images/' . $name), public_path('storage/' . $image));
         }
 
         Page::factory()
@@ -49,6 +50,7 @@ class PagesSeeder extends Seeder
                 'title' => 'Quiénes somos',
                 'slug' => 'quienes-somos',
             ]);
+
         Page::factory()
             ->published()
             ->create([
@@ -72,9 +74,31 @@ class PagesSeeder extends Seeder
                 'parent_id' => $quienes->id,
                 'blocks' => json_decode('[{"type":"basico","data":{"subtitle":"Somos transparentes","title":"Transparencia","text":"<p>Es una prioridad de la fundaci\u00f3n la absoluta transparencia en cada una de nuestras actuaciones, para que todos los que colaboran y ayudan tengan plena seguridad en el buen fin de sus esfuerzos.<br><br>Se publicar\u00e1n puntualmente nuestras cuentas, planes de actuaci\u00f3n, auditorias, resoluciones del Patronato, estatutos y sus modificaciones, as\u00ed como cualquier otra documentaci\u00f3n que consideremos de inter\u00e9s.<br><br>La fundaci\u00f3n est\u00e1 bajo control del Protectorado de Fundaciones de la Comunidad Aut\u00f3noma de Madrid, adscrita a la Consejer\u00eda de sanidad.<br><br>Podr\u00e1 dirigirse mediante correo electr\u00f3nico a la fundaci\u00f3n para cualquier duda o consulta que le pueda surgir respecto a nuestras actividades.<br><br>Gracias por confiar en nosotros y apoyar nuestra misi\u00f3n.<\/p>"}},{"type":"descargas","data":{"subtitle":null,"title":"Documentos de inter\u00e9s","text":null,"items":[{"title":"Legales","content":"L\u00f6rem ipsum jaling pret\u00e5belt tiskade baraktig geologi. Drevkultur kropibelt i ber. Paranas makrolig tism. Anan prerat tills diagus. Spedonas telekalig. ","file":"descargas\/01JRJ9VRXZ1P2J3R7RP829QJCP.pdf"}]}}]'
                 )]);
+        Page::factory()
+            ->published()->create([
+                'title' => 'Osteosarcoma',
+                'slug' => 'osteosarcoma',
+                'layout' => 'donacion',
+                'parent_id' => $quienes->id,
+                'blocks' => json_decode('[{"type":"basico","data":{"subtitle":"Osteosarcoma","title":"\u00bfQu\u00e9 es el osteosarcoma?","text":"<p>Es un tipo de c\u00e1ncer poco frecuente que se origina en los huesos y que suele afectar a ni\u00f1os y adolescentes. Comienza cuando las c\u00e9lulas del cuerpo empiezan a crecer de forma descontrolada. En ni\u00f1os, adolescentes y adultos j\u00f3venes, suele originarse en zonas en las que el hueso crece r\u00e1pidamente, como cerca de los extremos de los huesos de las piernas (rodillas) o los brazos (hombros), aunque el osteosarcoma puede desarrollarse en cualquier hueso.<\/p><h2>Diagn\u00f3stico<\/h2><p><br>Es fundamental hacer una biopsia. Una vez establecido el diagn\u00f3stico es probable que necesites estudios de imagen especiales o esc\u00e1neres para buscar el c\u00e1ncer en cualquier otra parte del cuerpo. Es importante buscar un especialista en sarcomas que te gu\u00ede durante todo el proceso.<\/p><p><br><\/p><p><figure data-trix-attachment=\"{&quot;contentType&quot;:&quot;image\/jpeg&quot;,&quot;filename&quot;:&quot;investigacion.jpg&quot;,&quot;filesize&quot;:316114,&quot;height&quot;:471,&quot;href&quot;:&quot;https:\/\/fundacionelenatertre.test\/storage\/lRO7zXI26QjvK4Y5xExpcfHSvxGo2OTuHDS4Ntp5.jpg&quot;,&quot;url&quot;:&quot;https:\/\/fundacionelenatertre.test\/storage\/lRO7zXI26QjvK4Y5xExpcfHSvxGo2OTuHDS4Ntp5.jpg&quot;,&quot;width&quot;:856}\" data-trix-content-type=\"image\/jpeg\" data-trix-attributes=\"{&quot;presentation&quot;:&quot;gallery&quot;}\" class=\"attachment attachment--preview attachment--jpg\"><a href=\"https:\/\/fundacionelenatertre.test\/storage\/lRO7zXI26QjvK4Y5xExpcfHSvxGo2OTuHDS4Ntp5.jpg\"><img src=\"https:\/\/fundacionelenatertre.test\/storage\/lRO7zXI26QjvK4Y5xExpcfHSvxGo2OTuHDS4Ntp5.jpg\" width=\"856\" height=\"471\"><figcaption class=\"attachment__caption\"><span class=\"attachment__name\">investigacion.jpg<\/span> <span class=\"attachment__size\">308.71 KB<\/span><\/figcaption><\/a><\/figure><\/p><p><br><\/p><h2>Tratamiento<\/h2><h3>Al ser un c\u00e1ncer poco frecuente, solo los m\u00e9dicos de los principales centros oncol\u00f3gicos tienen amplia experiencia en el tratamiento.<\/h3><p><br><\/p><p>Para tratarlo, se recomienda un enfoque de equipo. En ni\u00f1os y adolescentes, este equipo incluye al pediatra del ni\u00f1o y a los especialistas en c\u00e1ncer infantil: un cirujano especializado en m\u00fasculos y huesos con experiencia en el tratamiento de tumores \u00f3seos, un onc\u00f3logo m\u00e9dico o pedi\u00e1trico, un onc\u00f3logo radioter\u00e1pico y un m\u00e9dico especializado en rehabilitaci\u00f3n y fisioterapia. El equipo tambi\u00e9n puede incluir otros m\u00e9dicos, asistentes, enfermeros, psic\u00f3logos, trabajadores sociales, especialistas en rehabilitaci\u00f3n y otros profesionales de la salud.<\/p><p><br><\/p><p><br><\/p><p><figure data-trix-attachment=\"{&quot;contentType&quot;:&quot;image\/jpeg&quot;,&quot;filename&quot;:&quot;investigacion.jpg&quot;,&quot;filesize&quot;:316114,&quot;height&quot;:471,&quot;href&quot;:&quot;https:\/\/fundacionelenatertre.test\/storage\/lRO7zXI26QjvK4Y5xExpcfHSvxGo2OTuHDS4Ntp5.jpg&quot;,&quot;url&quot;:&quot;https:\/\/fundacionelenatertre.test\/storage\/lRO7zXI26QjvK4Y5xExpcfHSvxGo2OTuHDS4Ntp5.jpg&quot;,&quot;width&quot;:856}\" data-trix-content-type=\"image\/jpeg\" data-trix-attributes=\"{&quot;presentation&quot;:&quot;gallery&quot;}\" class=\"attachment attachment--preview attachment--jpg\"><a href=\"https:\/\/fundacionelenatertre.test\/storage\/lRO7zXI26QjvK4Y5xExpcfHSvxGo2OTuHDS4Ntp5.jpg\"><img src=\"https:\/\/fundacionelenatertre.test\/storage\/lRO7zXI26QjvK4Y5xExpcfHSvxGo2OTuHDS4Ntp5.jpg\" width=\"856\" height=\"471\"><figcaption class=\"attachment__caption\"><span class=\"attachment__name\">investigacion.jpg<\/span> <span class=\"attachment__size\">308.71 KB<\/span><\/figcaption><\/a><\/figure><br><br><\/p>"}}]'
+                )]);
 
         Page::factory()
-            ->count(2)
-            ->create();
+            ->published()->create([
+                'title' => 'Objetivos',
+                'slug' => 'objetivos',
+                'parent_id' => $quienes->id,
+            ]);
+        $quehacemos = Page::factory()
+            ->published()->create([
+                'title' => 'Qué hacemos',
+                'slug' => 'que-hacemos',
+            ]);
+        Page::factory()->create([
+            'title' => 'Actividades',
+            'slug' => 'actividades',
+            'parent_id' => $quehacemos->id,
+        ]);
+
     }
 }

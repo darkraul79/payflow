@@ -109,6 +109,18 @@
         }
     }
 
+    .donacion {
+        @apply mx-auto px-4 pt-7 pb-20 lg:px-[72px];
+
+        section {
+            @apply px-0;
+
+            &:first-of-type {
+                @apply py-0;
+            }
+        }
+    }
+
     h4 {
         @apply text-xl;
     }
@@ -206,6 +218,28 @@
         &:focus,
         &:active {
             @apply bg-azul-sapphire text-white no-underline;
+        }
+    }
+
+    &.btn-primary-outline {
+        @apply text-azul-mist border-azul-mist border bg-white;
+
+        &:hover,
+        &:focus,
+        &:active {
+            @apply bg-azul-sapphire text-white no-underline;
+        }
+
+        img {
+            @apply w-0;
+        }
+
+        &:has(input[type='radio']:checked) {
+            @apply bg-azul-mist text-white no-underline;
+
+            img {
+                @apply visible! w-auto!;
+            }
         }
     }
 }

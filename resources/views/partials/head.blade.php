@@ -11,3 +11,9 @@
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @fluxAppearance
+
+@stack('vite')
+@stack('css')
+@stack('scripts')
+
+@fluxAppearance

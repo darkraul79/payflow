@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Page;
+use App\Models\Post;
 
 class FrontEndController extends Controller
 {
@@ -13,5 +14,15 @@ class FrontEndController extends Controller
 
         return view('home', compact('page'));
 
+    }
+
+    public function activities($slug)
+    {
+        $post = Post::where('slug', $slug)->first();
+        $page = false;
+
+//        dd($post->getMedia());
+
+        return view('activities.show', compact('post', 'page'));
     }
 }

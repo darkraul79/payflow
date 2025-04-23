@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontEndController::class, 'index'])->name('home');
 
+Route::get('/que-hacemos/actividades/{slug}', [FrontEndController::class, 'activities'])->name('activities.show');
+
 Route::get('/pagina', function () {
     return view('page');
 })->name('pagina');

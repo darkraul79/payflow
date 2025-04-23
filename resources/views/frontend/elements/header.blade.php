@@ -56,7 +56,7 @@
     </div>
 </flux:header>
 <div class="full-container">
-    @includeIf('sub-header', [Route::currentRouteName() != 'home'])
+    @includeIf('frontend.elements.header.sub-header', [Route::currentRouteName() != 'home'])
 </div>
 <flux:sidebar
     sticky="true"
