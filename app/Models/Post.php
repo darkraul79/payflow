@@ -12,9 +12,12 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+/**
+ * @property mixed $slug
+ */
 class Post extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes, InteractsWithMedia;
+    use HasFactory, InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
         'title',
@@ -27,7 +30,7 @@ class Post extends Model implements HasMedia
         'donacion',
     ];
 
-    public function registerMediaConversions(Media|null $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this
             ->addMediaConversion('preview')
@@ -35,13 +38,12 @@ class Post extends Model implements HasMedia
             ->nonQueued();
     }
 
-    public function getFormatDate()
+    public function getFormatDate(): string
     {
         return Str::apa(Carbon::parse($this->date)->translatedFormat('l d \d\e F'));
     }
 
-
-    public function getFormatTime()
+    public function getFormatTime(): string
     {
         return Carbon::parse($this->date)->format('h:i \h\r\s.');
     }

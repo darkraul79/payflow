@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PostResource\Pages;
 use App\Models\Post;
+use Exception;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
@@ -16,6 +17,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -36,11 +39,47 @@ class PostResource extends Resource
 
     protected static ?string $slug = 'posts';
 
-    protected static ?string $label = "Actividad";
-    protected static ?string $pluralLabel = "Actividades";
+    protected static ?string $label = 'Actividad';
 
+    protected static ?string $pluralLabel = 'Actividades';
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-date-range';
+
+    /**
+     * @throws Exception
+     */
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('title')
+                    ->searchable()
+                    ->sortable(),
+
+            ])
+            ->filters([
+                TrashedFilter::make(),
+            ])
+            ->actions([
+                ActionGroup::make([
+                    Action::make('visit')
+                        ->label('Visitar')
+                        ->icon('heroicon-o-arrow-top-right-on-square')
+                        ->url(fn($record): string => route('activities.show', ['slug' => $record->slug]), true),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                    RestoreAction::make(),
+                    ForceDeleteAction::make(),
+                ]),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                ]),
+            ]);
+    }
 
     public static function form(Form $form): Form
     {
@@ -61,21 +100,18 @@ class PostResource extends Resource
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-
                         RichEditor::make('content')
                             ->label('Contenido')
                             ->required(),
 
                         TextInput::make('resume')
-                            ->label('Resumen')
-                        ,
-
+                            ->label('Resumen'),
 
                     ])->columns(1),
                     Group::make([
                         Toggle::make('published')->label('Publicado')
                             ->helperText('Será visible en la web')
-                            ->inline(true)
+                            ->inline()
                             ->default(false)
                             ->columnSpan(1),
                         SpatieMediaLibraryFileUpload::make('image')->nullable()
@@ -101,7 +137,6 @@ class PostResource extends Resource
                                     ->columnSpan(1),
                             ]),
 
-
                         Placeholder::make('created_at')
                             ->label('Fecha creación')
                             ->inlineLabel()
@@ -117,41 +152,6 @@ class PostResource extends Resource
                 ])->from('md')
                     ->columnSpanFull(),
 
-
-            ]);
-    }
-
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                TextColumn::make('title')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('slug')
-                    ->label('URL amigable')
-                    ->searchable()
-                    ->sortable(),
-
-
-                TextColumn::make('resume'),
-            ])
-            ->filters([
-                TrashedFilter::make(),
-            ])
-            ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                ]),
             ]);
     }
 
