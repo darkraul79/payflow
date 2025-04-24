@@ -11,6 +11,7 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -18,6 +19,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Z3d0X\FilamentFabricator\FilamentFabricatorPlugin;
 
@@ -67,6 +69,14 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label('Configuración')
                     ->icon('heroicon-o-wrench-screwdriver'),
+            ])->assets([
+                Css::make('admin-css', Vite::asset('resources/css/filament/admin/theme.css', 'build')),
+            ])
+//            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->colors([
+                'primary' => '#1a598c',
+                'secondary' => '#36A0BF',
+                'danger' => '#EA4B48',
             ]);
     }
 }

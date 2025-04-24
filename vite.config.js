@@ -6,9 +6,11 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
+                'resources/css/theme.css',
                 'resources/css/app.css',
                 'resources/css/home.css',
                 'resources/css/frontend.css',
+                'resources/css/filament/admin/theme.css',
                 'resources/js/app.js',
                 'resources/js/carousel.js',
             ],
