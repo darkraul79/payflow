@@ -1,8 +1,8 @@
 <?php
 
 // config for Z3d0X/FilamentFabricator
+use App\Filament\Resources\PageResource;
 use Z3d0X\FilamentFabricator\Models\Page;
-use Z3d0X\FilamentFabricator\Resources\PageResource;
 
 return [
     'routing' => [

@@ -4,17 +4,13 @@ namespace App\Filament\Resources\PageResource\Pages;
 
 use App\Filament\Resources\PageResource;
 use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\ViewAction;
-use Filament\Resources\Pages\EditRecord;
-use Pboivin\FilamentPeek\Pages\Actions\PreviewAction;
+use Filament\Actions\EditAction;
+use Filament\Resources\Pages\ViewRecord;
 use Z3d0X\FilamentFabricator\Facades\FilamentFabricator;
 use Z3d0X\FilamentFabricator\Models\Contracts\Page as PageContract;
 
-class EditPage extends EditRecord
+class ViewPage extends ViewRecord
 {
-    use Concerns\HasPreviewModal;
-
     protected static string $resource = PageResource::class;
 
     public static function getResource(): string
@@ -25,16 +21,10 @@ class EditPage extends EditRecord
     protected function getActions(): array
     {
         return [
-            PreviewAction::make(),
-
-            ViewAction::make()
-                ->visible(config('filament-fabricator.enable-view-page')),
-
-            DeleteAction::make(),
+            EditAction::make(),
 
             Action::make('visit')
-                ->label('Visit Page')
-                ->label('Visitar')
+                ->label(__('filament-fabricator::page-resource.actions.visit'))
                 ->url(function () {
                     /** @var PageContract $page */
                     $page = $this->getRecord();
@@ -45,10 +35,6 @@ class EditPage extends EditRecord
                 ->openUrlInNewTab()
                 ->color('success')
                 ->visible(config('filament-fabricator.routing.enabled')),
-
-            Action::make('Guardar')
-                ->action('save')
-                ->label('Guardar'),
         ];
     }
 }

@@ -11,7 +11,6 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-
 /**
  * Post
  *
@@ -20,7 +19,6 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
 {
     use HasFactory, InteractsWithMedia, SoftDeletes;
-
 
     protected $fillable = [
         'title',
@@ -31,6 +29,12 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
         'published_at',
     ];
 
+//    protected function published_at(): Attribute
+//    {
+//        return Attribute::make(
+//            set: fn (string $value) => $value ? now() : null,
+//        );
+//    }
 
     public function registerMediaConversions(?Media $media = null): void
     {
@@ -40,35 +44,21 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
             ->nonQueued();
     }
 
-    /**
-     * @param Builder $query
-     * @return void
-     */
     #[Scope]
     protected function firstLevel(Builder $query): void
     {
         $query->where('parent_id', null);
     }
 
-    /**
-     * @param Builder $query
-     * @return void
-     */
     #[Scope]
     protected function isHome(Builder $query): void
     {
         $query->where('is_home', true);
     }
 
-
-    /**
-     * @param Builder $query
-     * @return void
-     */
     #[Scope]
     protected function published(Builder $query): void
     {
         $query->where('published_at', '<>', null);
     }
-
 }
