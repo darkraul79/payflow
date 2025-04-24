@@ -47,4 +47,9 @@ class Post extends Model implements HasMedia
     {
         return Carbon::parse($this->date)->format('h:i \h\r\s.');
     }
+
+    public function getUrlPrefix()
+    {
+        return config('app.url') . '/que-hacemos/actividades/';
+    }
 }

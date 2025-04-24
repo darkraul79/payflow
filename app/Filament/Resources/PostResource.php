@@ -16,6 +16,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
@@ -27,11 +28,14 @@ use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class PostResource extends Resource
 {
@@ -52,10 +56,21 @@ class PostResource extends Resource
     {
         return $table
             ->columns([
+                SpatieMediaLibraryImageColumn::make('image')
+                    ->square()
+                    ->grow(false)
+                    ->extraAttributes(['class' => 'rounded-lg'])
+                    ->label(''),
                 TextColumn::make('title')
+                    ->label('Título')
+                    ->grow()
                     ->searchable()
                     ->sortable(),
-
+                TextColumn::make('date')
+                    ->label('Fecha')
+                    ->formatStateUsing(fn($state, $record): string => Carbon::parse($state)->diffForHumans() . " <small class='text-gray-400'>(" . Carbon::parse($state)->format('d/m/Y') . ')</small>')
+                    ->html()
+                    ->sortable(),
             ])
             ->filters([
                 TrashedFilter::make(),
@@ -90,10 +105,14 @@ class PostResource extends Resource
 
                         TextInput::make('title')
                             ->label('Titulo')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))
                             ->columnSpanFull()
                             ->required(),
                         TextInput::make('slug')
+                            ->prefix(fn($record): string => $record->getUrlPrefix())
                             ->label('Slug')
+                            ->unique(ignoreRecord: true)
                             ->helperText('URL amigable')
                             ->required()
                             ->unique(Post::class, 'slug', ignoreRecord: true)
@@ -129,6 +148,7 @@ class PostResource extends Resource
 
                                 DateTimePicker::make('date')
                                     ->label('Fecha')
+                                    ->seconds(false)
                                     ->nullable()
                                     ->columnSpan(1),
                                 Toggle::make('donacion')->label('Donación')
@@ -139,12 +159,14 @@ class PostResource extends Resource
 
                         Placeholder::make('created_at')
                             ->label('Fecha creación')
+                            ->extraAttributes(['class' => 'text-gray-400 text-end'])
                             ->inlineLabel()
                             ->columnSpanFull()
                             ->content(fn(?Post $record): string => $record?->created_at?->diffForHumans() ?? '-'),
 
                         Placeholder::make('updated_at')
                             ->label('Fecha modificación')
+                            ->extraAttributes(['class' => 'text-gray-400 text-end'])
                             ->inlineLabel()
                             ->columnSpanFull()
                             ->content(fn(?Post $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
