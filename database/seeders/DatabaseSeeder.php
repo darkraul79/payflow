@@ -17,5 +17,6 @@ class DatabaseSeeder extends Seeder
         $this->call(PagesSeeder::class);
         $this->call(PostSeeder::class);
         $this->call(BlockquotesSeeder::class);
+        $this->call(TagsSeeder::class);
     }
 }
