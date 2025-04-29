@@ -75,19 +75,40 @@ class Post extends Model implements HasMedia
         return Carbon::parse($this->date)->format('h:i \h\r\s.');
     }
 
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(tag::class, 'post_tag', 'post_id', 'tag_id');
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        $breadcrumbs = [];
+
+        $que_hacemos = Page::query()->where('slug', 'que-hacemos')->first();
+        if ($que_hacemos) {
+            $breadcrumbs[$que_hacemos->title] = $que_hacemos->getUrl();
+
+            $activities = Page::query()
+                ->where('slug', 'actividades')
+                ->where('parent_id', $que_hacemos->id)
+                ->first();
+
+            if ($activities) {
+                $breadcrumbs[$activities->title] = $activities->getUrl();
+            }
+        }
+
+        return $breadcrumbs;
+    }
+
     public function getUrl(): string
     {
-        return $this->getUrlPrefix() . $this->slug;
+        return $this->getUrlPrefix().$this->slug;
     }
 
     public function getUrlPrefix(): string
     {
-        return config('app.url') . '/que-hacemos/actividades/';
-    }
-
-    public function tags(): BelongsToMany
-    {
-        return $this->belongsToMany(tag::class, 'post_tag', 'post_id', 'tag_id');
+        return config('app.url').'/que-hacemos/actividades/';
     }
 
     #[Scope]
