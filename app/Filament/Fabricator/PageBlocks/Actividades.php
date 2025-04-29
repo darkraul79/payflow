@@ -5,9 +5,7 @@ namespace App\Filament\Fabricator\PageBlocks;
 use App\Models\Post;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Z3d0X\FilamentFabricator\PageBlocks\PageBlock;
@@ -48,15 +46,6 @@ class Actividades extends PageBlock
                             ->columnSpan(1)
                             ->multiple(),
                     ]),
-                Section::make('gallery')
-                    ->label('Galería de imágenes')
-                    ->schema([
-                        SpatieMediaLibraryFileUpload::make('image')
-                            ->collection('actividades')
-                            ->disk('public')
-                            ->directory('actividades')
-                            ->nullable()
-                    ]),
 
             ]);
     }
@@ -90,6 +79,7 @@ class Actividades extends PageBlock
                 break;
             default:
         }
+
         return $data;
     }
 }
