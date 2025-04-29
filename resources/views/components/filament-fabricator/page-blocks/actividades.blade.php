@@ -1,4 +1,4 @@
-<section {{ $attributes->merge(['class' => 'actividades']) }}>
+<section class="actividades">
     <x-basic
         :title="$attributes['title']"
         :subtitle="$attributes['subtitle']"
@@ -8,17 +8,17 @@
         class=""
     />
     <div
-        class="{{ $attributes['classGrid'] }} my-12 grid grid-cols-1 space-y-8 md:gap-6 md:space-y-0 lg:gap-12"
+        class="{{ $attributes['classGrid'] }} lg:gap- my-12 grid grid-cols-1 items-stretch justify-center space-y-8 md:gap-6 md:space-y-0"
     >
-        @for ($i = 0; $i < 3; $i++)
+        @foreach ($attributes['activities'] as $activity)
             <x-card
-                :image="asset('images/banner.webp')"
-                title="II Concierto solidario de luis cobos"
-                text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-                date="Diciembre 20, 2025"
+                :image="$activity->getFirstMedia('actividades')->getUrl('card-thumb')"
+                :title="$activity->title"
+                :text="$activity->resume"
+                :date="$activity->getFormatDateBlog()"
                 button-text="Leer más"
-                button-link="#"
+                :button-link="$activity->getUrl()"
             />
-        @endfor
+        @endforeach
     </div>
 </section>

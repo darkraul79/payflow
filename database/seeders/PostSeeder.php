@@ -14,6 +14,8 @@ class PostSeeder extends Seeder
             'cartel-festival.jpg' => 'S1yJHm1NPxSYhksVis1gsYRbtGnjU5yROOVVjBLF.jpeg',
             'danza.jpg' => '7lHXTEPuLo87f3R5UWDUqHIqcG6KnAM9pU504Ue8.jpg',
             'danza-actividad.jpg' => '01JSH0J7NQQY1RPDYKNTBAB8R9.jpg',
+            'cartel-carrera-solidaria.jpg' => 'cartel-carrera-solidaria.jpg',
+            'LAS-ROZAS-FET-2025-316SALIDAS-PRUEBAS-DE-4-Y-8-KM.jpg' => 'LAS-ROZAS-FET-2025-316SALIDAS-PRUEBAS-DE-4-Y-8-KM.jpg'
         ];
 
         // Copio estas imágenes a la carpeta de storage
@@ -34,6 +36,38 @@ class PostSeeder extends Seeder
         ]);
         $actividad->addMedia(public_path('storage/01JSH0J7NQQY1RPDYKNTBAB8R9.jpg'))
             ->preservingOriginal()
-            ->toMediaCollection();
+            ->toMediaCollection('actividades');
+
+        $titulo = 'III CARRERA SOLIDARIA DE LAS ROZAS';
+        $actividad = Post::factory()->create([
+            'title' => $titulo,
+            'slug' => Str::slug($titulo),
+            'content' => '<p>El pasado sábado 5 de abril, tuvo lugar en la Dehesa de Navalcarbón, en <strong>Las Rozas</strong> (Madrid) la <strong>III Carrera Solidaria de la Fundación Elena Tertre.</strong></p><p>Más de medio millón de participantes, (573 en total), llenaron de solidaridad y de optimismo esta cita deportiva popular organizada por la <strong>Fundación Elena Tertre.</strong></p><p>La salida y meta estuvo situada en la zona verde recreativa de la Dehesa de Navalcarbón junto al recinto ferial de Las Rozas. Las pruebas se celebraron durante toda la mañana, siendo dos las distancias a recorrer que fueron de 4 y 8 kilómetros con salida única.</p><p>Además, hubo un paseo solidario popular por el mismo recorrido de la competición y unas pruebas atléticas de pequeño recorrido adaptadas para familias con niñas y niños menores de 10 años.</p><p>Junto con las pruebas deportivas, hubo varias carpas informativas de la Fundación Elena Tertre, así como un mercadillo solidario y una zona de fisioterapia y atención directa a los corredores instalados por la clínica <strong>Fisioincorpore.</strong></p>',
+            'date' => '2025-04-05 10:00',
+            'address' => 'Dehesa de Navalcarbón, en Las Rozas (Madrid)',
+            'resume' => 'El pasado sábado 5 de abril, tuvo lugar en la Dehesa de Navalcarbón',
+            'published' => true,
+            'donacion' => false,
+        ]);
+        $actividad->addMedia(public_path('storage/cartel-carrera-solidaria.jpg'))
+            ->preservingOriginal()
+            ->toMediaCollection('actividades');
+
+
+        $titulo = 'III CARRERA SOLIDARIA FUNDACIÓN ELENA TERTRE';
+        $actividad = Post::factory()->create([
+            'title' => $titulo,
+            'slug' => Str::slug($titulo),
+            'content' => '<p>Únete a la Carrera Solidaria y la Marcha Familiar en apoyo a la Fundación Elena Tertre!</p><p>Fecha: 5 de abril de 2025<br>Lugar: Explanada de la Dehesa de Navalcarbón<br>Horario: de 10:00 a 13:00</p><p>Inscripción: ¡Recuerda que todo lo recaudado será destinado íntegramente a los programas de musicoterapia y detección precoz del osteosarcoma de la Fundación Elena Tertre!</p>',
+            'date' => '2025-04-05 10:00',
+            'address' => 'Explanada de la Dehesa de Navalcarbón',
+            'resume' => 'Únete a la Carrera Solidaria y la Marcha Familiar en apoyo a la Fundación Elena Tertre!',
+            'published' => true,
+            'donacion' => false,
+        ]);
+
+        $actividad->addMedia(public_path('storage/LAS-ROZAS-FET-2025-316SALIDAS-PRUEBAS-DE-4-Y-8-KM.jpg'))
+            ->preservingOriginal()
+            ->toMediaCollection('actividades');
     }
 }

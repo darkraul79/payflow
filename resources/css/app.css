@@ -107,10 +107,10 @@
             @apply grid grid-cols-3 gap-2 lg:grid-cols-3;
 
             a {
-                @apply w-full overflow-hidden rounded-xl;
+                @apply max-h-20 w-full max-w-20 overflow-hidden rounded-xl;
 
                 img {
-                    @apply w-full object-cover transition-all ease-out hover:scale-110;
+                    @apply h-full w-full object-cover transition-all ease-out hover:scale-110;
                 }
             }
         }

@@ -25,7 +25,7 @@
         @if ($post->getMedia())
             <div class="md:w-1/2">
                 <img
-                    src="{{ $post->getMedia()->first()->getUrl() }}"
+                    src="{{ $post->getMedia('actividades')->first()->getUrl() }}"
                     alt="{{ $post->title }}"
                 />
             </div>

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\PostResource\Pages;
 use App\Models\Post;
 use Exception;
@@ -57,7 +58,9 @@ class PostResource extends Resource
         return $table
             ->columns([
                 SpatieMediaLibraryImageColumn::make('image')
-                    ->square()
+                    ->collection('actividades')
+                    ->conversion('card-thumb')
+                    ->circular()
                     ->grow(false)
                     ->extraAttributes(['class' => 'rounded-lg'])
                     ->label(''),
@@ -68,7 +71,7 @@ class PostResource extends Resource
                     ->sortable(),
                 TextColumn::make('date')
                     ->label('Fecha')
-                    ->formatStateUsing(fn ($state, $record): string => Carbon::parse($state)->diffForHumans()." <small class='text-gray-400'>(".Carbon::parse($state)->format('d/m/Y').')</small>')
+                    ->formatStateUsing(fn($state, $record): string => Carbon::parse($state)->diffForHumans() . " <small class='text-gray-400'>(" . Carbon::parse($state)->format('d/m/Y') . ')</small>')
                     ->html()
                     ->sortable(),
             ])
@@ -80,7 +83,7 @@ class PostResource extends Resource
                     Action::make('visit')
                         ->label('Visitar')
                         ->icon('heroicon-o-arrow-top-right-on-square')
-                        ->url(fn ($record): string => route('activities.show', ['slug' => $record->slug]), true),
+                        ->url(fn($record): string => route('activities.show', ['slug' => $record->slug]), true),
                     EditAction::make(),
                     DeleteAction::make(),
                     RestoreAction::make(),
@@ -106,11 +109,11 @@ class PostResource extends Resource
                         TextInput::make('title')
                             ->label('Titulo')
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state)))
+                            ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))
                             ->columnSpanFull()
                             ->required(),
                         TextInput::make('slug')
-                            ->prefix(fn ($record): string => $record?->getUrlPrefix() ?? (new Post)->getUrlPrefix())
+                            ->prefix(fn($record): string => $record?->getUrlPrefix() ?? (new Post)->getUrlPrefix())
                             ->label('Slug')
                             ->unique(ignoreRecord: true)
                             ->helperText('URL amigable')
@@ -125,6 +128,11 @@ class PostResource extends Resource
 
                         TextInput::make('resume')
                             ->label('Resumen'),
+                        Section::make('Galería de imágenes')
+                            ->description('Imágenes de la actividad')
+                            ->schema([
+                                Reusable::imageGallery()
+                            ])->columnSpanFull(),
 
                     ])->columns(1),
                     Group::make([
@@ -133,8 +141,10 @@ class PostResource extends Resource
                             ->inline()
                             ->default(false)
                             ->columnSpan(1),
-                        SpatieMediaLibraryFileUpload::make('image')->nullable()
-                            ->disk('public')->directory('actividades'),
+                        SpatieMediaLibraryFileUpload::make('image')
+                            ->collection('actividades')
+                            ->conversion('card-thumb')
+                            ->disk('public')->directory('actividades')->nullable(),
 
                         Section::make('')
                             ->label(false)
@@ -162,17 +172,18 @@ class PostResource extends Resource
                             ->extraAttributes(['class' => 'text-gray-400 text-end'])
                             ->inlineLabel()
                             ->columnSpanFull()
-                            ->content(fn (?Post $record): string => $record?->created_at?->diffForHumans() ?? '-'),
+                            ->content(fn(?Post $record): string => $record?->created_at?->diffForHumans() ?? '-'),
 
                         Placeholder::make('updated_at')
                             ->label('Fecha modificación')
                             ->extraAttributes(['class' => 'text-gray-400 text-end'])
                             ->inlineLabel()
                             ->columnSpanFull()
-                            ->content(fn (?Post $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
+                            ->content(fn(?Post $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
                     ])->columnSpanFull()->grow(false),
                 ])->from('md')
                     ->columnSpanFull(),
+
 
             ]);
     }

@@ -1,3 +1,7 @@
+@php
+    use App\Models\Post;
+@endphp
+
 <footer
     class="@container bg-azul-sky full-container flex pt-8 shadow-lg lg:px-[72px] lg:pt-14 lg:pb-10"
 >
@@ -50,11 +54,18 @@
             <div class="footer-nav">
                 <h6>Memorias de actividades</h6>
                 <div class="actividades">
-                    @for ($i = 1; $i <= 6; $i++)
-                        <a href="#" class="">
-                            <img src="https://picsum.photos/80" alt="#" />
+                    @foreach (Post::getFooterActivities() as $activity)
+                        <a
+                            href="{{ $activity->getUrl() }}"
+                            title="{{ $activity->title }}"
+                            class="h-[80px] w-[80px] overflow-hidden"
+                        >
+                            <img
+                                src="{{ $activity->getFirstMedia('actividades')->getUrl('card-thumb') }}"
+                                alt="{{ $activity->title }}"
+                            />
                         </a>
-                    @endfor
+                    @endforeach
                 </div>
             </div>
         </div>

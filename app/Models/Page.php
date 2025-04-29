@@ -29,12 +29,8 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
         'published_at',
     ];
 
-//    protected function published_at(): Attribute
-//    {
-//        return Attribute::make(
-//            set: fn (string $value) => $value ? now() : null,
-//        );
-//    }
+    protected $with = ['parent'];
+
 
     public function registerMediaConversions(?Media $media = null): void
     {

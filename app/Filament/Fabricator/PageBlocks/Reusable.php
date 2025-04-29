@@ -6,6 +6,7 @@ use Filament\Forms\Components\Group;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 
 class Reusable
@@ -31,31 +32,24 @@ class Reusable
             ]);
     }
 
-    /**
-     * @param array $exceptions
-     * @return Group
-     */
     public static function Basic(array $exceptions = []): Group
     {
         // Exclude the fields in $exceptions from the schema
         $fields = [
             TextInput::make('subtitle')
-                ->label('Subtitular')
-            ,
+                ->label('Subtitular'),
             TextInput::make('title')
-                ->label('Titular')
-            ,
+                ->label('Titular'),
             RichEditor::make('text')
-                ->label('Texto')
-            ,
+                ->label('Texto'),
         ];
         $fields = array_filter($fields, function ($field) use ($exceptions) {
             return !in_array($field->getName(), $exceptions);
         });
+
         return Group::make($fields);
 
     }
-
 
     public static function alignment(): Select
     {
@@ -67,5 +61,16 @@ class Reusable
                 'right' => 'Derecha',
             ])
             ->default('right');
+    }
+
+    public static function imageGallery(): SpatieMediaLibraryFileUpload
+    {
+        return SpatieMediaLibraryFileUpload::make('gallery')
+            ->label(false)
+            ->collection('gallery')
+            ->multiple()
+            ->disk('public')
+            ->directory('actividades')
+            ->nullable();
     }
 }
