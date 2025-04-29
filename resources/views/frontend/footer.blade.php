@@ -3,9 +3,9 @@
 @endphp
 
 <footer
-    class="@container bg-azul-sky full-container flex pt-8 shadow-lg lg:px-[72px] lg:pt-14 lg:pb-10"
+    class="@container bg-azul-sky full-container flex pt-8 pb-4 shadow-lg lg:px-[72px] lg:pt-14 lg:pb-0 lg:pb-10"
 >
-    <div class="@container full-container">
+    <div class="@container container">
         <div
             class="flex w-full flex-col justify-between gap-5 gap-y-8 md:flex-row lg:gap-y-0"
         >
