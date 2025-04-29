@@ -1,0 +1,1 @@
+/*! tailwindcss v4.0.8 | MIT License | https://tailwindcss.com */@layer theme{:root,:host{--spacing:.25rem}}.home .items img{margin-inline:auto}.home section:first-of-type{padding-top:calc(var(--spacing)*0)}

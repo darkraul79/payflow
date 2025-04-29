@@ -75,12 +75,12 @@ class Post extends Model implements HasMedia
         return Carbon::parse($this->date)->format('h:i \h\r\s.');
     }
 
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->getUrlPrefix() . $this->slug;
     }
 
-    public function getUrlPrefix()
+    public function getUrlPrefix(): string
     {
         return config('app.url') . '/que-hacemos/actividades/';
     }
