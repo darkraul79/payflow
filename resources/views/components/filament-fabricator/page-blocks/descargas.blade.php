@@ -9,6 +9,7 @@
     />
     <div class="flex flex-col">
         @foreach ($items as $item)
+            @dump($item)
             <div
                 class="border-b-azul-cobalt mb-4 flex items-center justify-between gap-10 border-b py-5"
             >
@@ -21,7 +22,7 @@
                 </div>
                 <div class="flex basis-1/3 justify-end">
                     <x-boton
-                        :buttonLink="$item['file']"
+                        :buttonLink="getUrlDownloads($item['file'])"
                         buttonText="Descargar"
                         :is_download="true"
                     />
