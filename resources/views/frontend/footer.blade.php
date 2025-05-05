@@ -56,16 +56,18 @@
                 <h6>Memorias de actividades</h6>
                 <div class="actividades">
                     @foreach (Activity::getFooterActivities() as $activity)
-                        <a
-                            href="{{ $activity->getUrl() }}"
-                            title="{{ $activity->title }}"
-                            class="h-[80px] w-[80px] overflow-hidden"
-                        >
-                            <img
-                                src="{{ $activity->getFirstMedia('principal')->getUrl('card-thumb') }}"
-                                alt="{{ $activity->title }}"
-                            />
-                        </a>
+                        @if ($activity?->getFirstMedia('principal'))
+                            <a
+                                href="{{ $activity->getUrl() }}"
+                                title="{{ $activity->title }}"
+                                class="h-[80px] w-[80px] overflow-hidden"
+                            >
+                                <img
+                                    src="{{ $activity->getFirstMedia('principal')->getUrl('card-thumb') }}"
+                                    alt="{{ $activity->title }}"
+                                />
+                            </a>
+                        @endif
                     @endforeach
                 </div>
             </div>
