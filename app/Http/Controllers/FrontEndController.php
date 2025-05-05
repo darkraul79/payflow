@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
+use App\Models\News;
 use App\Models\Page;
-use App\Models\Post;
+use App\Models\Proyect;
 
 class FrontEndController extends Controller
 {
@@ -18,10 +20,24 @@ class FrontEndController extends Controller
 
     public function activities($slug)
     {
-        $post = Post::where('slug', $slug)->first();
+        $post = Activity::where('slug', $slug)->first();
         $page = false;
 
-//        dd($post->getMedia());
+        return view('activities.show', compact('post', 'page'));
+    }
+
+    public function proyects($slug)
+    {
+        $post = Proyect::where('slug', $slug)->first();
+        $page = false;
+
+        return view('activities.show', compact('post', 'page'));
+    }
+
+    public function news($slug)
+    {
+        $post = News::where('slug', $slug)->first();
+        $page = false;
 
         return view('activities.show', compact('post', 'page'));
     }

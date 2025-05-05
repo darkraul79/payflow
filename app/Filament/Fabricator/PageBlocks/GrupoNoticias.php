@@ -3,7 +3,7 @@
 namespace App\Filament\Fabricator\PageBlocks;
 
 use App\Models\Post;
-use App\Models\tag;
+use App\Models\Tag;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;

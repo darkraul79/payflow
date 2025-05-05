@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\PageResource\Pages;
 use Closure;
 use Exception;
@@ -20,7 +21,6 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,6 +37,7 @@ class PageResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $slug = 'paginas';
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'title';
 
@@ -170,22 +171,7 @@ class PageResource extends Resource
                     ->toggleable()
                     ->sortable(),
 
-                ToggleColumn::make('published_at')
-                    ->label('Publicado')
-                    ->toggleable()
-                    ->sortable()
-                    ->onColor('secondary')
-                    ->offColor('gray')
-                    ->updateStateUsing(function ($record, $state) {
-                        if ($state) {
-                            $record->published_at = now();
-                        } else {
-                            $record->published_at = null;
-                        }
-                        $record->save();
-
-                        return $state;
-                    }),
+                Reusable::publicado(self::$model)
 
             ])
             ->filters([

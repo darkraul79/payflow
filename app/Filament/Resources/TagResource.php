@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\tagResource\Pages;
-use App\Models\tag;
+use App\Models\Tag;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -15,13 +15,16 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class tagResource extends Resource
+class TagResource extends Resource
 {
-    protected static ?string $model = tag::class;
+    protected static ?string $model = Tag::class;
 
     protected static ?string $slug = 'etiquetas';
     protected static ?string $pluralModelLabel = "etiquetas";
+
     protected static ?string $label = "etiqueta";
+
+    protected static ?string $navigationGroup = 'Configuración';
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
@@ -34,11 +37,11 @@ class tagResource extends Resource
 
                 Placeholder::make('created_at')
                     ->label('Created Date')
-                    ->content(fn(?tag $record): string => $record?->created_at?->diffForHumans() ?? '-'),
+                    ->content(fn(?Tag $record): string => $record?->created_at?->diffForHumans() ?? '-'),
 
                 Placeholder::make('updated_at')
                     ->label('Last Modified Date')
-                    ->content(fn(?tag $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
+                    ->content(fn(?Tag $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
             ]);
     }
 

@@ -7,14 +7,17 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('post_tag', function (Blueprint $table) {
-            $table->foreignId('post_id')->constrained('posts');
+        Schema::create('taggables', function (Blueprint $table) {
             $table->foreignId('tag_id')->constrained('tags');
+            $table->foreignId('taggable_id');
+            $table->string('taggable_type');
+
+
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('post_tag');
+        Schema::dropIfExists('taggables');
     }
 };

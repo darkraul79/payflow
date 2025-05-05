@@ -2,7 +2,6 @@
 
 namespace App\View\Components;
 
-use App\Models\Post;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
@@ -10,8 +9,10 @@ class Breadcrumbs extends Component
 {
     public function __construct(
         public $page,
-        public ?Post $post
-    ) {}
+        public $post
+    )
+    {
+    }
 
     public function render(): View
     {

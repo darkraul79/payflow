@@ -12,7 +12,7 @@
     >
         @foreach ($attributes['activities'] as $activity)
             <x-card
-                :image="$activity->getFirstMedia('actividades')->getUrl('card-thumb')"
+                :image="$activity->getFirstMedia('actividades')?->getUrl('card-thumb')"
                 :title="$activity->title"
                 :text="$activity->resume"
                 :date="$activity->getFormatDateBlog()"

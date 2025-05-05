@@ -68,7 +68,6 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('Configuración')
-                    ->icon('heroicon-o-wrench-screwdriver'),
             ])->assets([
                 Css::make('admin-css', Vite::asset('resources/css/filament/admin/theme.css', 'build')),
             ])

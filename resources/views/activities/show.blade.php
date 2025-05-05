@@ -16,40 +16,16 @@
     ])
 
     <div class="flex flex-col md:flex-row donacion ">
-        <div class="w-full md:w-4/6">
+        <div class="w-full {{ $post->donacion ? 'md:w-4/6':'' }}">
             <section>
 
                 {!! $post->content !!}
 
-                <div class="flex flex-row items-center justify-start gap-4 my-10" id="gallery">
-                    @foreach($post->getMedia('gallery') as $media)
-                        <a
-                            href="{{ $media->getUrl() }}"
-                            data-fslightbox="gallery"
-                            class="card p-1 ">
-                            <img
-                                src="{{ $media->getUrl('thumb') }}"
-                                alt="{{ $post->title }}"
-                                class="w-full max-w-[150px] object-cover rounded-sm"
-                            />
-                        </a>
-
-                    @endforeach ($post->getMedia())
-                </div>
+                @include('frontend.elements.gallery')
 
             </section>
         </div>
-        <div class="w-full md:w-2/6 flex justify-end items-start ">
-            @livewire('donacion-banner')
-        </div>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                const lightbox = new SimpleLightbox("#gallery a", {
-                    captions: false,
-                    closeText: "x",
-                    scrollZoom: true,
-                    preloading: true
-                });
-            });
-        </script>
+
+    @include('frontend.elements.sideBarDonacion')
+
 @endsection

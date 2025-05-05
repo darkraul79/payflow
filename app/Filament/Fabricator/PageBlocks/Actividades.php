@@ -2,7 +2,7 @@
 
 namespace App\Filament\Fabricator\PageBlocks;
 
-use App\Models\Post;
+use App\Models\Activity;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;
@@ -29,7 +29,7 @@ class Actividades extends PageBlock
                 Fieldset::make('Tipo de actividades')
                     ->schema([
                         Select::make('type')
-                            ->label('Actividades a mostrar')
+                            ->label('Filtro:')
                             ->live()
                             ->options([
                                 'latest' => 'Últimas actividades',
@@ -38,8 +38,9 @@ class Actividades extends PageBlock
                             ])
                             ->default('latest'),
                         Select::make('activities_id')
+                            ->label('Actividades')
                             ->visible(fn(Get $get): bool => $get('type') === 'manual')
-                            ->options(fn(): array => Post::query()->published()->pluck('title', 'id')->toArray())
+                            ->options(fn(): array => Activity::query()->published()->pluck('title', 'id')->toArray())
                             ->preload()
                             ->searchable()
                             ->maxItems(fn(Get $get): int => $get('number'))
@@ -55,14 +56,14 @@ class Actividades extends PageBlock
         $data['classGrid'] = 'md:grid-cols-2 lg:grid-cols-' . $data['number'] . ' gap-4';
         switch ($data['type']) {
             case 'latest':
-                $data['activities'] = Post::query()
+                $data['activities'] = Activity::query()
                     ->published()
                     ->orderBy('date', 'desc')
                     ->limit($data['number'])
                     ->get();
                 break;
             case 'next_activities':
-                $data['activities'] = Post::query()
+                $data['activities'] = Activity::query()
                     ->published()
                     ->next_activities()
                     ->orderBy('date', 'asc')
@@ -70,7 +71,7 @@ class Actividades extends PageBlock
                     ->get();
                 break;
             case 'manual':
-                $data['activities'] = Post::query()
+                $data['activities'] = Activity::query()
                     ->published()
                     ->whereIn('id', $data['activities_id'])
                     ->orderBy('date', 'desc')

@@ -28,7 +28,7 @@ class PagesSeeder extends Seeder
             'icons/heart-hand-outline.svg' => '01JRGMTSS9AVKVM7P1RSB2WAPQ.svg',
             'firma1.png' => 'Rge1Tb7xzKSsfUnaZJ9OIi7KITMEyUxt0Ae0oDNU.png',
             'bea.webp' => '01JRJ53KQ84F4N2T7DR6073S9P.webp',
-            'fundacion.pdf' => '01JRJ9VRXZ1P2J3R7RP829QJCP.pdf',
+            'fundacion.pdf' => 'descargas/01JRJ9VRXZ1P2J3R7RP829QJCP.pdf',
             'investigacion.jpg' => 'lRO7zXI26QjvK4Y5xExpcfHSvxGo2OTuHDS4Ntp5.jpg',
         ];
 
