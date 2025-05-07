@@ -25,8 +25,8 @@ class Banner extends PageBlock
                     ->schema([
                         Group::make()
                             ->schema([
-                                Reusable::Basic(),
-                                Reusable::alignment()
+                                Reusable::alignment(),
+                                Reusable::Basic(['text']),
 
                             ]),
                         RichEditor::make('description')
@@ -42,6 +42,26 @@ class Banner extends PageBlock
 
     public static function mutateData(array $data): array
     {
+        switch ($data['alignment']) {
+            case 'left':
+                $data['alignment_text'] = 'text-left';
+                $data['box-alignment'] = 'lg:me-auto';
+                $data['alignment_button'] = 'me-auto';
+                break;
+
+            case 'center':
+                $data['alignment_text'] = 'text-center';
+                $data['box-alignment'] = 'lg:mx-auto';
+                $data['alignment_button'] = 'mx-auto';
+                break;
+
+            case 'right':
+            default:
+                $data['alignment_text'] = 'text-left';
+                $data['box-alignment'] = 'lg:ms-auto';
+                $data['alignment_button'] = 'me-auto';
+                break;
+        }
 
         return $data;
     }
