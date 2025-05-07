@@ -46,11 +46,20 @@ class Proyect extends Model implements HasMedia
     {
         $this
             ->addMediaConversion('card-thumb')
-            ->fit(Fit::Contain, 364, 190)
+            ->fit(Fit::Crop, 364, 190)
+            ->withResponsiveImages()
+            ->quality(90)
+            ->nonQueued();
+        $this
+            ->addMediaConversion('activity-title')
+            ->fit(Fit::Contain, 795, 530)
+            ->withResponsiveImages()
+            ->quality(90)
             ->nonQueued();
         $this
             ->addMediaConversion('thumb')
-            ->fit(Fit::Contain, 300, 300)
+            ->quality(90)
+            ->fit(Fit::Crop, 300, 200)
             ->nonQueued();
     }
 

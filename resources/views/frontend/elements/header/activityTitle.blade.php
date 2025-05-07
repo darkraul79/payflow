@@ -33,10 +33,7 @@
         </div>
         @if ($post->getMedia())
             <div class="flex justify-end md:w-1/2">
-                <img
-                    src="{{ $post->getMedia('principal')->first()->getUrl() }}"
-                    alt="{{ $post->title }}"
-                />
+                {{ $post->getFirstMedia('principal')->img()->conversion('activity-title')->attributes(['alt' => $post->title]) }}
             </div>
         @endif
     </div>
