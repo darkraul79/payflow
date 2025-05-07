@@ -25,28 +25,40 @@
         {{ $attributes['activities']->links() }}
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const section = document.getElementById('activities-section');
+        document.addEventListener("DOMContentLoaded", () => {
+            const section = document.getElementById("activities-section");
+
+            if (!section) {
+                console.error("El elemento con id \"activities-section\" no se encontró.");
+                return;
+            }
+
+            const activitiesContainer = section.querySelector("div");
 
             // Restaurar la posición del scroll si existe en localStorage
-            const savedScrollPosition = localStorage.getItem('scrollPosition');
+            const savedScrollPosition = localStorage.getItem("scrollPosition");
             if (savedScrollPosition) {
                 window.scrollTo(0, parseInt(savedScrollPosition, 10));
-                localStorage.removeItem('scrollPosition'); // Limpiar después de restaurar
+                localStorage.removeItem("scrollPosition"); // Limpiar después de restaurar
             }
 
             // Escuchar clics en los enlaces de paginación
-            document.querySelectorAll('.pagination a').forEach((link) => {
-                link.addEventListener('click', () => {
-                    if (section) {
+            document.querySelectorAll(".pagination a").forEach((link) => {
+                link.addEventListener("click", (event) => {
+                    event.preventDefault(); // Evitar el comportamiento predeterminado
+
+                    if (section && activitiesContainer) {
                         // Guardar la posición del scroll
-                        localStorage.setItem(
-                            'scrollPosition',
-                            section.offsetTop,
-                        );
-                    }
-                });
-            });
-        });
+                        localStorage.setItem("scrollPosition", section.offsetTop);
+
+                        // Establecer una altura fija al contenedor para evitar saltos
+                        activitiesContainer.style.minHeight = `${activitiesContainer.offsetHeight}px`;
+
+                        // Desplazamiento suave al contenedor
+                        section.scrollIntoView({ behavior: "smooth" });
+
+                        // Recargar la página después de un pequeño retraso
+                        setTimeout(() => {
+                            window.location.href = link.getAttribute("href");
     </script>
 </section>
