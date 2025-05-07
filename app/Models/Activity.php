@@ -45,6 +45,11 @@ class Activity extends Model implements HasMedia
             ->get();
     }
 
+    public function getDateCalendar()
+    {
+        return (Carbon::parse($this->date)->format('Y-m-d'));
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('principal');
