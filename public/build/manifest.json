@@ -1,11 +1,11 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-C8yk6Bv0.css",
+    "file": "assets/app-PISQHeLm.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-DJcVpsxn.css",
+    "file": "assets/theme-DgJkSzQ2.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },
@@ -40,5 +40,14 @@
     "name": "carousel",
     "src": "resources/js/carousel.js",
     "isEntry": true
+  },
+  "resources/js/slider.js": {
+    "file": "assets/slider-dlZDsl6i.js",
+    "name": "slider",
+    "src": "resources/js/slider.js",
+    "isEntry": true,
+    "css": [
+      "assets/slider-D7wrQ6zr.css"
+    ]
   }
 }

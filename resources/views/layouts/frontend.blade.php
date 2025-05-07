@@ -7,7 +7,7 @@
     <body class="{{ Route::currentRouteName() }} flex min-h-screen flex-col">
         @include('frontend.elements.header')
         <main
-            class="@container {{ $page ? $page->slug : '' }} full-container bg-white"
+            class="@container {{ $page ? $page->slug : '' }} full-container content bg-white"
         >
             @yield('main')
         </main>

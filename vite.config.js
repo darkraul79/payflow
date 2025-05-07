@@ -14,6 +14,7 @@ export default defineConfig({
                 'resources/css/filament/admin/theme.css',
                 'resources/js/app.js',
                 'resources/js/carousel.js',
+                'resources/js/slider.js',
             ],
             refresh: [`resources/views/**/*`],
         }),

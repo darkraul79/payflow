@@ -1,12 +1,15 @@
-<?php
+<?php /** @noinspection PhpUndefinedMethodInspection */
 
 namespace App\Filament\Fabricator\PageBlocks;
 
 use App\Models\Activity;
+use App\Models\News;
+use App\Models\Proyect;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Get;
 use Z3d0X\FilamentFabricator\PageBlocks\PageBlock;
 
@@ -17,33 +20,63 @@ class Actividades extends PageBlock
         return Block::make('actividades')
             ->schema([
 
-                Reusable::Basic(['text']),
-                TextInput::make('number')
-                    ->label('Número de actividades')
-                    ->live()
-                    ->numeric()
-                    ->maxValue(3)
-                    ->minValue(1)
-                    ->default(3),
+                ToggleButtons::make('alignment')
+                    ->options([
+                        'text-left' => '',
+                        'text-center' => '',
+                        'text-end' => '',
+                    ])
+                    ->icons([
+                        'text-left' => 'heroicon-o-bars-3-bottom-left',
+                        'text-center' => 'heroicon-o-bars-3',
+                        'text-end' => 'heroicon-o-bars-3-bottom-right',
+                    ])
+                    ->label('Alineación')
+                    ->grouped()
+                    ->columnSpan(1),
+
+                Reusable::Basic(),
 
                 Fieldset::make('Tipo de actividades')
                     ->schema([
                         Select::make('type')
+                            ->label('Tipo de contenido:')
+                            ->live()
+                            ->options([
+                                'Activity' => 'Actividades',
+                                'News' => 'Noticias',
+                                'Proyect' => 'Proyectos',
+                            ])
+                            ->required()
+                            ->columnSpanFull()
+                            ->default('Activity'),
+                        TextInput::make('number')
+                            ->label('Número de actividades')
+                            ->live()
+                            ->numeric()
+                            ->maxValue(3)
+                            ->minValue(1)
+                            ->default(3),
+                        Select::make('filter')
                             ->label('Filtro:')
                             ->live()
                             ->options([
-                                'latest' => 'Últimas actividades',
-                                'next_activities' => 'Próximas actividades',
+                                'latest' => 'Últimas',
+                                'next_activities' => 'Próximas',
                                 'manual' => 'Manual',
                             ])
                             ->default('latest'),
                         Select::make('activities_id')
                             ->label('Actividades')
-                            ->visible(fn(Get $get): bool => $get('type') === 'manual')
-                            ->options(fn(): array => Activity::query()->published()->pluck('title', 'id')->toArray())
+                            ->visible(fn(Get $get): bool => $get('filter') === 'manual')
+                            ->options(fn(Get $get): array => match ($get('type')) {
+                                'Activity' => Activity::query()->published()->pluck('title', 'id')->toArray(),
+                                'News' => News::query()->published()->pluck('title', 'id')->toArray(),
+                                'Proyect' => Proyect::query()->published()->pluck('title', 'id')->toArray(),
+                            }
+                            )
                             ->preload()
                             ->searchable()
-                            ->maxItems(fn(Get $get): int => $get('number'))
                             ->columnSpan(1)
                             ->multiple(),
                     ]),
@@ -53,30 +86,26 @@ class Actividades extends PageBlock
 
     public static function mutateData(array $data): array
     {
-        $data['classGrid'] = 'md:grid-cols-2 lg:grid-cols-' . $data['number'] . ' gap-4';
-        switch ($data['type']) {
+        switch ($data['filter']) {
             case 'latest':
-                $data['activities'] = Activity::query()
-                    ->published()
-                    ->orderBy('date', 'desc')
-                    ->limit($data['number'])
-                    ->get();
+                $data['activities'] = $data['type']
+                    ? resolve('App\\Models\\' . $data['type'])::query()
+                        ->latest_activities()
+                        ->get() : [];
                 break;
             case 'next_activities':
-                $data['activities'] = Activity::query()
-                    ->published()
-                    ->next_activities()
-                    ->orderBy('date', 'asc')
-                    ->limit($data['number'])
-                    ->get();
+                $data['activities'] = $data['type']
+                    ? resolve('App\\Models\\' . $data['type'])::query()
+                        ->next_activities()
+                        ->get() : [];
                 break;
             case 'manual':
-                $data['activities'] = Activity::query()
-                    ->published()
-                    ->whereIn('id', $data['activities_id'])
-                    ->orderBy('date', 'desc')
-                    ->limit($data['number'])
-                    ->get();
+                $data['activities'] = $data['type']
+                    ? resolve('App\\Models\\' . $data['type'])::query()
+                        ->published()
+                        ->whereIn('id', $data['activities_id'])
+                        ->orderBy('date', 'desc')
+                        ->get() : [];
                 break;
             default:
         }

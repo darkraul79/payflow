@@ -32,7 +32,7 @@
             </button>
         </div>
         @if ($post->getMedia())
-            <div class="md:w-1/2">
+            <div class="flex justify-end md:w-1/2">
                 <img
                     src="{{ $post->getMedia('principal')->first()->getUrl() }}"
                     alt="{{ $post->title }}"

@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace App\Models;
 
@@ -25,7 +25,6 @@ class Activity extends Model implements HasMedia
         'que-hacemos',
         'actividades',
     ];
-
     protected $fillable = [
         'title',
         'slug',
@@ -80,9 +79,26 @@ class Activity extends Model implements HasMedia
         return Carbon::parse($this->date)->format('h:i \h\r\s.');
     }
 
+    /**
+     * Devuelve el resumen de la noticia,
+     * si no existe generla los últimos 200 char del contenido.
+     */
+    public function getResume(): string
+    {
+        return $this->resume ?? Str::limit(strip_tags($this->content), 200);
+    }
+
     #[Scope]
     protected function next_activities(Builder $query): void
     {
-        $query->where('date', '>=', now());
+        $query->where('date', '>=', now())->published()
+            ->orderBy('date', 'desc');
+    }
+
+    #[Scope]
+    protected function latest_activities(Builder $query): void
+    {
+        $query->where('date', '>=', now())->published()
+            ->orderBy('date', 'asc');
     }
 }

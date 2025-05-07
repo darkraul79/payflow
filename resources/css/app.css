@@ -145,6 +145,12 @@
             @apply mb-3;
         }
     }
+
+    .content {
+        ul {
+            @apply list-inside list-disc;
+        }
+    }
 }
 
 @utility btn {
@@ -198,4 +204,26 @@
 }
 @utility card {
     @apply border-azul-cobalt block rounded-lg border bg-white p-4 shadow-md;
+}
+
+.splide {
+    .splide__track {
+        @apply h-auto px-2! py-5;
+    }
+
+    .splide__arrows {
+        @apply my-3 flex h-auto justify-start gap-3;
+
+        button.splide__arrow {
+            @apply bg-azul-sky relative top-0 left-0 transform;
+
+            svg {
+                @apply fill-azul-sea;
+            }
+
+            &:disabled {
+                /*@apply hidden;*/
+            }
+        }
+    }
 }
