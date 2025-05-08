@@ -2,6 +2,7 @@
     "expandable" => false,
     "expanded" => true,
     "heading" => null,
+    "href" => null,
 ])
 
 <?php if ($expandable && $heading): ?>
@@ -26,7 +27,11 @@
             />
         </div>
 
-        <span class="text-sm leading-none font-normal">{{ $heading }}</span>
+        <a href="{{ $href }}">
+            <span class="text-sm leading-none font-normal">
+                {{ $heading }}
+            </span>
+        </a>
     </button>
 
     <div

@@ -6,7 +6,9 @@
             @if ($navItem->has('children') && $navItem->title != 'Home')
                 <flux:dropdown>
                     <flux:navbar.item icon:trailing="chevron-down">
-                        {{ $navItem->title }}
+                        <a href="{{ $navItem->getUrl() }}">
+                            {{ $navItem->title }}
+                        </a>
                     </flux:navbar.item>
                     <flux:navmenu>
                         @foreach ($navItem->children as $child)

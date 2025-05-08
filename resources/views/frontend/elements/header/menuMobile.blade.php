@@ -13,6 +13,7 @@
                 <flux:navlist.group
                     expandable="true"
                     :expanded="false"
+                    href="{{ $navItem->getUrl() }}"
                     heading="{{ $navItem->title }}"
                 >
                     @foreach ($navItem->children as $child)
