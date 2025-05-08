@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedMethodInspection */
+
 namespace App\Filament\Fabricator\PageBlocks;
 
 use App\Models\Activity;
@@ -68,8 +70,8 @@ class ActividadesPaginadas extends PageBlock
                             ->default('latest'),
                         Select::make('activities_id')
                             ->label('Actividades')
-                            ->visible(fn(Get $get): bool => $get('filter') === 'manual')
-                            ->options(fn(Get $get): array => match ($get('type')) {
+                            ->visible(fn (Get $get): bool => $get('filter') === 'manual')
+                            ->options(fn (Get $get): array => match ($get('type')) {
                                 'Activity' => Activity::query()->published()->pluck('title', 'id')->toArray(),
                                 'News' => News::query()->published()->pluck('title', 'id')->toArray(),
                                 'Proyect' => Proyect::query()->published()->pluck('title', 'id')->toArray(),
@@ -86,31 +88,6 @@ class ActividadesPaginadas extends PageBlock
 
     public static function mutateData(array $data): array
     {
-        $perPage = $data['number'] ?? 3;
-        switch ($data['filter']) {
-            case 'latest':
-                $data['activities'] = $data['type']
-                    ? resolve('App\\Models\\' . $data['type'])::query()
-                        ->latest_activities()
-                        ->paginate($perPage) : [];
-                break;
-            case 'next_activities':
-                $data['activities'] = $data['type']
-                    ? resolve('App\\Models\\' . $data['type'])::query()
-                        ->next_activities()
-                        ->paginate($perPage) : [];
-                break;
-            case 'manual':
-                $data['activities'] = $data['type']
-                    ? resolve('App\\Models\\' . $data['type'])::query()
-                        ->published()
-                        ->whereIn('id', $data['activities_id'])
-                        ->orderBy('date', 'desc')
-                        ->paginate($perPage) : [];
-                break;
-            default:
-        }
-
         return $data;
     }
 }

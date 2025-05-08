@@ -1,7 +1,7 @@
 @aware(['page'])
-<div class="flex flex-col gap-5 px-4 py-4 md:py-8 lg:flex-row">
+<div class="flex flex-col gap-5 px-4 py-4 md:py-8 lg:flex-row lg:gap-20">
     <div
-        class="bg-azul-sky text-azul-mist flex w-full items-center justify-center px-4 py-4 lg:max-w-1/2 lg:px-6"
+        class="bg-azul-sky text-azul-mist flex w-full items-center justify-center px-4 py-4 lg:max-w-2/5 lg:px-6"
     >
         <div>
             <x-basic
@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    <div class="ms-auto w-full flex-1">
+    <div class="ms-auto w-full flex-1 lg:max-w-3/5">
         <livewire:activities-calendar
             :day-click-enabled="false"
             :event-click-enabled="true"

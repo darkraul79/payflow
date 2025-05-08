@@ -8,7 +8,7 @@
     @elseif ($pollMillis !== null)
         wire:poll.{{ $pollMillis }}ms
     @endif
-    class="ms-auto lg:max-w-xl"
+    class="ms-auto lg:max-w-5xl"
 >
     <div>
         @includeIf($beforeCalendarView)
