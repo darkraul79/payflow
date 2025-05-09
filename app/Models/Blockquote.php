@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Blockquote extends Model
 {
@@ -19,4 +20,14 @@ class Blockquote extends Model
         return Blockquote::inRandomOrder()->take(1)->first()?->text;
 
     }
+
+    /**
+     * Get all the pages that are assigned this BlockQuote.
+     */
+    public function pages(): MorphToMany
+    {
+        return $this->morphedByMany(Page::class, 'blockquoteable');
+    }
+
+
 }

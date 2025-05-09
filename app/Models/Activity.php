@@ -4,6 +4,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasBlockQuotes;
 use App\Models\Traits\HasBreadcrumbs;
 use App\Models\Traits\HasPublishedField;
 use App\Models\Traits\HasTags;
@@ -21,7 +22,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Activity extends Model implements HasMedia
 {
-    use HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes;
+    use HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, HasBlockQuotes;
 
     protected static array $parentsSlugs = [
         'que-hacemos',
@@ -104,6 +105,7 @@ class Activity extends Model implements HasMedia
     {
         return $this->resume ?? Str::limit(strip_tags($this->content), 200);
     }
+
 
     #[Scope]
     protected function next_activities(Builder $query): void

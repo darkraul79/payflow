@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasBlockQuotes;
+use App\Models\Traits\HasTags;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,18 +20,19 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  */
 class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
 {
-    use HasFactory, InteractsWithMedia, SoftDeletes;
+    use HasFactory, InteractsWithMedia, SoftDeletes, HasBlockQuotes, HasTags;
 
+    public $guarded = [];
     protected $fillable = [
         'title',
         'slug',
         'blocks',
+        'layout',
         'is_home',
         'parent_id',
         'published_at',
     ];
-
-    protected $with = ['parent'];
+    protected $with = ['parent', 'blockquotes', 'tags'];
 
 
     public function registerMediaConversions(?Media $media = null): void
@@ -39,6 +42,7 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
             ->fit(Fit::Contain, 300, 300)
             ->nonQueued();
     }
+
 
     #[Scope]
     protected function firstLevel(Builder $query): void

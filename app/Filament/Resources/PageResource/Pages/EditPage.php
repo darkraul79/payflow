@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\PageResource\Pages;
 
 use App\Filament\Resources\PageResource;
+use App\Models\Page;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 use Pboivin\FilamentPeek\Pages\Actions\PreviewAction;
 use Z3d0X\FilamentFabricator\Facades\FilamentFabricator;
 use Z3d0X\FilamentFabricator\Models\Contracts\Page as PageContract;
@@ -20,6 +22,17 @@ class EditPage extends EditRecord
     public static function getResource(): string
     {
         return config('filament-fabricator.page-resource') ?? static::$resource;
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $blockquotes = $data['blockquotes'] ?? null;
+        $record->update(collect($data)->except(['blockquotes'])->toArray());
+
+        // Sync
+        Page::find($record->id)->blockquotes()->sync($blockquotes);
+
+        return $record;
     }
 
     protected function getActions(): array
