@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontEndController::class, 'index'])->name('home');
 
-Route::get((new Activity)->getUrlPrefix() . '/{slug}', [FrontEndController::class, 'activities'])->name('activities.show');
-Route::get((new News)->getUrlPrefix() . '/{slug}', [FrontEndController::class, 'news'])->name('news.show');
-Route::get((new Proyect)->getUrlPrefix() . '/{slug}', [FrontEndController::class, 'proyects'])->name('proyects.show');
+Route::get(Activity::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'activities'])->name('activities.show');
+Route::get(News::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'news'])->name('news.show');
+Route::get(Proyect::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'proyects'])->name('proyects.show');
 
 Route::get('/pagina', function () {
     return view('page');
@@ -31,4 +31,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

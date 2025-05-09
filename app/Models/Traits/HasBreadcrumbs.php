@@ -39,7 +39,7 @@ trait HasBreadcrumbs
     {
         // si estoy ejecutando test creo un slug manualmente
         if (app()->runningUnitTests()) {
-            return ($completa ? config('app.url') : '').implode('/', self::$parentsSlugs);
+            return ($completa ? config('app.url') : '/').implode('/', self::$parentsSlugs);
         }
 
         $url = '';
@@ -54,5 +54,10 @@ trait HasBreadcrumbs
     public function getUrlComplete(): string
     {
         return $this->getUrlPrefix().$this->slug;
+    }
+
+    public static function getStaticUrlPrefix(): string
+    {
+        return implode('/', self::$parentsSlugs);
     }
 }
