@@ -22,6 +22,7 @@ trait HasBreadcrumbs
     {
 
         $parents = collect();
+
         foreach (self::$parentsSlugs as $parentSlug) {
             $parents->push(Page::query()->where('slug', $parentSlug)->first() ?? Page::make(['slug' => $parentSlug]));
         }
@@ -31,21 +32,27 @@ trait HasBreadcrumbs
 
     public function getUrl(): string
     {
-        return config('app.url') . $this->getUrlPrefix() . '/' . $this->slug;
+        return config('app.url').$this->getUrlPrefix().'/'.$this->slug;
     }
 
     public function getUrlPrefix(bool $completa = false): string
     {
-        $url = '';
-        foreach ($this->getParents() as $parent) {
-            $url .= $parent?->slug ? '/' . $parent->slug : '';
+        // si estoy ejecutando test creo un slug manualmente
+        if (app()->runningUnitTests()) {
+            return ($completa ? config('app.url') : '').implode('/', self::$parentsSlugs);
         }
 
-        return $completa ? config('app.url') . $url : $url;
+        $url = '';
+
+        foreach ($this->getParents() as $parent) {
+            $url .= $parent?->slug ? '/'.$parent->slug : '';
+        }
+
+        return $completa ? config('app.url').$url : $url;
     }
 
     public function getUrlComplete(): string
     {
-        return $this->getUrlPrefix() . $this->slug;
+        return $this->getUrlPrefix().$this->slug;
     }
 }

@@ -16,10 +16,10 @@
     ])
 
     <div class="flex flex-col md:flex-row donacion ">
-        <div class="w-full {{ $post->donacion ? 'md:w-4/6':'' }}">
+        <div class="w-full {{ $post?->donacion ? 'md:w-4/6':'' }}">
             <section>
 
-                {!! $post->content !!}
+                {!! $post?->content !!}
 
                 @include('frontend.elements.gallery')
 
