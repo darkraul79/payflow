@@ -1,6 +1,6 @@
 @if ($post->getMedia('gallery')->count())
     <div
-        class="my-10 flex flex-row items-center justify-start gap-4"
+        class="my-10 flex flex-row flex-wrap items-center justify-start gap-4"
         id="gallery"
     >
         @foreach ($post->getMedia('gallery') as $media)
