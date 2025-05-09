@@ -1,4 +1,4 @@
-<section id="activities-section" class="actividades">
+<section id="activities-section" class="actividades mb-10">
     <x-basic
         :title="$attributes['title']"
         :subtitle="$attributes['subtitle']"

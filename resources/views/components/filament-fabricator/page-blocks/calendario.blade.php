@@ -1,5 +1,5 @@
 @aware(['page'])
-<div class="flex flex-col gap-5 px-4 py-4 md:py-8 lg:flex-row lg:gap-20">
+<section class="flex flex-col gap-5 px-4 pb-4 md:py-8 lg:flex-row lg:gap-20">
     <div
         class="bg-azul-sky text-azul-mist flex w-full items-center justify-center px-4 py-4 lg:max-w-2/5 lg:px-6"
     >
@@ -24,4 +24,4 @@
             event-view="components/calendar/event"
         />
     </div>
-</div>
+</section>
