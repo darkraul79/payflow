@@ -50,9 +50,11 @@ class ContentPaginated extends Component
                     ->paginate($this->perPage);
             case 'manual':
                 return resolve('App\\Models\\'.$this->type)::query()
-                    ->published()
-                    ->whereIn('id', $this->ids)
-                    ->orderBy('date', 'desc')
+                    ->manual(ids: $this->ids)
+                    ->paginate($this->perPage);
+            case 'all':
+                return resolve('App\\Models\\'.$this->type)::query()
+                    ->all_activities()
                     ->paginate($this->perPage);
         }
     }

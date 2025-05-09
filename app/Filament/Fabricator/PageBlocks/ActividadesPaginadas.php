@@ -66,6 +66,7 @@ class ActividadesPaginadas extends PageBlock
                                 'latest' => 'Últimas',
                                 'next_activities' => 'Próximas',
                                 'manual' => 'Manual',
+                                'all' => 'Todas',
                             ])
                             ->default('latest'),
                         Select::make('activities_id')

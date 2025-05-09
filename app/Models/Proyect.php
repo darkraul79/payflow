@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php
+
+/** @noinspection PhpUnused */
 
 namespace App\Models;
 
@@ -94,6 +96,21 @@ class Proyect extends Model implements HasMedia
 
     #[Scope]
     protected function latest_activities(Builder $query): void
+    {
+        $query->published()
+            ->orderBy('updated_at', 'desc');
+    }
+
+    #[Scope]
+    protected function manual(Builder $query, array $ids): void
+    {
+        $query->published()
+            ->whereIn('id', $ids)
+            ->orderBy('updated_at', 'desc');
+    }
+
+    #[Scope]
+    protected function all_activities(Builder $query): void
     {
         $query->published()
             ->orderBy('updated_at', 'desc');

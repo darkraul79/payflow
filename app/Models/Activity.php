@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php
+
+/** @noinspection PhpUnused */
 
 namespace App\Models;
 
@@ -25,6 +27,7 @@ class Activity extends Model implements HasMedia
         'que-hacemos',
         'actividades',
     ];
+
     protected $fillable = [
         'title',
         'slug',
@@ -45,9 +48,9 @@ class Activity extends Model implements HasMedia
             ->get();
     }
 
-    public function getDateCalendar()
+    public function getDateCalendar(): string
     {
-        return (Carbon::parse($this->date)->format('Y-m-d'));
+        return Carbon::parse($this->date)->format('Y-m-d');
     }
 
     public function registerMediaCollections(): void
@@ -114,5 +117,20 @@ class Activity extends Model implements HasMedia
     {
         $query->where('date', '>=', now())->published()
             ->orderBy('date', 'asc');
+    }
+
+    #[Scope]
+    protected function manual(Builder $query, array $ids): void
+    {
+        $query->published()
+            ->whereIn('id', $ids)
+            ->orderBy('date', 'desc');
+    }
+
+    #[Scope]
+    protected function all_activities(Builder $query): void
+    {
+        $query->published()
+            ->orderBy('date', 'desc');
     }
 }

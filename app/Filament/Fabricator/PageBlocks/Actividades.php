@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
+<?php
+
+/** @noinspection PhpUndefinedMethodInspection */
 
 namespace App\Filament\Fabricator\PageBlocks;
 
@@ -64,12 +66,13 @@ class Actividades extends PageBlock
                                 'latest' => 'Últimas',
                                 'next_activities' => 'Próximas',
                                 'manual' => 'Manual',
+                                'all' => 'Todas',
                             ])
                             ->default('latest'),
                         Select::make('activities_id')
                             ->label('Actividades')
-                            ->visible(fn(Get $get): bool => $get('filter') === 'manual')
-                            ->options(fn(Get $get): array => match ($get('type')) {
+                            ->visible(fn (Get $get): bool => $get('filter') === 'manual')
+                            ->options(fn (Get $get): array => match ($get('type')) {
                                 'Activity' => Activity::query()->published()->pluck('title', 'id')->toArray(),
                                 'News' => News::query()->published()->pluck('title', 'id')->toArray(),
                                 'Proyect' => Proyect::query()->published()->pluck('title', 'id')->toArray(),
@@ -87,27 +90,31 @@ class Actividades extends PageBlock
     public static function mutateData(array $data): array
     {
         switch ($data['filter']) {
+            default:
             case 'latest':
                 $data['activities'] = $data['type']
-                    ? resolve('App\\Models\\' . $data['type'])::query()
+                    ? resolve('App\\Models\\'.$data['type'])::query()
                         ->latest_activities()
                         ->get() : [];
                 break;
             case 'next_activities':
                 $data['activities'] = $data['type']
-                    ? resolve('App\\Models\\' . $data['type'])::query()
+                    ? resolve('App\\Models\\'.$data['type'])::query()
                         ->next_activities()
                         ->get() : [];
                 break;
             case 'manual':
                 $data['activities'] = $data['type']
-                    ? resolve('App\\Models\\' . $data['type'])::query()
-                        ->published()
-                        ->whereIn('id', $data['activities_id'])
-                        ->orderBy('date', 'desc')
+                    ? resolve('App\\Models\\'.$data['type'])::query()
+                        ->manual(ids: $data['activities_id'])
                         ->get() : [];
                 break;
-            default:
+            case 'all':
+                $data['activities'] = $data['type']
+                    ? resolve('App\\Models\\'.$data['type'])::query()
+                        ->all_activities()
+                        ->get() : [];
+                break;
         }
 
         return $data;
