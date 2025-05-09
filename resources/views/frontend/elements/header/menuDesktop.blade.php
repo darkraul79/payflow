@@ -1,9 +1,9 @@
 <div
     class="flex h-full w-full flex-grow flex-col items-center justify-end font-light lg:flex-row"
 >
-    <flux:navbar class="-mb-px max-lg:hidden">
+    <flux:navbar class="mx-auto -mb-px max-lg:hidden">
         @foreach ($menu as $navItem)
-            @if ($navItem->has('children') && $navItem->title != 'Home')
+            @if ($navItem->children->count() && $navItem->title != 'Home')
                 <flux:dropdown>
                     <flux:navbar.item icon:trailing="chevron-down">
                         <a href="{{ $navItem->getUrl() }}">

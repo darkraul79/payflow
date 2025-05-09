@@ -15,7 +15,7 @@ class MenuServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('*', function ($view) {
-            $view->with('menu', Page::with(['children', 'parent'])->published()->firstLevel()->get());
+            $view->with('menu', Page::with(['children', 'parent'])->whereNot('title', 'Home')->published()->firstLevel()->get());
         });
     }
 }
