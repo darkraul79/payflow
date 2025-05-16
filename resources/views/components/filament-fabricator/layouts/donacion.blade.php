@@ -18,7 +18,7 @@
         'page',
     ])
 
-    <div class="flex flex-col md:flex-row donacion ">
+    <div class="flex flex-col md:flex-row donacion md:gap-x-10">
         <div class="w-full md:w-4/6">
             <x-filament-fabricator::page-blocks :blocks="$page?->blocks" />
         </div>

@@ -1,4 +1,6 @@
-<div class="card mb-6 h-auto w-full p-6 md:max-w-[400px]">
+<div
+    class="card top-0 right-0 mb-6 h-auto w-full p-6 md:sticky md:max-w-[400px]"
+>
     <h5 class="text- px-6 text-center text-xl text-pretty">
         !Dona a la fundación ELENA TERTRE!
     </h5>
