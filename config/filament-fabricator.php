@@ -2,7 +2,7 @@
 
 // config for Z3d0X/FilamentFabricator
 use App\Filament\Resources\PageResource;
-use Z3d0X\FilamentFabricator\Models\Page;
+use App\Models\Page;
 
 return [
     'routing' => [
