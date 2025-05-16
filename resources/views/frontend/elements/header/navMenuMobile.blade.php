@@ -8,30 +8,33 @@
             <x-logo-fundacion />
             <flux:sidebar.toggle class="" icon="x-mark" />
         </div>
-        <flux:navlist variant="outline">
-            @foreach ($menu->menuItems as $navItem)
-                @if ($navItem->children->count() && $navItem->title != 'Home')
-                    <flux:navlist.group
-                        expandable="true"
-                        :expanded="false"
-                        href="{{ $navItem->url }}"
-                        heading="{{ $navItem->title }}"
-                    >
-                        @foreach ($navItem->children as $child)
-                            <flux:navlist.item href="{{ $child->url }}">
-                                {{ $child->title }}
-                            </flux:navlist.item>
-                        @endforeach
-                    </flux:navlist.group>
-                @else
-                    <flux:navlist.item
-                        href="{{ $navItem->url == '/home' ? '/' : $navItem->url }}"
-                    >
-                        {{ $navItem->title }}
-                    </flux:navlist.item>
-                @endif
-            @endforeach
-        </flux:navlist>
+        @if ($menu)
+            <flux:navlist variant="outline">
+                @foreach ($menu?->menuItems as $navItem)
+                    @if ($navItem?->children->count() && $navItem->title != 'Home')
+                        <flux:navlist.group
+                            expandable="true"
+                            :expanded="false"
+                            href="{{ $navItem->url }}"
+                            heading="{{ $navItem->title }}"
+                        >
+                            @foreach ($navItem->children as $child)
+                                <flux:navlist.item href="{{ $child->url }}">
+                                    {{ $child->title }}
+                                </flux:navlist.item>
+                            @endforeach
+                        </flux:navlist.group>
+                    @else
+                        <flux:navlist.item
+                            href="{{ $navItem->url == '/home' ? '/' : $navItem->url }}"
+                        >
+                            {{ $navItem->title }}
+                        </flux:navlist.item>
+                    @endif
+                @endforeach
+            </flux:navlist>
+        @endif
+
         <flux:spacer />
         <flux:navlist variant="outline">
             <a
