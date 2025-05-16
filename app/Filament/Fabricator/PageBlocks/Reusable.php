@@ -63,6 +63,27 @@ class Reusable
 
     }
 
+    public static function datesInfo(): Group
+    {
+        return Group::make([
+            Placeholder::make('created_at')
+                ->visible(fn($record) => $record)
+                ->label('Fecha creación')
+                ->extraAttributes(['class' => 'text-gray-400 text-end'])
+                ->inlineLabel()
+                ->columnSpanFull()
+                ->content(fn($record): string => $record?->created_at?->diffForHumans() ?? '-'),
+
+            Placeholder::make('updated_at')
+                ->label('Fecha modificación')
+                ->visible(fn($record) => $record)
+                ->extraAttributes(['class' => 'text-gray-400 text-end'])
+                ->inlineLabel()
+                ->columnSpanFull()
+                ->content(fn($record): string => $record?->updated_at?->diffForHumans() ?? '-'),
+        ]);
+    }
+
     public static function Content(string $type)
     {
 
@@ -119,22 +140,8 @@ class Reusable
                     ->preload()
                     ->multiple()
                     ->relationship(titleAttribute: 'name'),
+                self::datesInfo(),
 
-                Placeholder::make('created_at')
-                    ->visible(fn($record) => $record)
-                    ->label('Fecha creación')
-                    ->extraAttributes(['class' => 'text-gray-400 text-end'])
-                    ->inlineLabel()
-                    ->columnSpanFull()
-                    ->content(fn($record): string => $record?->created_at?->diffForHumans() ?? '-'),
-
-                Placeholder::make('updated_at')
-                    ->label('Fecha modificación')
-                    ->visible(fn($record) => $record)
-                    ->extraAttributes(['class' => 'text-gray-400 text-end'])
-                    ->inlineLabel()
-                    ->columnSpanFull()
-                    ->content(fn($record): string => $record?->updated_at?->diffForHumans() ?? '-'),
             ])->grow(false),
         ])->from('md')
             ->columnSpanFull();
@@ -156,7 +163,7 @@ class Reusable
 
         return ToggleButtons::make('donacion')
             ->grouped()
-            ->label(fn(): string => 'Panel de donación?')
+            ->label(fn(): string => '¿Panel de donación?')
             ->boolean()->inline()
             ->default(false)
             ->columnSpan(1);
@@ -185,7 +192,7 @@ class Reusable
 
     }
 
-    public static function genericContentTable($type)
+    public static function genericContentTable($type): array
     {
 
         return [
@@ -203,7 +210,7 @@ class Reusable
                 ->sortable(),
             self::donacionTable(),
             self::dateTable($type),
-            Reusable::publicado($type)
+            Reusable::publicado($type),
 
         ];
     }

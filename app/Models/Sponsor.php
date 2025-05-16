@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+
+class Sponsor extends Model implements HasMedia
+{
+    use HasFactory, InteractsWithMedia;
+
+    protected $fillable = [
+        'name',
+        'url',
+        'order',
+    ];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('sponsors');
+
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this
+            ->addMediaConversion('icon')
+            ->fit(Fit::Crop, 144, 130)
+            ->nonQueued();
+    }
+}
