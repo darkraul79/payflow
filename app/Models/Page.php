@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Models\Traits\HasBlockQuotes;
 use App\Models\Traits\HasTags;
+use Datlechin\FilamentMenuBuilder\Concerns\HasMenuPanel;
+use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,11 +20,12 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *
  * @mixin Builder
  */
-class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
+class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia, MenuPanelable
 {
-    use HasFactory, InteractsWithMedia, SoftDeletes, HasBlockQuotes, HasTags;
+    use HasBlockQuotes, HasFactory, HasMenuPanel, HasTags, InteractsWithMedia, SoftDeletes;
 
     public $guarded = [];
+
     protected $fillable = [
         'title',
         'slug',
@@ -32,8 +35,18 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
         'parent_id',
         'published_at',
     ];
+
     protected $with = ['parent', 'blockquotes', 'tags'];
 
+    public function getMenuPanelTitleColumn(): string
+    {
+        return 'title';
+    }
+
+    public function getMenuPanelUrlUsing(): callable
+    {
+        return fn(self $model) => $model->getUrl();
+    }
 
     public function registerMediaConversions(?Media $media = null): void
     {
@@ -42,7 +55,6 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia
             ->fit(Fit::Contain, 300, 300)
             ->nonQueued();
     }
-
 
     #[Scope]
     protected function firstLevel(Builder $query): void

@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Models\Page;
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Datlechin\FilamentMenuBuilder\MenuPanel\ModelMenuPanel;
 use Exception;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -64,10 +67,20 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentFabricatorPlugin::make(),
+                FilamentMenuBuilderPlugin::make()
+                    ->addLocations([
+                        'header' => 'Header',
+                        'footer1' => 'Footer1',
+                        'footer2' => 'Footer2',
+                    ])
+                    ->addMenuPanels([
+                        ModelMenuPanel::make()
+                            ->model(Page::class),
+                    ]),
             ])
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('Configuración')
+                    ->label('Configuración'),
             ])->assets([
                 Css::make('admin-css', Vite::asset('resources/css/filament/admin/theme.css', 'build')),
             ])

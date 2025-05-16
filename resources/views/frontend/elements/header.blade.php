@@ -16,10 +16,10 @@
         />
     </div>
 
-    @include('frontend.elements.header.menuDesktop')
+    <livewire:nav-menu type="desktop" />
 </flux:header>
 <div class="full-container">
     @includeIf('frontend.elements.header.sub-header', [Route::currentRouteName() != 'home'])
 </div>
 
-@include('frontend.elements.header.menuMobile')
+<livewire:nav-menu type="mobile" />

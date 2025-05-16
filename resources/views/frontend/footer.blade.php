@@ -34,24 +34,9 @@
                     </p>
                 </div>
             </div>
-            <div class="footer-nav">
-                <h6>Acerca de Nosotros</h6>
-                <nav>
-                    <x-footer-link text="Quiénes somos" link="#" />
-                    <x-footer-link text="Qué hacemos" link="#" />
-                    <x-footer-link text="Colabora" link="#" />
-                    <x-footer-link text="Transparencia" link="#" />
-                </nav>
-            </div>
-            <div class="footer-nav">
-                <h6>Enlaces de ayuda</h6>
-                <nav>
-                    <x-footer-link text="Noticias" link="#" />
-                    <x-footer-link text="Aviso legal" link="#" />
-                    <x-footer-link text="Protección de datos" link="#" />
-                    <x-footer-link text="Contacto" link="#" />
-                </nav>
-            </div>
+
+            <livewire:nav-menu type="footer" location="footer1" />
+            <livewire:nav-menu type="footer" location="footer2" />
             <div class="footer-nav">
                 <h6>Memorias de actividades</h6>
                 <div class="actividades">

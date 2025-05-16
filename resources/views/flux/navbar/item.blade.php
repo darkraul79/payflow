@@ -89,7 +89,11 @@
 
     <?php if (is_string($iconTrailing) && $iconTrailing !== ''): ?>
 
-    <flux:icon :icon="$iconTrailing" variant="micro" class="ms-1 size-4" />
+    <flux:icon
+        :icon="$iconTrailing"
+        variant="micro"
+        class="ms-1 size-4 cursor-pointer"
+    />
 
     <?php elseif ($iconTrailing): ?>
 
