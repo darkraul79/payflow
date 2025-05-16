@@ -25,11 +25,6 @@
                             {{ $item['position'] }}
                         </span>
                         {!! html_entity_decode($item['bio']) !!}
-
-                        <x-boton
-                            :buttonText="$attributes['button_text']"
-                            :buttonLink="$attributes['button_link']"
-                        />
                     </div>
                 </div>
             </div>

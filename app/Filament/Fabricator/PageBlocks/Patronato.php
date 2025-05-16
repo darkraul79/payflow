@@ -33,9 +33,9 @@ class Patronato extends PageBlock
                                     ->required()
                                     ->label('Cargo'),
                                 RichEditor::make('bio'),
-                                Reusable::BotonFields()
-                            ])
-                    ])
+                                //                                Reusable::BotonFields()
+                            ]),
+                    ]),
             ]);
     }
 
