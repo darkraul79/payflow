@@ -9,7 +9,6 @@
     />
     <div class="flex flex-col">
         @foreach ($items as $item)
-            @dump($item)
             <div
                 class="border-b-azul-cobalt mb-4 flex items-center justify-between gap-10 border-b py-5"
             >
