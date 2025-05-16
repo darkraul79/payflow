@@ -16,7 +16,11 @@ export default defineConfig({
                 'resources/js/carousel.js',
                 'resources/js/slider.js',
             ],
-            refresh: [`resources/views/**/*`],
+            refresh: [
+                `resources/views/**/*`,
+                'app/Http/Livewire/**', // Custom Livewire components
+                'app/Filament/**', // Filament Resources
+            ],
         }),
         tailwindcss(),
     ],
