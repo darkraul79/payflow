@@ -5,8 +5,8 @@
         <x-home-item
             title="{{ $item['title'] }}"
             description="{!!  $item['description']  !!}"
-            link="{{ $item['link'] }}"
-            link-text="{{ $item['text'] }}"
+            link="{{ $item['button_link'] }}"
+            link-text="{{ $item['button_text'] }}"
             icon="{{ $item['icon'] }}"
         />
     @endforeach
