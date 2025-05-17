@@ -21,18 +21,26 @@
                         />
                         {{ config('app.name') }}
                     </h5>
-                    <p>{{ Setting::getFormated('telefono') }}</p>
-                    <p>{{ Setting::getFormated('horario') }}</p>
-                    <p>
-                        Email:
-                        <a
-                            href="mailto:{{ Setting::get('email') }}"
-                            target="_blank"
-                            title="{{ Setting::get('email') }}"
-                        >
-                            {{ Setting::get('email') }}
-                        </a>
-                    </p>
+                    @if (setting('contact.telefono'))
+                        <p>Teléfono: {{ setting('contact.telefono') }}</p>
+                    @endif
+
+                    @if (setting('contact.horario'))
+                        <p>Horario: {{ setting('contact.horario') }}</p>
+                    @endif
+
+                    @if (setting('contact.email'))
+                        <p>
+                            Email:
+                            <a
+                                href="mailto:{{ setting('contact.email') }}"
+                                target="_blank"
+                                title="{{ setting('contact.email') }}"
+                            >
+                                {{ setting('contact.email') }}
+                            </a>
+                        </p>
+                    @endif
                 </div>
             </div>
 
@@ -61,34 +69,13 @@
 
         <div class="mt-8 flex w-full items-end justify-between">
             <div class="flex gap-2 lg:gap-3">
-                @foreach (Setting::getRss() as $name => $rssItem)
+                @foreach (setting('rss') as $name => $url)
                     <x-rss-icon
                         title="{{ $name }}"
-                        link="{{ $rssItem }}"
+                        link="{{ $url }}"
                         :icon="asset('images/icons/' . $name.'.svg')"
                     />
                 @endforeach
-
-                {{-- <x-rss-icon --}}
-                {{-- title="Facebook" --}}
-                {{-- link="#" --}}
-                {{-- :icon="asset('images/icons/facebook.svg')" --}}
-                {{-- /> --}}
-                {{-- <x-rss-icon --}}
-                {{-- title="X" --}}
-                {{-- link="#" --}}
-                {{-- :icon="asset('images/icons/x.svg')" --}}
-                {{-- /> --}}
-                {{-- <x-rss-icon --}}
-                {{-- title="Instagram" --}}
-                {{-- link="#" --}}
-                {{-- :icon="asset('images/icons/instagram.svg')" --}}
-                {{-- /> --}}
-                {{-- <x-rss-icon --}}
-                {{-- title="Youtube" --}}
-                {{-- link="#" --}}
-                {{-- :icon="asset('images/icons/youtube.svg')" --}}
-                {{-- /> --}}
             </div>
             <div class="text-end text-xs">© {{ config('app.name') }}</div>
         </div>
