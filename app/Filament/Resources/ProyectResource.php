@@ -31,8 +31,9 @@ class ProyectResource extends Resource
     protected static ?string $label = 'Proyecto';
 
     protected static ?string $pluralModelLabel = 'Proyectos';
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 24;
 
+    protected static ?string $navigationGroup = 'Contenido';
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
     public static function form(Form $form): Form

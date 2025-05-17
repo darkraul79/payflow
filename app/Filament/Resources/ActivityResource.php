@@ -29,9 +29,11 @@ class ActivityResource extends Resource
     protected static ?string $slug = 'actividades';
 
     protected static ?string $label = 'Actividad';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 22;
 
     protected static ?string $pluralModelLabel = 'Actividades';
+    protected static ?string $navigationGroup = 'Contenido';
+
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-date-range';
 

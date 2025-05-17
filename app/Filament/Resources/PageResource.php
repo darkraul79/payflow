@@ -39,9 +39,12 @@ class PageResource extends Resource
 
     protected static ?string $slug = 'paginas';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 21;
 
     protected static ?string $recordTitleAttribute = 'title';
+
+    protected static ?string $navigationGroup = 'Contenido';
+
 
     public static function getModel(): string
     {

@@ -28,7 +28,7 @@ class SponsorResource extends Resource
 
     protected static ?string $label = 'patrocinador';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 31;
 
 
     protected static ?string $navigationGroup = 'Configuración';
