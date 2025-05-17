@@ -1,6 +1,7 @@
 @php
     use App\Models\Activity;
     use App\Models\Post;
+    use App\Models\Setting;
 @endphp
 
 <footer
@@ -20,16 +21,16 @@
                         />
                         {{ config('app.name') }}
                     </h5>
-                    <p>Teléfono: 648 986 753</p>
-                    <p>Horario: 14:30 a 19:30</p>
+                    <p>{{ Setting::getFormated('telefono') }}</p>
+                    <p>{{ Setting::getFormated('horario') }}</p>
                     <p>
                         Email:
                         <a
-                            href="mailto:ayuda@fundacionelenatertre.es"
+                            href="mailto:{{ Setting::get('email') }}"
                             target="_blank"
-                            title="ayuda@fundacionelenatertre.es"
+                            title="{{ Setting::get('email') }}"
                         >
-                            ayuda@fundacionelenatertre.es
+                            {{ Setting::get('email') }}
                         </a>
                     </p>
                 </div>
@@ -60,26 +61,34 @@
 
         <div class="mt-8 flex w-full items-end justify-between">
             <div class="flex gap-2 lg:gap-3">
-                <x-rss-icon
-                    title="Facebook"
-                    link="#"
-                    :icon="asset('images/icons/facebook.svg')"
-                />
-                <x-rss-icon
-                    title="X"
-                    link="#"
-                    :icon="asset('images/icons/x.svg')"
-                />
-                <x-rss-icon
-                    title="Instagram"
-                    link="#"
-                    :icon="asset('images/icons/instagram.svg')"
-                />
-                <x-rss-icon
-                    title="Youtube"
-                    link="#"
-                    :icon="asset('images/icons/youtube.svg')"
-                />
+                @foreach (Setting::getRss() as $name => $rssItem)
+                    <x-rss-icon
+                        title="{{ $name }}"
+                        link="{{ $rssItem }}"
+                        :icon="asset('images/icons/' . $name.'.svg')"
+                    />
+                @endforeach
+
+                {{-- <x-rss-icon --}}
+                {{-- title="Facebook" --}}
+                {{-- link="#" --}}
+                {{-- :icon="asset('images/icons/facebook.svg')" --}}
+                {{-- /> --}}
+                {{-- <x-rss-icon --}}
+                {{-- title="X" --}}
+                {{-- link="#" --}}
+                {{-- :icon="asset('images/icons/x.svg')" --}}
+                {{-- /> --}}
+                {{-- <x-rss-icon --}}
+                {{-- title="Instagram" --}}
+                {{-- link="#" --}}
+                {{-- :icon="asset('images/icons/instagram.svg')" --}}
+                {{-- /> --}}
+                {{-- <x-rss-icon --}}
+                {{-- title="Youtube" --}}
+                {{-- link="#" --}}
+                {{-- :icon="asset('images/icons/youtube.svg')" --}}
+                {{-- /> --}}
             </div>
             <div class="text-end text-xs">© {{ config('app.name') }}</div>
         </div>
