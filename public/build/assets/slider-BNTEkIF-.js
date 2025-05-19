@@ -1,0 +1,1 @@
+import{S as i}from"./splide.min-DywBRp_t.js";const n=e=>{const t=window.innerWidth<700?1:e.dataset.perPage||2;return new i(e,{type:"slide",perPage:parseInt(t,10),perMove:1,gap:"1rem",pagination:!1}).mount()};document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".splide").forEach(e=>{let t=n(e);window.addEventListener("resize",()=>{t.destroy(),t=n(e)})})});

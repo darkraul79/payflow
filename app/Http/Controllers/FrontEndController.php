@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Product;
 use App\Models\Proyect;
 
 class FrontEndController extends Controller
@@ -20,25 +21,35 @@ class FrontEndController extends Controller
 
     public function activities($slug)
     {
-        $post = Activity::where('slug', $slug)->first();
-        $page = false;
+        $page = Activity::where('slug', $slug)->first();
 
-        return view('activities.show', compact('post', 'page'));
+        return view('activities.show', compact('page'));
     }
 
     public function proyects($slug)
     {
-        $post = Proyect::where('slug', $slug)->first();
-        $page = false;
+        $page = Proyect::where('slug', $slug)->first();
 
-        return view('activities.show', compact('post', 'page'));
+
+        return view('activities.show', compact('page'));
     }
 
     public function news($slug)
     {
-        $post = News::where('slug', $slug)->first();
-        $page = false;
+        $page = News::where('slug', $slug)->first();
 
-        return view('activities.show', compact('post', 'page'));
+        return view('activities.show', compact('page'));
+    }
+
+    public function products($slug)
+    {
+        $page = Product::where('slug', $slug)->first();
+
+        return view('products.show', compact('page'));
+    }
+
+    private function getType($class)
+    {
+        return class_basename($class);
     }
 }

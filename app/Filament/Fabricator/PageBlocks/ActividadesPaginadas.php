@@ -48,6 +48,7 @@ class ActividadesPaginadas extends PageBlock
                                 'Activity' => 'Actividades',
                                 'News' => 'Noticias',
                                 'Proyect' => 'Proyectos',
+                                'Product' => 'Productos',
                             ])
                             ->required()
                             ->columnSpanFull()

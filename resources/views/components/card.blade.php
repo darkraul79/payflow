@@ -8,11 +8,13 @@
     }}
 >
     @if ($image)
-        <img
-            src="{{ $image }}"
-            alt="{{ $title }}"
-            class="h-48 w-full rounded-lg object-cover"
-        />
+        <a href="{{ $buttonLink }}" title="{{ $buttonText }}">
+            <img
+                src="{{ $image }}"
+                alt="{{ $title }}"
+                class="h-48 w-full rounded-lg object-cover"
+            />
+        </a>
     @endif
 
     <div class="my-5 w-full px-2">

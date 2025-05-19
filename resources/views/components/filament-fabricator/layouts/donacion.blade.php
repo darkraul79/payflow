@@ -6,7 +6,7 @@
 @endsection
 
 @push('css')
-    @if ($page?->is_home)
+    @if ($page?->is_home_page)
         @vite('resources/css/home.css')
     @elseif ($page)
         @vite('resources/css/frontend.css')

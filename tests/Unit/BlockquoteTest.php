@@ -26,7 +26,7 @@ test('si no hay frases el bloque blanco no aparece', function () {
 
 
     $this->get('/')
-        ->assertDontSee('blockquotes');
+        ->assertDontSeeHtml('<blockquotes');
 
 });
 

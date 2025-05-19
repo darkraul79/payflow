@@ -22,7 +22,7 @@
     }
 @endphp
 
-<section class="slider full mb-4">
+<section class="slider sliderHome full mb-4">
     <div
         id="indicators-carousel"
         class="relative overflow-hidden"

@@ -9,7 +9,7 @@ class NewsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tile' => ['required'],
+            'title' => ['required'],
             'slug' => ['required'],
             'content' => ['nullable'],
             'resume' => ['nullable'],

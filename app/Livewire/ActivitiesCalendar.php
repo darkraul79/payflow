@@ -22,7 +22,7 @@ class ActivitiesCalendar extends LivewireCalendar
                     'title' => $activity->title,
                     'description' => $activity->getResume(),
                     'date' => $activity->getDateCalendar(),
-                    'url' => $activity->getUrl(),
+                    'url' => $activity->getLink(),
                 ];
             });
 

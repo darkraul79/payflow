@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Models\Traits\HasBlockQuotes;
+use App\Models\Traits\HasBreadcrumbs;
 use App\Models\Traits\HasTags;
+use App\Models\Traits\WithCommonAttributes;
 use Datlechin\FilamentMenuBuilder\Concerns\HasMenuPanel;
 use Datlechin\FilamentMenuBuilder\Contracts\MenuPanelable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -22,7 +24,10 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  */
 class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia, MenuPanelable
 {
-    use HasBlockQuotes, HasFactory, HasMenuPanel, HasTags, InteractsWithMedia, SoftDeletes;
+    use HasBlockQuotes, HasFactory, HasMenuPanel, HasTags, InteractsWithMedia, SoftDeletes, WithCommonAttributes, HasBreadcrumbs;
+
+    protected static array $parentsSlugs = [
+    ];
 
     public $guarded = [];
 
@@ -62,11 +67,11 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia, Me
         $query->where('parent_id', null);
     }
 
-    #[Scope]
-    protected function isHome(Builder $query): void
-    {
-        $query->where('is_home', true);
-    }
+//    #[Scope]
+//    protected function isHome(Builder $query): void
+//    {
+//        $query->where('is_home', true);
+//    }
 
     #[Scope]
     protected function published(Builder $query): void

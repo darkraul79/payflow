@@ -96,19 +96,9 @@ class Reusable
                     ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))
                     ->columnSpanFull()
                     ->required(),
-                TextInput::make('slug')
-                    ->prefix(fn($record): string => (new $type)->getUrlPrefix(true))
-                    ->label('Slug')
-                    ->unique(ignoreRecord: true)
-                    ->helperText('URL amigable')
-                    ->required()
-                    ->unique($type, 'slug', ignoreRecord: true)
-                    ->maxLength(255)
+                self::SlugField($type),
+                self::richTextEditor(field: 'content', label: 'Contenido')
                     ->columnSpanFull(),
-
-                RichEditor::make('content')
-                    ->label('Contenido')
-                    ->required(),
 
                 TextInput::make('resume')
                     ->label('Resumen'),
@@ -145,6 +135,26 @@ class Reusable
             ])->grow(false),
         ])->from('md')
             ->columnSpanFull();
+    }
+
+    public static function SlugField($type)
+    {
+
+        return TextInput::make('slug')
+            ->prefix(fn($record): string => (new $type)->getUrlPrefix(true))
+            ->label('Slug')
+            ->unique(ignoreRecord: true)
+            ->helperText('URL amigable')
+            ->required()
+            ->unique($type, 'slug', ignoreRecord: true)
+            ->maxLength(255)
+            ->columnSpanFull();
+    }
+
+    public static function richTextEditor(string $field, string $label)
+    {
+        return RichEditor::make($field)
+            ->label($label);
     }
 
     public static function imageGallery(): SpatieMediaLibraryFileUpload
@@ -239,7 +249,7 @@ class Reusable
             ->default('right');
     }
 
-    private static function dateTable($type)
+    public static function dateTable($type)
     {
         return match ($type) {
             'App\Models\Activity' => TextColumn::make('date')

@@ -7,21 +7,21 @@
     >
         <div class="p-6 text-[20px] font-semibold md:w-1/2">
             <h2 class="subtitle">Actividades</h2>
-            <h1 class="title">{{ $post->title }}</h1>
+            <h1 class="title">{{ $page->title }}</h1>
             <p class="my-10">
-                @if (@isset($post->address))
-                    {{ $post->address }}
+                @if (@isset($page->address))
+                    {{ $page->address }}
 
                     <br />
                 @endif
 
-                @if (@isset($post->address))
-                    {{ $post->getFormatDate() }}
+                @if (@isset($page->address))
+                    {{ $page->getFormatDate() }}
                     <br />
                 @endif
 
-                @if (@isset($post->address))
-                    {{ $post->getFormatDateTime() }}
+                @if (@isset($page->address))
+                    {{ $page->getFormatDateTime() }}
                 @endif
             </p>
             <button
@@ -31,9 +31,9 @@
                 Haz una donación
             </button>
         </div>
-        @if ($post->getMedia())
+        @if ($page->getMedia())
             <div class="flex justify-end md:w-1/2">
-                {{ $post->getFirstMedia('principal') ?->img()->conversion('activity-title')->attributes(['alt' => $post->title]) }}
+                {{ $page->getFirstMedia('principal') ?->img()->conversion('activity-title')->attributes(['alt' => $page->title]) }}
             </div>
         @endif
     </div>

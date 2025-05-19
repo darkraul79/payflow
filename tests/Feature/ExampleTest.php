@@ -1,10 +1,11 @@
 <?php
 
+use Database\Seeders\MenusSeeder;
 use Database\Seeders\PagesSeeder;
 
 it('returns a successful response', function () {
 
-    $this->seed(PagesSeeder::class);
+    $this->seed([MenusSeeder::class, PagesSeeder::class]);
     $response = $this->get(route('home'));
     $response->assertStatus(200);
 
@@ -29,8 +30,8 @@ test('copio bien las imagenes en seeder', function () {
     // Copio estas imagenes a la carpeta de storage
     foreach ($images as $name => $image) {
 
-        copy(base_path('public/images/'.$name), public_path('storage/'.$image));
-        expect(file_exists(public_path('storage/'.$image)))->toBeTrue();
+        copy(base_path('public/images/' . $name), public_path('storage/' . $image));
+        expect(file_exists(public_path('storage/' . $image)))->toBeTrue();
     }
 
 });

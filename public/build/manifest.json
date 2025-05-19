@@ -1,11 +1,22 @@
 {
+  "_splide-D7wrQ6zr.css": {
+    "file": "assets/splide-D7wrQ6zr.css",
+    "src": "_splide-D7wrQ6zr.css"
+  },
+  "_splide.min-DywBRp_t.js": {
+    "file": "assets/splide.min-DywBRp_t.js",
+    "name": "splide.min",
+    "css": [
+      "assets/splide-D7wrQ6zr.css"
+    ]
+  },
   "resources/css/app.css": {
-    "file": "assets/app-DnQtJDC7.css",
+    "file": "assets/app-CQdIrv5C.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-DJImiLVj.css",
+    "file": "assets/theme-DvOjiIeo.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },
@@ -25,7 +36,7 @@
     "isEntry": true
   },
   "resources/css/theme.css": {
-    "file": "assets/theme-CFgblaA6.css",
+    "file": "assets/theme-B5cDFzjH.css",
     "src": "resources/css/theme.css",
     "isEntry": true
   },
@@ -42,12 +53,21 @@
     "isEntry": true
   },
   "resources/js/slider.js": {
-    "file": "assets/slider-Dc4CDlyQ.js",
+    "file": "assets/slider-BNTEkIF-.js",
     "name": "slider",
     "src": "resources/js/slider.js",
     "isEntry": true,
-    "css": [
-      "assets/slider-D7wrQ6zr.css"
+    "imports": [
+      "_splide.min-DywBRp_t.js"
+    ]
+  },
+  "resources/js/sliderProductGallery.js": {
+    "file": "assets/sliderProductGallery-Vlr_pK58.js",
+    "name": "sliderProductGallery",
+    "src": "resources/js/sliderProductGallery.js",
+    "isEntry": true,
+    "imports": [
+      "_splide.min-DywBRp_t.js"
     ]
   }
 }

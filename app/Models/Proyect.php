@@ -8,6 +8,7 @@ use App\Models\Traits\HasBlockQuotes;
 use App\Models\Traits\HasBreadcrumbs;
 use App\Models\Traits\HasPublishedField;
 use App\Models\Traits\HasTags;
+use App\Models\Traits\WithCommonAttributes;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,7 +23,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Proyect extends Model implements HasMedia
 {
-    use HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, HasBlockQuotes;
+    use HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, HasBlockQuotes, WithCommonAttributes;
 
     protected static array $parentsSlugs = [
         'que-hacemos',
@@ -80,6 +81,10 @@ class Proyect extends Model implements HasMedia
         return $this->resume ?? Str::limit(strip_tags($this->content), 200);
     }
 
+    protected function getIsHomeAttribute(): bool
+    {
+        return false;
+    }
 
     protected function casts(): array
     {

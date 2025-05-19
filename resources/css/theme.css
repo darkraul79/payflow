@@ -21,8 +21,10 @@
     --color-azul-gray: #aebecc;
     --color-azul-sky: #d1f6ff;
     --color-amarillo: #ffd857;
+    --color-error: #ea4b48;
     --font-body: Inter, sans-serif;
     --font-sans: Inter, sans-serif;
+    --font-poppins: 'Poppins', Inter, sans-serif;
     --font-teacher: 'Teachers', sans-serif;
     --font-weight-semibold: 550;
 

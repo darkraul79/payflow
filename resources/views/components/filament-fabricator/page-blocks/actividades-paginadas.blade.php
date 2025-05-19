@@ -3,11 +3,10 @@
         :title="$attributes['title']"
         :subtitle="$attributes['subtitle']"
         :text="$attributes['text']"
-        subtitleClass="text-center"
-        titleClass="text-center"
+        :subtitleClass="$attributes['alignment']"
+        :titleClass="$attributes['alignment']"
         class=""
     />
-
     <livewire:content-paginated
         :filter="$attributes['filter']"
         :typeContent="$attributes['type']"

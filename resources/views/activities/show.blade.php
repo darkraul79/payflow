@@ -15,11 +15,11 @@
         'page',
     ])
 
-    <div class="flex flex-col md:flex-row donacion ">
-        <div class="w-full {{ $post?->donacion ? 'md:w-4/6':'' }}">
+    <div class="flex flex-col md:flex-row donacion {{ $page?->donacion ? 'md:gap-x-10':'' }}">
+        <div class="w-full {{ $page?->donacion ? 'md:w-4/6':'' }}">
             <section>
 
-                {!! $post?->content !!}
+                {!! $page?->content !!}
 
                 @include('frontend.elements.gallery')
 

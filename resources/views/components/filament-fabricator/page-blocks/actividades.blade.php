@@ -18,7 +18,7 @@
                             :text="$activity->getResume()"
                             :date="$activity->getFormatDateBlog()"
                             button-text="Leer más"
-                            :button-link="$activity->getUrl()"
+                            :button-link="$activity->getLink()"
                         />
                     </li>
                 @endforeach

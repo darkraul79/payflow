@@ -52,7 +52,7 @@
                     @foreach (Activity::getFooterActivities() as $activity)
                         @if ($activity?->getFirstMedia('principal'))
                             <a
-                                href="{{ $activity->getUrl() }}"
+                                href="{{ $activity->getLink() }}"
                                 title="{{ $activity->title }}"
                                 class="h-[80px] w-[80px] overflow-hidden"
                             >
@@ -68,15 +68,18 @@
         </div>
 
         <div class="mt-8 flex w-full items-end justify-between">
-            <div class="flex gap-2 lg:gap-3">
-                @foreach (setting('rss') as $name => $url)
-                    <x-rss-icon
-                        title="{{ $name }}"
-                        link="{{ $url }}"
-                        :icon="asset('images/icons/' . $name.'.svg')"
-                    />
-                @endforeach
-            </div>
+            @if (setting('rss'))
+                <div class="flex gap-2 lg:gap-3">
+                    @foreach (setting('rss') as $name => $url)
+                        <x-rss-icon
+                            title="{{ $name }}"
+                            link="{{ $url }}"
+                            :icon="asset('images/icons/' . $name.'.svg')"
+                        />
+                    @endforeach
+                </div>
+            @endif
+
             <div class="text-end text-xs">© {{ config('app.name') }}</div>
         </div>
     </div>
