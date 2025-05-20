@@ -23,7 +23,7 @@ class EditActivity extends EditRecord
             RestoreAction::make(),
             Action::make('visit')
                 ->label('Visitar')
-                ->url(fn (?Activity $record) => $record->getUrl() ?? null)
+                ->url(fn(?Activity $record) => $record->getLink() ?? null)
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->openUrlInNewTab()
                 ->color('success')

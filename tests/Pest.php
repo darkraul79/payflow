@@ -11,7 +11,9 @@
 |
 */
 
+use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
+use function Pest\Laravel\actingAs;
 
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
@@ -49,4 +51,19 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+
+function asUser(): User
+{
+
+    $user = User::factory()->create([
+        'name' => 'Raul',
+        'email' => 'info@raulsebastian.es',
+        'password' => 'aa',
+    ]);
+    actingAs($user);
+
+    return $user;
+
 }
