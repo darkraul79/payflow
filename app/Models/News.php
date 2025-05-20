@@ -26,9 +26,16 @@ class News extends Model implements HasMedia
     use HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, HasBlockQuotes, WithCommonAttributes;
 
     protected static array $parentsSlugs = [
-        'actualidad',
-        'noticias',
+        [
+            'url' => '/actualidad/noticias',
+            'title' => 'Noticias',
+        ],
+        [
+            'url' => '/actualidad',
+            'title' => 'Actualidad',
+        ],
     ];
+
 
     protected $fillable = [
         'title',

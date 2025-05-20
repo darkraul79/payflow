@@ -1,8 +1,8 @@
-<div class="flex flex-row">
-    <h1 class="text-azul-sea font-[400 text-[34px]">
+<div class="flex flex-row flex-wrap gap-2">
+    <h1 class="text-azul-sea font-[400 text-[34px] leading-[38px]">
         {{ $page->title }}
     </h1>
-    <x-badge-product-stock class="mx-2" stock="{{$page->stock}}" />
+    <x-badge-product-stock class="" stock="{{$page->stock}}" />
 </div>
 
 <div

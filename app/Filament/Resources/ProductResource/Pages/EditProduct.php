@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\ProductResource\Pages;
 
 use App\Filament\Resources\ProductResource;
-use App\Models\Product;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
@@ -22,7 +21,7 @@ class EditProduct extends EditRecord
             RestoreAction::make(),
             Action::make('visit')
                 ->label('Visitar')
-                ->url(fn(?Product $record) => $record->getUrl() ?? null)
+                ->url(fn($record) => $record->getLink() ?? null)
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->openUrlInNewTab()
                 ->color('success'),

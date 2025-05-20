@@ -3,147 +3,90 @@
 namespace App\Models\Traits;
 
 use App\Models\Page;
-use Datlechin\FilamentMenuBuilder\Models\MenuItem;
 use Illuminate\Support\Collection;
 
 trait HasBreadcrumbs
 {
     public static function getStaticUrlPrefix(): string
     {
-        $instance = new self; // Crear una instancia de la clase
-        $parentsFromMenu = $instance->getParentsFromMenu(); // Llamar al método no estático
+        return collect(self::$parentsSlugs)->first()['url'] ?? '';
+    }
 
-        if ($parentsFromMenu && $parentsFromMenu->isNotEmpty()) {
-            return array_keys($parentsFromMenu->last())[0];
+    public function getBreadcrumbs(): array
+    {
+        $arr = [];
+        if (class_basename($this) == 'Page') {
+            if ($this->parent_id) {
+                $arr[] = [
+                    'url' => $this->parent->getLink(),
+                    'title' => $this->parent->title,
+                ];
+                $arr[] = [
+                    'url' => $arr[0]['url'] . '/' . $this->slug,
+                    'title' => $this->title,
+                ];
+            } else {
+                $arr[] = [
+                    'url' => '/' . $this->slug,
+                    'title' => $this->title,
+                ];
+            }
+
+            $arr = collect($arr);
+        } else {
+
+            $arr = collect(self::$parentsSlugs)->reverse();
+            $arr->push([
+                'url' => $arr->first()['url'] . '/' . $this->slug,
+                'title' => $this->title,
+            ]);
         }
 
-        return collect(self::$parentsSlugs)->keys()->last();
+        return $arr->toArray();
+    }
+
+    public function getLink(): ?string
+    {
+        if (collect(self::$parentsSlugs)->first()) {
+            return collect(self::$parentsSlugs)->first()['url'] . '/' . $this->slug;
+        }
+        if (class_basename($this) == 'Page') {
+            if ($this->parent_id) {
+                return $this->parent->getLink() . '/' . $this->slug;
+            }
+        }
+
+        return '/' . $this->slug;
     }
 
     public function getParentsFromMenu()
     {
-        $parents = collect();
-        switch (class_basename($this)) {
-            case 'Activity':
-                $item = $this->getMenuItems('Actividades');
-                if (! $item) {
-                    return false;
-                }
-                $parents->push([$item->url => $item->title]);
-                if ($item->parent) {
-                    $parents->push([$item->parent?->url => $item->parent?->title]);
-                }
-                $parents = $parents->reverse();
-                break;
-            case 'News':
-                $item = $this->getMenuItems('Noticias');
-                if (! $item) {
-                    return false;
-                }
-                $parents->push([$item->url => $item->title]);
-                if ($item->parent) {
-                    $parents->push([$item->parent?->url => $item->parent?->title]);
-                }
-                $parents = $parents->reverse();
-                break;
-            case 'Proyect':
 
-                $item = $this->getMenuItems('Proyectos');
-                if (! $item) {
-                    return false;
-                }
-                $parents->push([$item->url => $item->title]);
-                if ($item->parent) {
-                    $parents->push([$item->parent?->url => $item->parent?->title]);
-                }
-                $parents = $parents->reverse();
-
-                break;
-            case 'Product':
-                $item = $this->getMenuItems('Tienda solidaria');
-                if (! $item) {
-                    return false;
-                }
-                $parents->push([$item->url => $item->title]);
-                if ($item->parent) {
-                    $parents->push([$item->parent?->url => $item->parent?->title]);
-                }
-                $parents = $parents->reverse();
-                break;
-
-            case 'Page':
-
-                //                $parents->push([$this->getLink() => $this->title]);
-
-                if ($this->parent) {
-                    $parents->push([$this->parent?->getLink() => $this->parent?->title]);
-                }
-                $parents = $parents->reverse();
-
-                break;
-        }
-
-        /*  foreach ($parents as $parentSlug) {
-              $parents->push(Page::query()->where('slug', $parentSlug)->first() ?? Page::make(['slug' => $parentSlug]));
-          }*/
+        $parents = self::$parentsSlugs;
 
         return $parents;
 
     }
 
-    public function getMenuItems($url): mixed
-    {
-        if (app()->runningUnitTests()) {
-            return false;
-        }
-
-        return MenuItem::where('title', $url)->first() ?? false;
-    }
-
-    public function getLink()
-    {
-
-        switch (class_basename($this)) {
-            case 'Activity':
-                return route('activities.show', ['slug' => $this->slug]);
-            case 'News':
-                return route('news.show', ['slug' => $this->slug]);
-            case 'Proyect':
-                return route('proyects.show', ['slug' => $this->slug]);
-            case 'Product':
-                return route('products.show', ['slug' => $this->slug]);
-        }
-
-        return null;
-    }
-
-    public function getBreadcrumbs(): array
-    {
-        $array = $this->getParentsFromMenu()->collapse()->toArray();
-        $array[] = $this->title;
-
-        return $array;
-    }
-
     public function getUrlFromSlug(): string
     {
-        return config('app.url').$this->getUrlPrefix().'/'.$this->slug;
+        return config('app.url') . $this->getUrlPrefix() . '/' . $this->slug;
     }
 
     public function getUrlPrefix(bool $completa = false): string
     {
         // si estoy ejecutando test creo un slug manualmente
         if (app()->runningUnitTests()) {
-            return ($completa ? config('app.url') : '/').implode('/', self::$parentsSlugs);
+            return ($completa ? config('app.url') : '/') . implode('/', self::$parentsSlugs);
         }
 
         $url = '';
 
         foreach ($this->getParents() as $parent) {
-            $url .= $parent?->slug ? '/'.$parent->slug : '';
+            $url .= $parent?->slug ? '/' . $parent->slug : '';
         }
 
-        return $completa ? config('app.url').$url : $url;
+        return $completa ? config('app.url') . $url : $url;
     }
 
     public function getParents(): Collection
@@ -160,6 +103,6 @@ trait HasBreadcrumbs
 
     public function getUrlComplete(): string
     {
-        return $this->getUrlPrefix().$this->slug;
+        return $this->getUrlPrefix() . $this->slug;
     }
 }

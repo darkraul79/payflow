@@ -169,7 +169,9 @@ class ProductResource extends Resource
                     Action::make('visit')
                         ->label('Visitar')
                         ->icon('heroicon-o-arrow-top-right-on-square')
-                        ->url(fn($record): string => route('products.show', ['slug' => $record->slug]), true),
+                        ->url(function (Product $record) {
+                            return $record->getLink();
+                        }),
                     EditAction::make(),
                     DeleteAction::make(),
                     RestoreAction::make(),

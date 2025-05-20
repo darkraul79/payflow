@@ -24,7 +24,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  */
 class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia, MenuPanelable
 {
-    use HasBlockQuotes, HasFactory, HasMenuPanel, HasTags, InteractsWithMedia, SoftDeletes, WithCommonAttributes, HasBreadcrumbs;
+    use HasBlockQuotes, HasBreadcrumbs, HasFactory, HasMenuPanel, HasTags, InteractsWithMedia, SoftDeletes, WithCommonAttributes;
 
     protected static array $parentsSlugs = [
     ];
@@ -50,7 +50,7 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia, Me
 
     public function getMenuPanelUrlUsing(): callable
     {
-        return fn(self $model) => $model->getUrl();
+        return fn(self $model) => $model->getLink();
     }
 
     public function registerMediaConversions(?Media $media = null): void
@@ -67,11 +67,11 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia, Me
         $query->where('parent_id', null);
     }
 
-//    #[Scope]
-//    protected function isHome(Builder $query): void
-//    {
-//        $query->where('is_home', true);
-//    }
+    //    #[Scope]
+    //    protected function isHome(Builder $query): void
+    //    {
+    //        $query->where('is_home', true);
+    //    }
 
     #[Scope]
     protected function published(Builder $query): void

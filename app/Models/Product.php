@@ -22,8 +22,12 @@ class Product extends Model implements HasMedia
     use HasBreadcrumbs, HasFactory, HasTags, InteractsWithMedia, SoftDeletes, WithCommonAttributes;
 
     protected static array $parentsSlugs = [
-        'tienda-solidaria'
+        [
+            'url' => '/tienda-solidaria',
+            'title' => 'Tienda solidaria',
+        ]
     ];
+
 
     protected $fillable = [
         'name',

@@ -26,8 +26,14 @@ class Activity extends Model implements HasMedia
     use HasBlockQuotes, HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, WithCommonAttributes;
 
     protected static array $parentsSlugs = [
-        '/que-hacemos' => 'Qué hacemos',
-        '/que-hacemos/actividades' => 'Actividades',
+        [
+            'url' => '/actualidad/actividades',
+            'title' => 'Actividades',
+        ],
+        [
+            'url' => '/actualidad',
+            'title' => 'Actualidad',
+        ],
     ];
 
     protected $fillable = [

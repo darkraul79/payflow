@@ -26,9 +26,16 @@ class Proyect extends Model implements HasMedia
     use HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, HasBlockQuotes, WithCommonAttributes;
 
     protected static array $parentsSlugs = [
-        'que-hacemos',
-        'proyectos',
+        [
+            'url' => '/que-hacemos/proyectos',
+            'title' => 'Proyectos',
+        ],
+        [
+            'url' => '/que-hacemos',
+            'title' => 'Qué hacemos',
+        ],
     ];
+
 
     protected $fillable = [
         'title',

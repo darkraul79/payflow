@@ -233,7 +233,7 @@
     @apply flex gap-3 lg:flex-row-reverse;
 
     #productGallery {
-        @apply mx-auto my-0;
+        @apply my-0;
 
         .splide__track {
             @apply px-1;
@@ -241,7 +241,7 @@
     }
 
     .thumbnails {
-        @apply mx-auto mt-0 mb-0 flex list-none flex-col justify-start gap-3 p-0;
+        @apply mt-0 mb-0 flex list-none flex-col justify-start gap-3 p-0;
 
         .thumbnail {
             @apply mx-1 w-[80px] cursor-pointer list-none overflow-hidden rounded-lg border border-transparent;
