@@ -22,12 +22,12 @@ trait HasBreadcrumbs
                     'title' => $this->parent->title,
                 ];
                 $arr[] = [
-                    'url' => $arr[0]['url'] . '/' . $this->slug,
+                    'url' => $arr[0]['url'].'/'.$this->slug,
                     'title' => $this->title,
                 ];
             } else {
                 $arr[] = [
-                    'url' => '/' . $this->slug,
+                    'url' => '/'.$this->slug,
                     'title' => $this->title,
                 ];
             }
@@ -37,7 +37,7 @@ trait HasBreadcrumbs
 
             $arr = collect(self::$parentsSlugs)->reverse();
             $arr->push([
-                'url' => $arr->first()['url'] . '/' . $this->slug,
+                'url' => $arr->first()['url'].'/'.$this->slug,
                 'title' => $this->title,
             ]);
         }
@@ -48,29 +48,27 @@ trait HasBreadcrumbs
     public function getLink(): ?string
     {
         if (collect(self::$parentsSlugs)->first()) {
-            return collect(self::$parentsSlugs)->first()['url'] . '/' . $this->slug;
+            return collect(self::$parentsSlugs)->first()['url'].'/'.$this->slug;
         }
         if (class_basename($this) == 'Page') {
             if ($this->parent_id) {
-                return $this->parent->getLink() . '/' . $this->slug;
+                return $this->parent->getLink().'/'.$this->slug;
             }
         }
 
-        return '/' . $this->slug;
+        return '/'.$this->slug;
     }
 
     public function getParentsFromMenu()
     {
 
-        $parents = self::$parentsSlugs;
-
-        return $parents;
+        return self::$parentsSlugs;
 
     }
 
     public function getUrlFromSlug(): string
     {
-        return config('app.url') . $this->getUrlPrefix() . '/' . $this->slug;
+        return config('app.url').$this->getUrlPrefix().'/'.$this->slug;
     }
 
     public function getUrlPrefix(bool $completa = false): string
@@ -81,11 +79,11 @@ trait HasBreadcrumbs
                 }*/
 
         $url = '';
-        foreach ($this->getParents() as $parent) {
-            $url .= $parent?->slug['url'] . '/';
+        if ($parents = $this->getParents()) {
+            $url = $parents->first()->slug['url'].'/';
         }
 
-        return $completa ? config('app.url') . $url : $url;
+        return $completa ? config('app.url').$url : $url;
     }
 
     public function getParents(): Collection
@@ -102,6 +100,6 @@ trait HasBreadcrumbs
 
     public function getUrlComplete(): string
     {
-        return $this->getUrlPrefix() . $this->slug;
+        return $this->getUrlPrefix().$this->slug;
     }
 }
