@@ -76,14 +76,13 @@ trait HasBreadcrumbs
     public function getUrlPrefix(bool $completa = false): string
     {
         // si estoy ejecutando test creo un slug manualmente
-        if (app()->runningUnitTests()) {
-            return ($completa ? config('app.url') : '/') . implode('/', self::$parentsSlugs);
-        }
+        /*        if (app()->runningUnitTests()) {
+                    return ($completa ? config('app.url') : '/') . implode('/', self::$parentsSlugs);
+                }*/
 
         $url = '';
-
         foreach ($this->getParents() as $parent) {
-            $url .= $parent?->slug ? '/' . $parent->slug : '';
+            $url .= $parent?->slug['url'] . '/';
         }
 
         return $completa ? config('app.url') . $url : $url;
