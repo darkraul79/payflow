@@ -230,7 +230,7 @@
 }
 
 .product-gallery {
-    @apply flex gap-3 lg:flex-row-reverse;
+    @apply flex flex-row-reverse gap-3;
 
     #productGallery {
         @apply my-0;

@@ -27,6 +27,8 @@
                     </flux:navbar.item>
                 @endif
             @endforeach
+
+            <livewire:cart-component />
         </flux:navbar>
     @endif
 

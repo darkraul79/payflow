@@ -34,7 +34,11 @@
                 @endforeach
             </flux:navlist>
         @endif
+        <hr class="border- my-3 w-full border-gray-200 ">
 
+        <div class="flex w-full items-end justify-end">
+            <livewire:cart-component />
+        </div>
         <flux:spacer />
         <flux:navlist variant="outline">
             <a

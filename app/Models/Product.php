@@ -83,6 +83,14 @@ class Product extends Model implements HasMedia
         return $query->where('published', true);
     }
 
+    public function getPrice()
+    {
+        if ($this->offer_price) {
+            return $this->offer_price;
+        }
+        return $this->price;
+    }
+
     protected function blockquotes(): Attribute
     {
         return Attribute::make(

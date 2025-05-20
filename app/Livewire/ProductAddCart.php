@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Services\Cart;
 use Livewire\Component;
 
 class ProductAddCart extends Component
@@ -42,5 +43,19 @@ class ProductAddCart extends Component
         }
         $this->quantity -= 1;
         $this->errorMessage = false;
+    }
+
+    public function addToCart(Product $product): void
+    {
+        Cart::addItem($product, $this->quantity);
+
+        $this->dispatch('updatedCart');
+        $this->dispatch('showAlert', 'Producto agregado al carrito');
+
+    }
+
+    public function resetCart()
+    {
+        Cart::clearCart();
     }
 }

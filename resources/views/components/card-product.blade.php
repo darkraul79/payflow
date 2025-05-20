@@ -24,6 +24,7 @@
 
         <button
             class="bg-azul-mist hover:bg-azul-wave hover:text-azul-mist group absolute right-0 ms-auto inline-flex w-10 cursor-pointer overflow-hidden rounded-full p-3 -indent-px transition-all duration-300 ease-in-out hover:me-0 hover:w-auto hover:shadow"
+            wire:click="addToCart({{ $product }},1)"
         >
             <span class="hidden px-2 text-xs text-white group-hover:block">
                 Añadir al carro
