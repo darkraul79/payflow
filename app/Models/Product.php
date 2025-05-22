@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Number;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -67,7 +66,7 @@ class Product extends Model implements HasMedia
         $precio_original = $this->getFormatedPrice();
 
         if ($this->offer_price) {
-            return Number::currency($this->offer_price, 'EUR', locale: 'es-ES', precision: 2) . ' <span class="text-xs font-light text-gray-400 line-through mx-1">' . $precio_original . '</span>';
+            return convertPrice($this->offer_price) . ' <span class="text-xs font-light text-gray-400 line-through mx-1">' . $precio_original . '</span>';
         }
 
         return $precio_original;
@@ -75,7 +74,7 @@ class Product extends Model implements HasMedia
 
     public function getFormatedPrice(): string
     {
-        return Number::currency($this->price, 'EUR', locale: 'es-ES', precision: 2);
+        return convertPrice($this->price);
     }
 
     public function scopePublished(Builder $query): Builder

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\FrontEndController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
@@ -11,6 +12,9 @@ use App\Models\Proyect;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontEndController::class, 'index'])->name('home');
+
+Route::get('/tienda-solidaria/cesta', [CartController::class, 'index'])->name('cart');
+Route::get('/tienda-solidaria/cesta/pedido', [CartController::class, 'form'])->name('checkout');
 
 Route::get(Activity::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'activities'])->name('activities.show');
 Route::get(News::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'news'])->name('news.show');

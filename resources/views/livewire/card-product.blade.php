@@ -1,7 +1,11 @@
 <article
     class="border-azul-cobalt flex flex-col justify-between rounded-lg border bg-white px-3 pt-3 pb-1 shadow-lg transition-all duration-300 ease-out hover:scale-102"
 >
-    <a href="{{ $product->getLink() }}" title="{{ $product->title }}">
+    <a
+        href="{{ $product->getLink() }}"
+        title="{{ $product->title }}"
+        wire:ignore
+    >
         {{
             $product
                 ->getFirstMedia('product_images')
@@ -24,7 +28,7 @@
 
         <button
             class="bg-azul-mist hover:bg-azul-wave hover:text-azul-mist group absolute right-0 ms-auto inline-flex w-10 cursor-pointer overflow-hidden rounded-full p-3 -indent-px transition-all duration-300 ease-in-out hover:me-0 hover:w-auto hover:shadow"
-            wire:click="addToCart({{ $product }},1)"
+            wire:click="addToCart({{ $product }})"
         >
             <span class="hidden px-2 text-xs text-white group-hover:block">
                 Añadir al carro

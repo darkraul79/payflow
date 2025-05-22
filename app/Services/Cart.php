@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Product;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class Cart
 {
@@ -15,19 +17,26 @@ class Cart
         if (isset(self::$cart['items'][$product->id])) {
             self::$cart['items'][$product->id]['quantity'] += $quantity;
             self::$cart['items'][$product->id]['subtotal'] = $product->getPrice() * self::$cart['items'][$product->id]['quantity'];
+            self::$cart['items'][$product->id]['subtotal_formated'] = convertPrice(self::$cart['items'][$product->id]['subtotal']);
         } else {
             self::$cart['items'][$product->id] = [
                 'name' => $product->name,
                 'price' => $product->getPrice(),
+                'price_formated' => $product->getFormatedPriceWithDiscount(),
                 'quantity' => $quantity,
                 'subtotal' => $product->getPrice() * $quantity,
+                'subtotal_formated' => convertPrice($product->getPrice() * $quantity),
+                'image' => $product->getFirstMediaUrl('product_images', 'thumb') ?? null,
             ];
         }
-
 
         self::save();
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public static function init(): void
     {
         self::$cart = session()->get('cart') ?? ['items' => []];
@@ -36,6 +45,19 @@ class Cart
     public static function save(): void
     {
         session()->put('cart', self::$cart);
+    }
+
+    public static function updateItemQuantity(Product $product, $quantity): void
+    {
+        self::init();
+
+        if (isset(self::$cart['items'][$product->id])) {
+            self::$cart['items'][$product->id]['quantity'] = $quantity;
+            self::$cart['items'][$product->id]['subtotal'] = $product->getPrice() * $quantity;
+            self::$cart['items'][$product->id]['subtotal_formated'] = convertPrice(self::$cart['items'][$product->id]['subtotal']);
+        }
+
+        self::save();
     }
 
     public static function updateCart(): void
@@ -47,6 +69,7 @@ class Cart
             $product = Product::find($id);
             $subtotal = $product->getPrice() * $item['quantity'];
             self::$cart['items'][$id]['subtotal'] = $subtotal;
+            self::$cart['items'][$id]['img'] = $product->getFirstMediaUrl('product_images', 'thumb') ?? null;
             $total += $subtotal;
         }
 
@@ -67,15 +90,11 @@ class Cart
         if (isset(self::$cart['items'][$productId])) {
             unset(self::$cart['items'][$productId]);
         }
-        session()->flash('danger', 'Producto eliminado del carrito');
         self::save();
     }
 
     public static function clearCart(): void
     {
-        session()->forget('cart');
-
-        session()->flash('warning', 'Se ha vaciado el carrito');
         self::$cart = [];
     }
 
@@ -91,7 +110,7 @@ class Cart
         return $total;
     }
 
-    public static function getTotalQuantity(): float
+    public static function getTotalQuantity(): int
     {
         self::init();
 
@@ -101,5 +120,36 @@ class Cart
         }
 
         return $totalQuantity;
+    }
+
+    public static function setTotals(float $subtotal, float $taxes, float $total, float $shipping_cost): void
+    {
+        self::init();
+
+        self::$cart['totals'] = [
+            'shipping_cost' => $shipping_cost,
+            'subtotal' => $subtotal,
+            'taxes' => $taxes,
+            'total' => $total,
+        ];
+
+        self::save();
+    }
+
+    public static function canCheckout(): bool
+    {
+        self::init();
+
+        if (
+            empty(self::$cart) ||
+            empty(self::$cart['items']) ||
+            empty(self::$cart['totals']['subtotal']) ||
+            empty(self::$cart['totals']['taxes']) ||
+            empty(self::$cart['totals']['total'])
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -105,7 +105,7 @@
         }
 
         .actividades {
-            @apply flex flex-row gap-2 md:grid md:grid-cols-3 lg:grid-cols-3;
+            @apply flex w-fit flex-row gap-2 md:grid md:grid-cols-3 lg:w-auto lg:grid-cols-3;
 
             a {
                 @apply max-h-20 w-full max-w-20 overflow-hidden rounded-xl;
@@ -152,6 +152,16 @@
             @apply list-inside list-disc;
         }
     }
+
+    input[type='number'].item-number {
+        -moz-appearance: textfield;
+
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    }
 }
 
 @utility btn {
@@ -178,6 +188,10 @@
         &:focus,
         &:active {
             @apply bg-azul-sapphire text-white no-underline;
+        }
+
+        &:disabled {
+            @apply bg-azul-gray text-white;
         }
     }
 

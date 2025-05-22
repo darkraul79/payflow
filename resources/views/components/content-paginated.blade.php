@@ -4,7 +4,10 @@
     >
         @foreach ($data as $activity)
             @if ($type === 'Product')
-                <x-card-product :product="$activity" />
+                <livewire:card-product
+                    :product="$activity"
+                    :key="'product-'.$activity->id"
+                />
             @else
                 <x-card
                     :image="$activity->getFirstMedia('principal')?->getUrl('card-thumb')"

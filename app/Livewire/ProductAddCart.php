@@ -4,14 +4,13 @@ namespace App\Livewire;
 
 use App\Models\Product;
 use App\Services\Cart;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ProductAddCart extends Component
 {
-
     public Product $product;
 
-    public bool|string $errorMessage = '';
 
     public int $quantity = 1;
 
@@ -24,26 +23,13 @@ class ProductAddCart extends Component
         return view('livewire.product-add-cart');
     }
 
-    public function add(): void
+    #[On('updateQuantity')]
+    public function updateQuantity(int $quantity, Product $product): void
     {
-        if ($this->quantity > $this->product->stock) {
-            $this->errorMessage = 'No hay suficiente stock';
-            return;
-        }
-        $this->quantity += 1;
+        $this->quantity = $quantity;
 
-        $this->errorMessage = false;
     }
 
-    public function substract(): void
-    {
-        if ($this->quantity <= 1) {
-            $this->errorMessage = 'No puedes agregar menos de 1 producto';
-            return;
-        }
-        $this->quantity -= 1;
-        $this->errorMessage = false;
-    }
 
     public function addToCart(Product $product): void
     {

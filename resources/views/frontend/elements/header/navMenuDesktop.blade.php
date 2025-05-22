@@ -28,7 +28,7 @@
                 @endif
             @endforeach
 
-            <livewire:cart-component />
+            <livewire:cart-button-component wire:key="cart-button-desktop" />
         </flux:navbar>
     @endif
 

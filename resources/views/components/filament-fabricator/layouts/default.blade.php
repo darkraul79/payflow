@@ -18,5 +18,9 @@
         'page',
     ])
 
-    <x-filament-fabricator::page-blocks :blocks="$page?->blocks" />
+    @if (isset($static))
+        @yield('static')
+    @else
+        <x-filament-fabricator::page-blocks :blocks="$page?->blocks" />
+    @endif
 @endsection

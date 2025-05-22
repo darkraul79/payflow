@@ -7,13 +7,17 @@
             class="flex items-center justify-start py-4 lg:justify-center lg:py-0"
         />
 
-        <flux:sidebar.toggle
-            class="border-azul-sea stroke-azul-sea text-azul-sea me-4 rounded-full! border lg:hidden"
-            size="base"
-            icon:variant="outline"
-            icon="bars-3"
-            inset="left"
-        />
+        <div class="flex items-end justify-end gap-10 lg:hidden">
+            <livewire:cart-button-component wire:key="cart-button-mobile" />
+
+            <flux:sidebar.toggle
+                class="border-azul-sea stroke-azul-sea text-azul-sea me-4 rounded-full! border"
+                size="base"
+                icon:variant="outline"
+                icon="bars-3"
+                inset="left"
+            />
+        </div>
     </div>
 
     <livewire:nav-menu type="desktop" />

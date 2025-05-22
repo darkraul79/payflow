@@ -6,7 +6,7 @@ use App\Services\Cart;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class CartComponent extends Component
+class CartButtonComponent extends Component
 {
 
     public $quantity = 0;
@@ -39,5 +39,6 @@ class CartComponent extends Component
         $this->dispatch('showAlert', 'Carrito vaciado');
 
     }
+
 
 }

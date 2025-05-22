@@ -1,6 +1,9 @@
-<div
+<a
     class="border-azul-sea group hover:bg-azul-sea relative w-fit cursor-pointer rounded-full border p-2"
-    wire:click="resetCart"
+    href="{{ route('cart') }}"
+    title="Ir a la cesta"
+    wire:click="openCartPage"
+    wire:ignore.self
 >
     <svg
         width="24"
@@ -34,4 +37,4 @@
             {{ $quantity }}
         </div>
     @endif
-</div>
+</a>

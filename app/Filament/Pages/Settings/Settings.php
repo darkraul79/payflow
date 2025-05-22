@@ -9,12 +9,13 @@ use Outerweb\FilamentSettings\Filament\Pages\Settings as BaseSettings;
 
 class Settings extends BaseSettings
 {
-
-//    protected static ?string $slug = 'ajustes';
+    //    protected static ?string $slug = 'ajustes';
     protected static ?string $label = 'Ajuste';
+
     protected static ?string $pluralLabel = 'Ajustes';
 
     protected static ?string $navigationGroup = 'Configuración';
+
     protected static ?int $navigationSort = 30;
 
     protected static ?string $navigationIcon = 'heroicon-s-adjustments-horizontal';
@@ -68,7 +69,19 @@ class Settings extends BaseSettings
                                 ->label('Youtube')
                                 ->hintIcon('bi-youtube'),
                         ]),
+
+                    Tabs\Tab::make('Tienda')
+                        ->columns(4)
+                        ->schema([
+                            TextInput::make('store.price_send')
+                                ->label('Gasto de envío')
+                                ->suffix("€")
+                                ->formatStateUsing(fn($state) => convertPriceNumber($state))
+
+                        ]),
                 ]),
         ];
     }
+
+
 }
