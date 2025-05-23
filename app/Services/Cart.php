@@ -15,6 +15,9 @@ class Cart
         self::init();
 
         if (isset(self::$cart['items'][$product->id])) {
+            if (Product::find($product->id)->stock < self::$cart['items'][$product->id]['quantity'] + $quantity) {
+                return;
+            }
             self::$cart['items'][$product->id]['quantity'] += $quantity;
             self::$cart['items'][$product->id]['subtotal'] = $product->getPrice() * self::$cart['items'][$product->id]['quantity'];
             self::$cart['items'][$product->id]['subtotal_formated'] = convertPrice(self::$cart['items'][$product->id]['subtotal']);
@@ -151,5 +154,16 @@ class Cart
         }
 
         return true;
+    }
+
+    public static function getQuantityProduct($productId): int
+    {
+        self::init();
+
+        if (isset(self::$cart['items'][$productId])) {
+            return self::$cart['items'][$productId]['quantity'];
+        }
+
+        return 0;
     }
 }

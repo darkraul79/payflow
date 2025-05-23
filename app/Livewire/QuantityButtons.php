@@ -84,4 +84,9 @@ class QuantityButtons extends Component
 
         $this->updateEvent();
     }
+
+    public function checkStock()
+    {
+        
+    }
 }

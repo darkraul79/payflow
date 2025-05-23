@@ -19,11 +19,24 @@ class CardProduct extends Component
 
     public function addToCart()
     {
-        Cart::addItem($this->product, 1);
-        $this->dispatch('updatedCart');
-        $this->dispatch('showAlert', 'Producto agregado al carrito');
+        if ($this->checkStock()) {
+            $this->dispatch('showAlert', 'No hay suficiente stock');
+
+        } else {
+            Cart::addItem($this->product, 1);
+            $this->dispatch('updatedCart');
+            $this->dispatch('showAlert', 'Producto agregado al carrito');
+        }
     }
 
+    public function checkStock(): bool
+    {
+        if ((Cart::getQuantityProduct($this->product->id) + 1) <= $this->product->stock) {
+
+            return false;
+        }
+        return true;
+    }
 
     public function render(): View
     {
