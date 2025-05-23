@@ -2,25 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Models\Order;
+use App\Models\OrderAddress;
+use App\Models\Product;
 use App\Services\Cart;
 use Livewire\Component;
 
 class OrderFormComponent extends Component
 {
-    public float $total = 0;
-
-    public float $subtotal = 0;
-
-    public float $envio = 0;
-
-    public float $taxes = 0;
-
     public $cart;
-
     public string $name;
-
     public $payment_method;
-
     public $shipping = [
         'name' => '',
         'last_name' => '',
@@ -31,7 +23,6 @@ class OrderFormComponent extends Component
         'email' => '',
         'phone' => '',
     ];
-
     public $billing = [
         'name' => '',
         'last_name' => '',
@@ -42,7 +33,6 @@ class OrderFormComponent extends Component
         'email' => '',
         'phone' => '',
     ];
-
     public bool $addSendAddress = false;
     public array $rulesGlobal = [
         'payment_method' => 'required',
@@ -52,7 +42,7 @@ class OrderFormComponent extends Component
         'billing.name' => 'required|string|max:255',
         'billing.last_name' => 'required|string|max:255',
         'billing.company' => 'nullable|string|max:255',
-        'billing.nif' => 'required|string|max:255',
+        'billing.nif' => 'nullable|string|max:255',
         'billing.address' => 'required|string|max:255',
         'billing.cp' => 'required|string|max:10',
         'billing.city' => 'required',
@@ -65,7 +55,7 @@ class OrderFormComponent extends Component
         'shipping.name' => 'required|string|max:255',
         'shipping.last_name' => 'required|string|max:255',
         'shipping.company' => 'nullable|string|max:255',
-        'shipping.nif' => 'required|string|max:255',
+        'shipping.nif' => 'nullable|string|max:255',
         'shipping.address' => 'required|string|max:255',
         'shipping.cp' => 'required|string|max:10',
         'shipping.city' => 'required',
@@ -73,7 +63,11 @@ class OrderFormComponent extends Component
         'shipping.email' => 'required|email|max:255',
         'shipping.phone' => 'nullable|string|max:20',
     ];
-    protected array $rules = [];
+    public float $total = 0;
+    public float $subtotal = 0;
+    public float $envio = 0;
+    public float $taxes = 0;
+    public array $rules = [];
 
 
     public function mount()
@@ -84,7 +78,13 @@ class OrderFormComponent extends Component
 
         Cart::resfreshCart();
 
-        $this->cart = session()->get('cart', []);
+        $this->cart = session()->get('cart');
+        $this->total = $this->cart['totals']['total'];
+        $this->subtotal = $this->cart['totals']['subtotal'];
+        $this->taxes = $this->cart['totals']['taxes'];
+        $this->envio = $this->cart['totals']['shipping_cost'];
+
+
     }
 
     public function submit()
@@ -92,7 +92,12 @@ class OrderFormComponent extends Component
         $this->updateRules();
         $this->validate();
 
-        // Procesar los datos del formulario
+        $this->orderCreate();
+
+        Cart::resetCart();
+
+        $this->redirectRoute('checkout.response');
+
     }
 
     public function updateRules(): void
@@ -101,6 +106,75 @@ class OrderFormComponent extends Component
             $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling, $this->rulesShipping);
         } else {
             $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling);
+
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function orderCreate(): void
+    {
+        $order = Order::create([
+            'number' => generateOrderNumber(),
+            'shipping' => $this->shipping['name'],
+            'shipping_cost' => $this->envio,
+            'subtotal' => $this->subtotal,
+            'taxes' => $this->taxes,
+            'total' => $this->total,
+            'payment_method' => $this->payment_method,
+        ]);
+
+        $this->createAddresses($order);
+        $this->addItemsToOrder($order);
+    }
+
+    /**
+     * @param Order $order
+     * @return void
+     */
+    public function createAddresses(Order $order): void
+    {
+        $order->addresses()->create([
+            'type' => OrderAddress::BILLING,
+            'name' => $this->billing['name'],
+            'last_name' => $this->billing['last_name'],
+            'company' => $this->billing['company'] ?? null,
+            'nif' => $this->billing['nif'] ?? null,
+            'address' => $this->billing['address'],
+            'province' => $this->billing['province'],
+            'city' => $this->billing['city'],
+            'cp' => $this->billing['cp'],
+            'email' => $this->billing['email'],
+            'phone' => $this->billing['phone'] ?? null,
+        ]);
+
+        if ($this->addSendAddress) {
+            $order->addresses()->create([
+                'type' => OrderAddress::SHIPPING,
+                'name' => $this->shipping['name'],
+                'last_name' => $this->shipping['last_name'],
+                'company' => $this->shipping['company'] ?? null,
+                'nif' => $this->shipping['nif'] ?? null,
+                'address' => $this->shipping['address'],
+                'province' => $this->shipping['province'],
+                'city' => $this->shipping['city'],
+                'cp' => $this->shipping['cp'],
+                'email' => $this->shipping['email'],
+                'phone' => $this->shipping['phone'] ?? null,
+            ]);
+        }
+    }
+
+    public function addItemsToOrder(Order $order)
+    {
+        foreach ($this->cart['items'] as $idItem => $item) {
+            $order->items()->create([
+                'product_id' => $idItem,
+                'quantity' => $item['quantity'],
+                'subtotal' => $item['subtotal'],
+                'data' => Product::find($idItem)->toArray(),
+            ]);
 
         }
     }
@@ -121,6 +195,7 @@ class OrderFormComponent extends Component
             'numeric' => 'El campo debe ser un número.',
             'boolean' => 'El campo debe ser verdadero o falso.',
         ];
+
     }
 
 }

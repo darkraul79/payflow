@@ -16,17 +16,6 @@ class CartController extends Controller
         );
     }
 
-    public function form()
-    {
-        if (! session()->has('cart') || empty(session('cart'))) {
-            return redirect()->route('cart');
-        }
-
-        return view('cart.form',
-            $this->getParams('Detalles de facturación')
-        );
-    }
-
     public function getParams(string $title): array
     {
         return [
@@ -39,5 +28,31 @@ class CartController extends Controller
             'static' => true,
         ];
 
+    }
+
+    public function form()
+    {
+        if (!session()->has('cart') || empty(session('cart'))) {
+            return redirect()->route('cart');
+        }
+
+        return view('cart.form',
+            $this->getParams('Detalles de facturación')
+        );
+    }
+
+    public function finalizado()
+    {
+        $response = true;
+
+        if ($response) {
+            return view('cart.ok',
+                $this->getParams('Pedido realizado')
+            );
+        }
+
+        return view('cart.ko',
+            $this->getParams('Error')
+        );
     }
 }

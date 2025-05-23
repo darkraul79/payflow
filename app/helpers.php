@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Order;
 use Illuminate\Support\Number;
 
 if (!function_exists('getUrlDownloads')) {
@@ -68,7 +69,6 @@ if (!function_exists('convertPriceNumber')) {
     }
 }
 
-
 if (!function_exists('calculoImpuestos')) {
     function calculoImpuestos(float $subtotal): float
     {
@@ -89,4 +89,16 @@ if (!function_exists('getProvincias')) {
             'Santa Cruz de Tenerife', 'Teruel', 'Toledo', 'Valencia', 'Valladolid', 'Vizcaya', 'Zamora', 'Zaragoza'];
     }
 
+}
+
+if (!function_exists('getPgenerateOrderNumberrovincias')) {
+
+    function generateOrderNumber(): string
+    {
+        do {
+            $orderNumber = Str::upper(Str::random(8));
+        } while (Order::where('number', $orderNumber)->exists());
+
+        return $orderNumber;
+    }
 }

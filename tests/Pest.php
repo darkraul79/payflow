@@ -11,9 +11,15 @@
 |
 */
 
+use App\Livewire\CardProduct;
+use App\Livewire\OrderFormComponent;
+use App\Livewire\PageCartComponent;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use function Pest\Laravel\actingAs;
+use function Pest\Livewire\livewire;
 
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
@@ -53,7 +59,6 @@ function something()
     // ..
 }
 
-
 function asUser(): User
 {
 
@@ -66,4 +71,40 @@ function asUser(): User
 
     return $user;
 
+}
+
+function creaPedido(): Order
+{
+    $producto = Product::factory()->create([
+        'name' => 'Producto de prueba',
+        'price' => 10,
+        'stock' => 1,
+    ]);
+
+    livewire(CardProduct::class, [
+        'product' => $producto,
+        'quantity' => 1,
+    ])->call('addToCart');
+
+    livewire(PageCartComponent::class)->call('submit');
+
+    livewire(OrderFormComponent::class)
+        ->assertOk()
+        ->set([
+            'payment_method' => 'tarjeta',
+            'billing' => [
+                'name' => 'Juan',
+                'last_name' => 'Pérez',
+                'company' => 'Mi empresa',
+                'address' => 'Calle Falsa 123',
+                'province' => 'Madrid',
+                'city' => 'Madrid',
+                'cp' => '28001',
+                'email' => 'info@raulsebastian.es',
+            ],
+        ])->call('submit')
+        ->assertHasNoErrors();
+
+
+    return Order::latest()->first();
 }

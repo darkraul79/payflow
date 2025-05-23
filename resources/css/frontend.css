@@ -145,7 +145,7 @@
 
         input,
         select {
-            @apply border-gris! rounded-md border;
+            @apply border-gris! text-azul-sea! rounded-md border;
 
             &[type='text'],
             &[type='email'],

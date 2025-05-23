@@ -24,20 +24,20 @@ class ProductAddCart extends Component
     }
 
     #[On('updateQuantity')]
-    public function updateQuantity(int $quantity, Product $product): void
+    public function updateQuantity(int $quantity): void
     {
         $this->quantity = $quantity;
 
     }
 
 
-    public function addToCart(Product $product): void
+    public function addToCart(): void
     {
         if ($this->checkStock()) {
             $this->dispatch('showAlert', 'No hay suficiente stock');
 
         } else {
-            Cart::addItem($product, $this->quantity);
+            Cart::addItem($this->product, $this->quantity);
 
             $this->dispatch('updatedCart');
             $this->dispatch('showAlert', 'Producto agregado al carrito');
