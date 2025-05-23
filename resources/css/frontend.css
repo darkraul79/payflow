@@ -112,6 +112,14 @@
                 }
             }
         }
+
+        .items {
+            @apply mb-8 flex flex-col gap-2;
+
+            li {
+                @apply border-gris flex flex-row items-center justify-between py-3 text-[14px] not-last:border-b;
+            }
+        }
     }
 
     .no-img {
@@ -131,8 +139,13 @@
             }
         }
 
-        input {
-            @apply border-gris rounded-md border;
+        .form-error {
+            @apply text-error/80 text-[11px];
+        }
+
+        input,
+        select {
+            @apply border-gris! rounded-md border;
 
             &[type='text'],
             &[type='email'],

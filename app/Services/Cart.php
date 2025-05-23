@@ -19,18 +19,16 @@ class Cart
                 return;
             }
             self::$cart['items'][$product->id]['quantity'] += $quantity;
-            self::$cart['items'][$product->id]['subtotal'] = $product->getPrice() * self::$cart['items'][$product->id]['quantity'];
-            self::$cart['items'][$product->id]['subtotal_formated'] = convertPrice(self::$cart['items'][$product->id]['subtotal']);
+            self::updateProductSubtotal($product);
         } else {
             self::$cart['items'][$product->id] = [
                 'name' => $product->name,
                 'price' => $product->getPrice(),
                 'price_formated' => $product->getFormatedPriceWithDiscount(),
                 'quantity' => $quantity,
-                'subtotal' => $product->getPrice() * $quantity,
-                'subtotal_formated' => convertPrice($product->getPrice() * $quantity),
-                'image' => $product->getFirstMediaUrl('product_images', 'thumb') ?? null,
+                'image' => self::getImage($product),
             ];
+            self::updateProductSubtotal($product);
         }
 
         self::save();
@@ -45,6 +43,26 @@ class Cart
         self::$cart = session()->get('cart') ?? ['items' => []];
     }
 
+    /**
+     * @param Product $product
+     * @param $quantity
+     * @return void
+     */
+    public static function updateProductSubtotal(Product $product): void
+    {
+        self::$cart['items'][$product->id]['subtotal'] = $product->getPrice() * self::$cart['items'][$product->id]['quantity'];
+        self::$cart['items'][$product->id]['subtotal_formated'] = convertPrice(self::$cart['items'][$product->id]['subtotal']);
+    }
+
+    /**
+     * @param Product|array|null $product
+     * @return string|null
+     */
+    public static function getImage(Product|array|null $product): ?string
+    {
+        return $product->getFirstMediaUrl('product_images', 'thumb') ?? null;
+    }
+
     public static function save(): void
     {
         session()->put('cart', self::$cart);
@@ -56,8 +74,7 @@ class Cart
 
         if (isset(self::$cart['items'][$product->id])) {
             self::$cart['items'][$product->id]['quantity'] = $quantity;
-            self::$cart['items'][$product->id]['subtotal'] = $product->getPrice() * $quantity;
-            self::$cart['items'][$product->id]['subtotal_formated'] = convertPrice(self::$cart['items'][$product->id]['subtotal']);
+            self::updateProductSubtotal($product, $quantity);
         }
 
         self::save();
@@ -71,8 +88,8 @@ class Cart
         foreach (self::getItems() as $id => $item) {
             $product = Product::find($id);
             $subtotal = $product->getPrice() * $item['quantity'];
-            self::$cart['items'][$id]['subtotal'] = $subtotal;
-            self::$cart['items'][$id]['img'] = $product->getFirstMediaUrl('product_images', 'thumb') ?? null;
+            self::updateProductSubtotal($product);
+            self::$cart['items'][$id]['img'] = self::getImage($product);
             $total += $subtotal;
         }
 
@@ -166,4 +183,24 @@ class Cart
 
         return 0;
     }
+
+    public static function resfreshCart()
+    {
+        $data = [];
+        foreach (self::getItems() as $idProduct => $item) {
+            $product = Product::find($idProduct)->firstOrFail();
+            self::$cart['items'][$idProduct]['name'] = $product->name;
+            self::$cart['items'][$idProduct]['price'] = $product->getPrice();
+            self::$cart['items'][$idProduct]['price_formated'] = $product->getFormatedPriceWithDiscount();
+            self::updateProductSubtotal($product);
+            self::$cart['items'][$idProduct]['img'] = self::getImage($product);
+
+        }
+        self::$cart['totals']['subtotal'] = 0;
+        self::$cart['totals']['taxes'] = 0;
+        self::$cart['totals']['total'] = 0;
+        self::$cart['totals']['shipping_cost'] = 0;
+    }
+
+
 }
