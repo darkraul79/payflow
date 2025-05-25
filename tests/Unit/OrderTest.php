@@ -3,6 +3,7 @@
 use App\Models\Order;
 use App\Models\OrderAddress;
 use App\Models\OrderState;
+use App\Models\Product;
 use App\Services\Cart;
 
 test('puedo crear pedido a través de factory', closure: function () {
@@ -22,7 +23,6 @@ test('puedo crear factory con items', function () {
 
 test('puedo crear factory con diferentes estados', function (string $estado) {
     $order = Order::factory()->{$estado}()->create();
-
     expect($order->states)->toHaveCount(2)
         ->and($order->state->name)->toBe(constant(OrderState::class . '::' . strtoupper($estado)));
 })->with([
@@ -65,4 +65,28 @@ test('vacio cesta después de crear pedido', function () {
     $this->get(route('cart'))
         ->assertSee('No hay productos en el carrito');
 
+});
+
+test('se crea estado pendiente al crear pedido', function () {
+    $order = creaPedido();
+
+    expect($order->state->name)->toBe(OrderState::PENDIENTE);
+
+});
+
+test('puedo obtener las imagenes de los productos del pedido', function () {
+    Storage::fake('storage');
+    $productos = Product::factory()
+        ->imagen(public_path('storage/productos/botella-azul.webp'))
+        ->count(2)
+        ->create();
+
+
+    $order = Order::factory()
+        ->hasItems(2, [
+            'product_id' => $productos->random()->id,
+        ])
+        ->create();
+
+    dd($order->images());
 });

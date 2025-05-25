@@ -2,17 +2,24 @@
 
 namespace App\Models;
 
+use App\Observers\OrderObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use ReflectionClass;
 
 /**
  * @property mixed $items
  * @property mixed $total
  */
+#[ObservedBy([OrderObserver::class])]
 class Order extends Model
 {
     use HasFactory;
@@ -27,25 +34,20 @@ class Order extends Model
         'payment_method',
     ];
 
-    public static function getStates(): array
+    protected $with = [
+        'state',
+        'items.product',
+        'addresses',
+    ];
+
+    public function states(): HasMany
     {
-        $reflector = new ReflectionClass(OrderState::class);
-        $constants = $reflector->getConstants();
-
-        unset($constants['CREATED_AT']);
-        unset($constants['UPDATED_AT']);
-
-        return $constants;
+        return $this->hasMany(OrderState::class);
     }
 
     public function state(): HasOne
     {
         return $this->hasOne(OrderState::class)->latestOfMany();
-    }
-
-    public function states(): HasMany
-    {
-        return $this->hasMany(OrderState::class);
     }
 
     public function address(): Attribute
@@ -62,6 +64,12 @@ class Order extends Model
         return $this->hasMany(OrderAddress::class);
     }
 
+    public function fechaHumanos(): string
+    {
+
+        return Carbon::parse($this->created_at)->diffForHumans();
+    }
+
     public function billing_adress()
     {
         return $this->addresses()->where('type', OrderAddress::BILLING)->first();
@@ -75,5 +83,125 @@ class Order extends Model
     public function Items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function images(): Collection
+    {
+        $data = collect();
+        foreach ($this->items as $item) {
+            if ($item->product->getMedia('product_images')) {
+                $data->push($item->product->getMedia('product_images'));
+            }
+        }
+
+        return $data;
+    }
+
+    public function statesWithStateInitial(): Collection
+    {
+        // devuelvo los estados y agrega un estado de reccibido
+        return $this->states->prepend(OrderState::make([
+
+            'name' => 'Recibido',
+            'order_id' => $this->id,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->created_at,
+            'info' => null,
+            'message' => null,
+
+        ]));
+
+    }
+
+    /**
+     *  Devuelve los estados disponibles de un pedido, sin contar los ya asignados
+     */
+    public function available_states(): array
+    {
+
+        $estados = array_flip(self::getStates());
+
+        foreach ($this->states as $estadoYaUsado) {
+            unset($estados[$estadoYaUsado->name]);
+        }
+
+        return array_flip($estados);
+    }
+
+    public static function getStates(): array
+    {
+        $reflector = new ReflectionClass(OrderState::class);
+        $constants = $reflector->getConstants();
+
+        unset($constants['CREATED_AT']);
+        unset($constants['UPDATED_AT']);
+
+        return $constants;
+    }
+
+    /**
+     * Delimita el listado de pedidos a los finalizados.
+     */
+    #[Scope]
+    protected function finalizados(Builder $query): void
+    {
+        $query->whereHas('state', function ($query): void {
+            $query->where('name', OrderState::FINALIZADO);
+        });
+    }
+
+    /**
+     * Delimita el listado de pedidos a los pendientes de pago.
+     */
+    #[Scope]
+    protected function pendientePago(Builder $query): void
+    {
+        $query->whereHas('state', function ($query): void {
+            $query->where('name', OrderState::PENDIENTE);
+        });
+    }
+
+    /**
+     * Delimita el listado de pedidos a los pedidos cancelados.
+     */
+    #[Scope]
+    protected function cancelados(Builder $query): void
+    {
+        $query->whereHas('state', function ($query): void {
+            $query->where('name', OrderState::CANCELADO);
+        });
+    }
+
+    /**
+     * Delimita el listado de pedidos a los pagados.
+     */
+    #[Scope]
+    protected function pagados(Builder $query): void
+    {
+        $query->whereHas('state', function ($query): void {
+            $query->where('name', OrderState::PAGADO);
+        });
+    }
+
+    /**
+     * Delimita el listado de pedidos a los pedidos enviados.
+     */
+    #[Scope]
+    protected function enviados(Builder $query): void
+    {
+        $query->whereHas('state', function ($query): void {
+            $query->where('name', OrderState::ENVIADO);
+        });
+    }
+
+    /**
+     * Delimita el listado de pedidos a los pedidos con error.
+     */
+    #[Scope]
+    protected function conErrores(Builder $query): void
+    {
+        $query->whereHas('state', function ($query): void {
+            $query->where('name', OrderState::ERROR);
+        });
     }
 }

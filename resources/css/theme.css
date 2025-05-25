@@ -13,6 +13,18 @@
     --color-azul-sea: #003c6b;
     --color-azul-mist: #1a598c;
     --color-gris: #e6e6e6;
+    --color-success: #02b5a7;
+    --color-success-50: oklch(0.9493 0.0204 185.3974);
+    --color-success-100: oklch(0.8985 0.0414 185.0661);
+    --color-success-200: oklch(0.848 0.0624 184.5582);
+    --color-success-300: oklch(0.7961 0.0819 185.7512);
+    --color-success-400: oklch(0.7467 0.1024 184.7322);
+    --color-success-500: oklch(0.6953 0.1222 185.1073);
+    --color-success-600: oklch(0.6015 0.1017 185.3863);
+    --color-success-700: oklch(0.5098 0.0816 184.9046);
+    --color-success-800: oklch(0.4167 0.0613 184.1835);
+    --color-success-900: oklch(0.3246 0.0417 183.1301);
+    --color-success-950: oklch(0.2299 0.0198 184.7032);
 
     --color-azul-wave-100: #62c3df;
     --color-azul-wave: #36a0bf;
@@ -23,11 +35,14 @@
     --color-azul-sky: #d1f6ff;
     --color-amarillo: #ffd857;
     --color-error: #ea4b48;
+    --color-warning: #ea8648;
     --font-body: Inter, sans-serif;
     --font-sans: Inter, sans-serif;
     --font-poppins: 'Poppins', Inter, sans-serif;
     --font-teacher: 'Teachers', sans-serif;
     --font-weight-semibold: 550;
+
+    --color-primary: #003c6b;
 
     --boton-primary-bg: var(--color-azul-sapphire);
     --boton-primary-bg-hover: var(--color-azul-mist);

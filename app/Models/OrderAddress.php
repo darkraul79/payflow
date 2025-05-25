@@ -11,7 +11,9 @@ class OrderAddress extends Model
     use HasFactory;
 
     public const BILLING = 'facturación';
+
     public const SHIPPING = 'envío';
+
     protected $fillable = [
         'type',
         'name',
@@ -30,5 +32,10 @@ class OrderAddress extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        return $this->name.' '.$this->last_name;
     }
 }

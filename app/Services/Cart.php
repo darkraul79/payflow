@@ -193,7 +193,8 @@ class Cart
     {
         $data = [];
         foreach (self::getItems() as $idProduct => $item) {
-            $product = Product::find($idProduct)->firstOrFail();
+
+            $product = Product::find($idProduct);
             self::$cart['items'][$idProduct]['name'] = $product->name;
             self::$cart['items'][$idProduct]['price'] = $product->getPrice();
             self::$cart['items'][$idProduct]['price_formated'] = $product->getFormatedPriceWithDiscount();

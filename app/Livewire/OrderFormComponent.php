@@ -125,6 +125,8 @@ class OrderFormComponent extends Component
             'payment_method' => $this->payment_method,
         ]);
 
+        /* $order;*/
+
         $this->createAddresses($order);
         $this->addItemsToOrder($order);
     }

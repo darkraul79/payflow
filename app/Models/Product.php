@@ -38,6 +38,9 @@ class Product extends Model implements HasMedia
         'published',
         'donacion'
     ];
+    protected $with = [
+        'tags',
+    ];
 
     public function registerMediaCollections(): void
     {

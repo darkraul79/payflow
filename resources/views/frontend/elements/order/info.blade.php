@@ -18,6 +18,9 @@
                     @endif
                     <div class="text-azul-sea inline-flex items-center gap-4">
                         {{ $item['name'] }}
+                        @if ($item['quantity'] > 1)
+                            <small>x{{ $item['quantity'] }}</small>
+                        @endif
                     </div>
                 </div>
                 <div

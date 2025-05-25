@@ -31,17 +31,13 @@ class OrderFactory extends Factory
     public function configure(): static
     {
         return $this->afterMaking(function (Order $pedido) {
-            $pedido->states()->make([
-                'name' => OrderState::PENDIENTE,
-            ]);
+
             OrderAddress::factory()->make([
                 'type' => OrderAddress::BILLING,
                 'order_id' => $pedido->id,
             ]);
         })->afterCreating(function (Order $pedido) {
-            $pedido->states()->create([
-                'name' => OrderState::PENDIENTE,
-            ]);
+            
             OrderAddress::factory()->create([
                 'type' => OrderAddress::BILLING,
                 'order_id' => $pedido->id,
