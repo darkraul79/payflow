@@ -74,13 +74,23 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="5">
-                    <a
-                        href="/tienda-solidaria"
-                        class="btn btn-primary-outline block"
-                    >
-                        Regresar a tienda
-                    </a>
+                <td colspan="5" class="">
+                    <div class="flex items-center justify-between">
+                        <a
+                            href="/tienda-solidaria"
+                            class="btn btn-primary-outline block"
+                        >
+                            Regresar a tienda
+                        </a>
+
+                        <a
+                            href="#"
+                            wire:click.prevent="clearCart"
+                            class="btn btn-primary block cursor-pointer"
+                        >
+                            Vaciar carrito
+                        </a>
+                    </div>
                 </td>
             </tr>
         </tfoot>

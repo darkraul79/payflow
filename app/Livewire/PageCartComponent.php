@@ -16,7 +16,7 @@ class PageCartComponent extends Component
 
     public float $subtotal = 0;
 
-    public float $envio;
+    public float $envio = 0;
 
     public float $total = 0;
 
@@ -24,7 +24,7 @@ class PageCartComponent extends Component
 
     public float $taxes = 0;
 
-    public function mount()
+    public function mount(): void
     {
         $this->refreshCart();
         $this->envio = convertPriceNumber(setting('store.price_send')) ?? 3.5;
@@ -34,21 +34,34 @@ class PageCartComponent extends Component
 
     public function refreshCart(): void
     {
+
         $this->items = Cart::getItems();
         $this->itemsProducts = Product::whereIn('id', array_keys($this->items))->with('media')->get();
+        Cart::setTotals(
+            subtotal: $this->subtotal,
+            taxes: $this->taxes,
+            total: $this->total,
+            shipping_cost: $this->envio
+        );
     }
 
-    public function updateTotals()
+    public function updateTotals(): void
     {
         $this->subtotal = Cart::getTotalPrice();
         $this->total = $this->subtotal + $this->envio;
-        $this->taxes = $this->total;
+        $this->taxes = calculoImpuestos($this->subtotal);
+        Cart::setTotals(
+            subtotal: $this->subtotal,
+            taxes: $this->taxes,
+            total: $this->total,
+            shipping_cost: $this->envio
+        );
         $this->dispatch('updatedCart');
         $this->isValid();
 
     }
 
-    public function isValid()
+    public function isValid(): void
     {
         if ($this->subtotal > 0) {
             $this->disabled = false;
@@ -62,7 +75,7 @@ class PageCartComponent extends Component
         return view('livewire.page-cart-component');
     }
 
-    public function removeItem($id)
+    public function removeItem($id): void
     {
         Cart::removeItem($id);
         $this->refreshCart();
@@ -91,7 +104,7 @@ class PageCartComponent extends Component
         $this->redirectRoute('checkout');
     }
 
-    private function updateCart()
+    private function updateCart(): void
     {
         Cart::setTotals(
             subtotal: $this->subtotal,
@@ -99,6 +112,17 @@ class PageCartComponent extends Component
             total: $this->total,
             shipping_cost: $this->envio
         );
+
+    }
+
+    public function clearCart(): void
+    {
+        $this->items = [];
+        $this->taxes = 0;
+        $this->subtotal = 0;
+        $this->total = 0;
+        $this->envio = 0;
+        Cart::resetCart();
 
     }
 }

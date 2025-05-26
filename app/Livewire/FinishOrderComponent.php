@@ -6,10 +6,12 @@ use App\Models\Order;
 use App\Models\OrderAddress;
 use App\Models\Product;
 use App\Services\Cart;
+use Livewire\Attributes\Session;
 use Livewire\Component;
 
 class FinishOrderComponent extends Component
 {
+    #[Session('cart')]
     public $cart;
 
     public string $name;
@@ -81,7 +83,6 @@ class FinishOrderComponent extends Component
             $this->redirectRoute('cart');
         }
 
-        Cart::resfreshCart();
 
         $this->cart = session()->get('cart');
 
@@ -95,8 +96,7 @@ class FinishOrderComponent extends Component
 
         $this->orderCreate();
 
-        Cart::resetCart();
-
+        session()->forget('cart');
         $this->redirectRoute('checkout.response');
 
     }

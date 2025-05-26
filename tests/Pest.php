@@ -105,6 +105,7 @@ function creaPedido(): Order
         ])->call('submit')
         ->assertHasNoErrors();
 
+    session()->flush();
 
     return Order::latest()->first();
 }

@@ -51,8 +51,11 @@ if (!function_exists('getTypeContent')) {
     }
 }
 if (!function_exists('convertPrice')) {
-    function convertPrice($price): string
+    function convertPrice($price, $items_number = 1): string
     {
+        if (!$items_number) {
+            $price = 0;
+        }
         return Number::currency($price, 'EUR', locale: 'es-ES', precision: 2);
     }
 }

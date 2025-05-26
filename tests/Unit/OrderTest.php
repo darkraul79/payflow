@@ -60,6 +60,7 @@ test('vacio cesta después de crear pedido', function () {
 
     creaPedido();
 
+
     expect(Cart::getItems())->toBeArray()
         ->and(Cart::getItems())->toHaveCount(0);
 

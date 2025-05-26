@@ -116,11 +116,13 @@ class Cart
     public static function clearCart(): void
     {
         self::$cart = [];
+        self::save();
     }
 
     public static function resetCart(): void
     {
         session()->forget('cart');
+        self::init();
     }
 
     public static function getTotalPrice(): float

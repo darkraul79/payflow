@@ -50,7 +50,7 @@
                 @if ($cart['totals']['taxes'])
                     <span>
                         incluye
-                        {{ convertPrice(calculoImpuestos($cart['totals']['taxes'])) }}
+                        {{ convertPrice($cart['totals']['taxes']) }}
                         de impuestos
                     </span>
                 @endif

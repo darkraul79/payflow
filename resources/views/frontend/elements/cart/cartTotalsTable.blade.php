@@ -7,7 +7,7 @@
         </li>
         <li>
             <span>Envío</span>
-            <strong>{{ convertPrice($envio) }}</strong>
+            <strong>{{ convertPrice($envio, count($items)) }}</strong>
         </li>
         <li>
             <span class="total">Total</span>
@@ -15,8 +15,8 @@
                 {{ convertPrice($total) }}
                 @if ($taxes)
                     <span>
-                        incluye {{ convertPrice(calculoImpuestos($taxes)) }} de
-                        impuestos
+                        incluye {{ convertPrice(calculoImpuestos($subtotal)) }}
+                        de impuestos
                     </span>
                 @endif
             </strong>
