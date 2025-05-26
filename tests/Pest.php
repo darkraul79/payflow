@@ -12,7 +12,7 @@
 */
 
 use App\Livewire\CardProduct;
-use App\Livewire\OrderFormComponent;
+use App\Livewire\FinishOrderComponent;
 use App\Livewire\PageCartComponent;
 use App\Models\Order;
 use App\Models\Product;
@@ -88,7 +88,7 @@ function creaPedido(): Order
 
     livewire(PageCartComponent::class)->call('submit');
 
-    livewire(OrderFormComponent::class)
+    livewire(FinishOrderComponent::class)
         ->assertOk()
         ->set([
             'payment_method' => 'tarjeta',

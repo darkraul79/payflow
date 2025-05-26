@@ -5,6 +5,7 @@ use App\Models\OrderAddress;
 use App\Models\OrderState;
 use App\Models\Product;
 use App\Services\Cart;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 test('puedo crear pedido a través de factory', closure: function () {
 
@@ -88,5 +89,5 @@ test('puedo obtener las imagenes de los productos del pedido', function () {
         ])
         ->create();
 
-    dd($order->images());
+    expect($order->images()->first()->first())->toBeInstanceOf(Media::class);
 });

@@ -8,11 +8,14 @@ use App\Models\Product;
 use App\Services\Cart;
 use Livewire\Component;
 
-class OrderFormComponent extends Component
+class FinishOrderComponent extends Component
 {
     public $cart;
+
     public string $name;
+
     public $payment_method;
+
     public $shipping = [
         'name' => '',
         'last_name' => '',
@@ -23,6 +26,7 @@ class OrderFormComponent extends Component
         'email' => '',
         'phone' => '',
     ];
+
     public $billing = [
         'name' => '',
         'last_name' => '',
@@ -33,11 +37,14 @@ class OrderFormComponent extends Component
         'email' => '',
         'phone' => '',
     ];
+
     public bool $addSendAddress = false;
+
     public array $rulesGlobal = [
         'payment_method' => 'required',
 
     ];
+
     public array $rulesBilling = [
         'billing.name' => 'required|string|max:255',
         'billing.last_name' => 'required|string|max:255',
@@ -51,6 +58,7 @@ class OrderFormComponent extends Component
         'billing.phone' => 'nullable|string|max:20',
 
     ];
+
     public array $rulesShipping = [
         'shipping.name' => 'required|string|max:255',
         'shipping.last_name' => 'required|string|max:255',
@@ -63,12 +71,9 @@ class OrderFormComponent extends Component
         'shipping.email' => 'required|email|max:255',
         'shipping.phone' => 'nullable|string|max:20',
     ];
-    public float $total = 0;
-    public float $subtotal = 0;
-    public float $envio = 0;
-    public float $taxes = 0;
-    public array $rules = [];
 
+
+    public array $rules = [];
 
     public function mount()
     {
@@ -79,10 +84,6 @@ class OrderFormComponent extends Component
         Cart::resfreshCart();
 
         $this->cart = session()->get('cart');
-        $this->total = $this->cart['totals']['total'];
-        $this->subtotal = $this->cart['totals']['subtotal'];
-        $this->taxes = $this->cart['totals']['taxes'];
-        $this->envio = $this->cart['totals']['shipping_cost'];
 
 
     }
@@ -110,31 +111,24 @@ class OrderFormComponent extends Component
         }
     }
 
-    /**
-     * @return void
-     */
     public function orderCreate(): void
     {
         $order = Order::create([
             'number' => generateOrderNumber(),
             'shipping' => $this->shipping['name'],
-            'shipping_cost' => $this->envio,
-            'subtotal' => $this->subtotal,
-            'taxes' => $this->taxes,
-            'total' => $this->total,
+            'shipping_cost' => $this->cart['totals']['shipping_cost'],
+            'subtotal' => $this->cart['totals']['subtotal'],
+            'taxes' => $this->cart['totals']['taxes'],
+            'total' => $this->cart['totals']['total'],
             'payment_method' => $this->payment_method,
         ]);
 
-        /* $order;*/
+        /* $order; */
 
         $this->createAddresses($order);
         $this->addItemsToOrder($order);
     }
 
-    /**
-     * @param Order $order
-     * @return void
-     */
     public function createAddresses(Order $order): void
     {
         $order->addresses()->create([
@@ -183,7 +177,7 @@ class OrderFormComponent extends Component
 
     public function render()
     {
-        return view('livewire.order-form-component');
+        return view('livewire.finish-order');
     }
 
     protected function messages()
@@ -199,5 +193,4 @@ class OrderFormComponent extends Component
         ];
 
     }
-
 }
