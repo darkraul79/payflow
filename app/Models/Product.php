@@ -93,6 +93,11 @@ class Product extends Model implements HasMedia
         return $this->price;
     }
 
+    public function discount_porcentaje()
+    {
+        return $this->offer_price ? round((($this->price - $this->offer_price) / $this->price) * 100) : 0;
+    }
+
     protected function blockquotes(): Attribute
     {
         return Attribute::make(
