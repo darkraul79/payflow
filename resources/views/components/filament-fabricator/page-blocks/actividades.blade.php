@@ -11,7 +11,7 @@
         <div class="splide__track">
             <ul class="splide__list">
                 @foreach ($attributes['activities'] as $activity)
-                    <li class="splide__slide">
+                    <li class="splide__slide pt-1.5 pb-5">
                         <x-card
                             :image="$activity->getFirstMedia('principal')?->getUrl('card-thumb')"
                             :title="$activity->title"

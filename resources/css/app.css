@@ -243,6 +243,22 @@
     }
 }
 
+.splide__arrows {
+    @apply my-3 flex h-auto justify-start gap-3;
+
+    button.splide__arrow {
+        @apply bg-azul-sky relative top-0 left-0 transform;
+
+        svg {
+            @apply fill-azul-sea;
+        }
+
+        &:disabled {
+            /*@apply hidden;*/
+        }
+    }
+}
+
 .product-gallery {
     @apply flex flex-row-reverse gap-3;
 
