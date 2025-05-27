@@ -1,5 +1,9 @@
+@php
+    use App\Helpers\RedsysAPI;
+@endphp
+
 <form
-    action="{{ $data['Url'] }}"
+    action="{{ RedsysAPI::getRedsysUrl() }}"
     id="redsys_form"
     method="post"
     name="redsys_form"

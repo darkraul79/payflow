@@ -30,13 +30,13 @@ class FinishOrderComponent extends Component
     ];
 
     public $billing = [
-        'name' => 'Raul',
-        'last_name' => 'Sebastian',
-        'address' => 'Prueba',
-        'cp' => '28522',
-        'city' => 'Madrid',
-        'province' => 'Madrid',
-        'email' => 'info@raulsebastian.es',
+        'name' => '',
+        'last_name' => '',
+        'address' => '',
+        'cp' => '',
+        'city' => '',
+        'province' => '',
+        'email' => '',
         'phone' => '',
     ];
 
@@ -76,9 +76,9 @@ class FinishOrderComponent extends Component
 
     public array $rules = [];
 
-    public function mount()
+    public function mount(): void
     {
-        if (!Cart::canCheckout()) {
+        if (! Cart::canCheckout()) {
             $this->redirectRoute('cart');
         }
 
@@ -86,19 +86,27 @@ class FinishOrderComponent extends Component
 
     }
 
-    public function submit()
+    public function submit(): void
     {
-        //        $this->updateRules();
-        //        $this->validate();
+        $this->updateRules();
+        $this->validate();
 
         $order = $this->orderCreate();
-
-        //        session()->forget('cart');
+        Cart::clearCart();
 
         $order->refresh();
         $this->redirectRoute('pagar-pedido', $order);
-        //        $this->redirectRoute('checkout.response');
 
+    }
+
+    public function updateRules(): void
+    {
+        if ($this->addSendAddress) {
+            $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling, $this->rulesShipping);
+        } else {
+            $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling);
+
+        }
     }
 
     public function orderCreate()
@@ -163,16 +171,6 @@ class FinishOrderComponent extends Component
                 'subtotal' => $item['subtotal'],
                 'data' => Product::find($idItem)->toArray(),
             ]);
-
-        }
-    }
-
-    public function updateRules(): void
-    {
-        if ($this->addSendAddress) {
-            $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling, $this->rulesShipping);
-        } else {
-            $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling);
 
         }
     }
