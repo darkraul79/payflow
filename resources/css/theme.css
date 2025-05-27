@@ -11,6 +11,8 @@
     --color-zinc-900: var(--color-slate-900);
     --color-zinc-950: var(--color-slate-950);
     --color-azul-sea: #003c6b;
+    --color-azul-sea-50: #e2eefe;
+    --colot-azul-sea-100: #93cef6;
     --color-azul-mist: #1a598c;
     --color-gris: #e6e6e6;
     --color-success: #02b5a7;
@@ -34,8 +36,11 @@
     --color-azul-gray: #aebecc;
     --color-azul-sky: #d1f6ff;
     --color-amarillo: #ffd857;
+    --color-amarillo-50: #fff8e5;
     --color-error: #ea4b48;
+    --color-error-50: #feefed;
     --color-warning: #ea8648;
+    --color-warning-50: #fff4e5;
     --font-body: Inter, sans-serif;
     --font-sans: Inter, sans-serif;
     --font-poppins: 'Poppins', Inter, sans-serif;

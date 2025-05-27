@@ -9,7 +9,6 @@ use Livewire\Component;
 
 class CardProduct extends Component
 {
-
     public Product $product;
 
     public function mount(Product $product): void
@@ -17,15 +16,15 @@ class CardProduct extends Component
         $this->product = $product;
     }
 
-    public function addToCart()
+    public function addToCart(): void
     {
         if ($this->checkStock()) {
-            $this->dispatch('showAlert', 'No hay suficiente stock');
+            $this->dispatch('showAlert', type: 'error', title: 'No se puede agregar el producto', message: 'No hay suficiente stock');
 
         } else {
-            Cart::addItem($this->product, 1);
+            Cart::addItem($this->product);
             $this->dispatch('updatedCart');
-            $this->dispatch('showAlert', 'Producto agregado al carrito');
+            $this->dispatch('showAlert', type: 'success', title: 'Producto agregado', message: 'El producto ha sido agregado al carrito.');
         }
     }
 
@@ -35,6 +34,7 @@ class CardProduct extends Component
 
             return false;
         }
+
         return true;
     }
 
