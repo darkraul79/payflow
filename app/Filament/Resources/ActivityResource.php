@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\ActivityResource\Pages;
 use App\Models\Activity;
+use Exception;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
@@ -29,11 +30,12 @@ class ActivityResource extends Resource
     protected static ?string $slug = 'actividades';
 
     protected static ?string $label = 'Actividad';
+
     protected static ?int $navigationSort = 22;
 
     protected static ?string $pluralModelLabel = 'Actividades';
-    protected static ?string $navigationGroup = 'Contenido';
 
+    protected static ?string $navigationGroup = 'Contenido';
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-date-range';
 
@@ -45,6 +47,9 @@ class ActivityResource extends Resource
             ]);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function table(Table $table): Table
     {
         return $table

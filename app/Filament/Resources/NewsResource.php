@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\NewsResource\Pages;
 use App\Models\News;
+use Exception;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
@@ -31,9 +32,11 @@ class NewsResource extends Resource
     protected static ?string $label = 'Noticia';
 
     protected static ?string $pluralLabel = 'Noticias';
+
     protected static ?int $navigationSort = 23;
 
     protected static ?string $navigationGroup = 'Contenido';
+
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
 
     public static function form(Form $form): Form
@@ -44,6 +47,9 @@ class NewsResource extends Resource
             ]);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function table(Table $table): Table
     {
         return $table
