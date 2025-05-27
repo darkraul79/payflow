@@ -17,20 +17,22 @@
                     'class' => 'rounded-md object-cover w-full' . ($product->stock < 1 ? ' opacity-50 ' : ' '),
                 ])
         }}
-        @if ($product->stock < 1)
-            <x-badge-product-stock
-                class="absolute top-0 left-0 w-fit rounded-sm"
-                stock="{{$product->stock}}"
-            />
-        @endif
+        <div class="absolute top-0 left-0 flex flex-col gap-1">
+            @if ($product->offer_price)
+                <x-badge-product-offer
+                    class="bg-error! w-fit rounded-sm text-white!"
+                    text="Oferta {{ $product->discount_porcentaje() }} %"
+                    :visible="$product->offer_price"
+                />
+            @endif
 
-        @if ($product->offer_price)
-            <x-badge-product-offer
-                class="bg-error! absolute top-0 left-0 w-fit rounded-sm text-white!"
-                text="Oferta {{ $product->discount_porcentaje() }} %"
-                :visible="$product->offer_price"
-            />
-        @endif
+            @if ($product->stock < 1)
+                <x-badge-product-stock
+                    class="w-fit rounded-sm"
+                    stock="{{$product->stock}}"
+                />
+            @endif
+        </div>
     </a>
     <div class="relative flex flex-row items-center justify-between">
         <div class="p-4">
