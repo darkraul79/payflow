@@ -16,8 +16,9 @@ Route::get('/', [FrontEndController::class, 'index'])->name('home');
 Route::get('/tienda-solidaria/cesta', [CartController::class, 'index'])->name('cart');
 Route::get('/tienda-solidaria/cesta/pedido', [CartController::class, 'form'])->name('checkout');
 Route::get('/tienda-solidaria/cesta/{pedido}/pago', [CartController::class, 'pagar_pedido'])->name('pagar-pedido');
-Route::any('/tienda-solidaria/cesta/pago/response', [CartController::class, 'response'])->name('pagar-pedido-response');
-Route::get('/tienda-solidaria/cesta/pedido/finalizado', [CartController::class, 'finalizado'])->name('checkout.response');
+Route::get('/tienda-solidaria/cesta/pedido/finalizado', [CartController::class, 'orderOK'])->name('checkout.ok');
+Route::get('/tienda-solidaria/cesta/pedido/error', [CartController::class, 'orderKO'])->name('checkout.ko');
+Route::any('/tienda-solidaria/cesta/pago/response', [CartController::class, 'responseNotification'])->name('pagar-pedido-response');
 
 Route::get(Activity::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'activities'])->name('activities.show');
 Route::get(News::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'news'])->name('news.show');

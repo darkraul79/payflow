@@ -21,7 +21,8 @@
         "livewire/flux": "^2.0",
         "omnia-digital/livewire-calendar": "^3.2",
         "outerweb/filament-settings": "^1.3",
-        "z3d0x/filament-fabricator": "^2.5"
+        "z3d0x/filament-fabricator": "^2.5",
+        "ext-openssl": "*"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15",

@@ -19,6 +19,7 @@ use ReflectionClass;
 /**
  * @property mixed $items
  * @property mixed $total
+ * @property mixed $totalRedsys
  */
 #[ObservedBy([OrderObserver::class])]
 class Order extends Model
@@ -40,11 +41,6 @@ class Order extends Model
         'items.product',
         'addresses',
     ];
-
-    public function states(): HasMany
-    {
-        return $this->hasMany(OrderState::class);
-    }
 
     public function state(): HasOne
     {
@@ -138,6 +134,64 @@ class Order extends Model
         unset($constants['UPDATED_AT']);
 
         return $constants;
+    }
+
+    public function error($mensaje = null): void
+    {
+        $estado = [
+            'name' => OrderState::ERROR,
+        ];
+
+        if (!$this->states()->where($estado)->exists()) {
+            $estado['info'] = $mensaje;
+            $state = $this->states()->create($estado);
+            $this->refresh();
+
+        }
+
+        // Disparo evento de actualización de pedido
+        //            PedidoActualizadoEvent::dispatch($this);
+    }
+
+    public function states(): HasMany
+    {
+        return $this->hasMany(OrderState::class);
+    }
+
+    public function payed($mensaje = null): void
+    {
+        if (!$this->states()->where('name', OrderState::PAGADO)->exists()) {
+
+            // resto la cantidad al stock de los productos
+            $this->subtractStocks();
+
+            $this->states()->create([
+                'name' => OrderState::PAGADO,
+                'info' => json_encode($mensaje),
+            ]);
+            $this->refresh();
+        }
+
+        // Disparo evento de actualización de pedido
+        //            PedidoActualizadoEvent::dispatch($this);
+    }
+
+    /**
+     * Resta la cantidad de los productos del pedido al stock.
+     */
+    public function subtractStocks(): void
+    {
+        foreach ($this->items as $item) {
+            $product = $item->product;
+            $product->stock -= $item->quantity;
+
+            if ($product->stock < 0) {
+                $product->stock = 0;
+            }
+
+            $product->save();
+        }
+
     }
 
     /**

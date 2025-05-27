@@ -60,10 +60,11 @@ class OrderState extends Model
     {
         return match ($this->name) {
             self::PENDIENTE => 'warning',
-            self::PAGADO => 'info',
+            self::PAGADO => 'success',
             self::ENVIADO => 'secondary',
-            self::FINALIZADO => 'success',
+            self::FINALIZADO => 'info',
             self::CANCELADO => 'danger',
+            self::ERROR => 'danger',
             default => 'primary',
         };
     }

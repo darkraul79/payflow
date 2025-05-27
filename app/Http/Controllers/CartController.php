@@ -6,8 +6,6 @@ use App\Helpers\RedsysAPI;
 use App\Models\Order;
 use App\Models\OrderState;
 use App\Models\Page;
-use App\Models\Pedido;
-use App\Models\PedidoEstado;
 use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
@@ -38,7 +36,7 @@ class CartController extends Controller
 
     public function form()
     {
-        if (!session()->has('cart') || empty(session('cart'))) {
+        if (! session()->has('cart') || empty(session('cart'))) {
             return redirect()->route('cart');
         }
 
@@ -47,19 +45,50 @@ class CartController extends Controller
         );
     }
 
-    public function finalizado()
+    public function orderOK()
     {
-        $response = true;
-
-        if ($response) {
-            return view('cart.ok',
-                $this->getParams('Pedido realizado')
-            );
+        if (app()->isLocal()) {// En local obtengo la actualización de Redsys por parámetros
+            $this->responseNotification();
         }
 
-        return view('cart.ko',
-            $this->getParams('Error')
-        );
+        return view('cart.ok', $this->getParams('Pedido'));
+
+    }
+
+    public function responseNotification(): void
+    {
+        Session::forget('cart');
+        $redSys = new RedsysAPI;
+
+        $datos = request('Ds_MerchantParameters');
+        $signatureRecibida = request('Ds_Signature');
+
+        if (empty($datos) || empty($signatureRecibida)) {
+            abort(404, 'Datos de Redsys no recibidos');
+        }
+
+        $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
+        $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
+        $pedido = Order::where('number', $decodec['Ds_Order'])->firstOrFail();
+
+        if ($redSys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
+            $pedido->payed($decodec);
+        } else {
+            $error = hash_equals($firma, $signatureRecibida)
+                ? estado_redsys($decodec['Ds_Response'])
+                : 'Firma no válida';
+            $pedido->error($error);
+        }
+
+    }
+
+    public function orderKO()
+    {
+        if (app()->isLocal()) { // En local obtengo la actualización de Redsys por parámetros
+            $this->responseNotification();
+        }
+
+        return view('cart.ko', $this->getParams('Pedido'));
     }
 
     public function pagar_pedido(Order $pedido)
@@ -72,44 +101,5 @@ class CartController extends Controller
         $data = $redSys->actualizaDatosRedSys($pedido);
 
         return view('frontend.pagar-pedido', compact('data'));
-    }
-
-    public function response()
-    {
-        $redSys = new RedsysAPI;
-
-
-        $datos = request('Ds_MerchantParameters');
-        $signatureRecibida = request('Ds_Signature');
-
-        $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
-        $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
-        $DsResponse = intval($decodec['Ds_Response']);
-
-        $pedido = Order::where('number', $decodec['Ds_Order'])->firstOrFail();
-
-        if ($firma === $signatureRecibida && $DsResponse <= 99) {
-            $pedido->states()->create([
-                'name' => OrderState::PAGADO,
-                'info' => json_encode($decodec)
-            ]);
-
-
-            // Elimino la cesta de la compra
-            Session::forget('cart');
-
-//            return view('frontend.cesta.finalizar-pedido');
-        } else {
-
-            Session::forget('cart');
-            $pedido->states->create([
-                'name' => OrderState::ERROR,
-                'info' => $decodec
-            ]);
-
-            $pedido->error(estado_redsys($DsResponse));
-
-//            return view('frontend.cesta.error-pedido');
-        }
     }
 }
