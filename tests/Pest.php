@@ -18,6 +18,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
+
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
 
@@ -73,13 +74,15 @@ function asUser(): User
 
 }
 
-function creaPedido(): Order
+function creaPedido(?Product $producto = null): Order
 {
-    $producto = Product::factory()->create([
-        'name' => 'Producto de prueba',
-        'price' => 10,
-        'stock' => 1,
-    ]);
+    if (! $producto) {
+        $producto = Product::factory()->create([
+            'name' => 'Producto de prueba',
+            'price' => 10,
+            'stock' => 2,
+        ]);
+    }
 
     livewire(CardProduct::class, [
         'product' => $producto,

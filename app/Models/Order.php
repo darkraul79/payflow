@@ -144,7 +144,7 @@ class Order extends Model
 
         if (!$this->states()->where($estado)->exists()) {
             $estado['info'] = $mensaje;
-            $state = $this->states()->create($estado);
+            $this->states()->create($estado);
             $this->refresh();
 
         }
@@ -173,7 +173,7 @@ class Order extends Model
         }
 
         // Disparo evento de actualización de pedido
-        //            PedidoActualizadoEvent::dispatch($this);
+        //        OrderUpdated::dispatch($this);
     }
 
     /**
@@ -183,13 +183,16 @@ class Order extends Model
     {
         foreach ($this->items as $item) {
             $product = $item->product;
-            $product->stock -= $item->quantity;
+
+            $stock = $product->stock -= $item->quantity;
 
             if ($product->stock < 0) {
-                $product->stock = 0;
+                $stock = 0;
             }
 
-            $product->save();
+            $product->update([
+                'stock' => $stock,
+            ]);
         }
 
     }

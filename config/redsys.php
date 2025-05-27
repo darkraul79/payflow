@@ -2,9 +2,9 @@
 
 return [
     'key' => env('REDSYS_KEY', 'sq7HjrUOBfKmC576ILgskD5srU870gJ7 '),
-    'url_notification' => env('REDSYS_URL_NOTIFICATION', env('APP_URL') . '/tienda-solidaria/cesta/pago/response'),
-    'url_ok' => env('APP_URL') . '/tienda-solidaria/cesta/pedido/finalizado',
-    'url_ko' => env('APP_URL') . '/tienda-solidaria/cesta/pedido/finalizado',
+    'url_notification' => env('REDSYS_URL_NOTIFICATION', env('APP_URL').'/tienda-solidaria/cesta/pago/response'),
+    'url_ok' => (env('APP_URL').'/tienda-solidaria/cesta/pedido/finalizado'),
+    'url_ko' => (env('APP_URL').'/tienda-solidaria/cesta/pedido/finalizado'),
     'merchantcode' => env('REDSYS_MERCHANT_CODE', '357328590'),
     'terminal' => env('REDSYS_TERMINAL', '1'),
     'enviroment' => env('REDSYS_ENVIROMENT', 'test'),

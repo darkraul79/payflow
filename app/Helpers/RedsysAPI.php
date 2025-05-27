@@ -30,10 +30,9 @@ class RedsysAPI
     /****** Array de DatosEntrada ******/
     public array $vars_pay = [];
 
-    /******  Get parameter ******/
-    public function getParameter($key)
+    public static function getRedsysUrl(): string
     {
-        return $this->vars_pay[$key];
+        return config('redsys.enviroment') == 'test' ? 'https://sis-t.redsys.es:25443/sis/realizarPago' : 'https://sis.redsys.es/sis/realizarPago';
     }
 
     // ////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,6 +40,12 @@ class RedsysAPI
     // //////////					FUNCIONES AUXILIARES:							  ////////////
     // ////////////////////////////////////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////////////////////////
+
+    /******  Get parameter ******/
+    public function getParameter($key)
+    {
+        return $this->vars_pay[$key];
+    }
 
     public function decodeMerchantParameters($datos): string
     {
@@ -61,8 +66,14 @@ class RedsysAPI
 
     public function stringToArray($datosDecod): void
     {
-        $this->vars_pay = json_decode((string)$datosDecod, true); // (PHP 5 >= 5.2.0)
+        $this->vars_pay = json_decode((string) $datosDecod, true); // (PHP 5 >= 5.2.0)
     }
+
+    // ////////////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////////////////
+    // //////////	   FUNCIONES PARA LA GENERACIÓN DEL FORMULARIO DE PAGO:			  ////////////
+    // ////////////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////////////////
 
     public function actualizaDatosRedSys(Order $pedido): array
     {
@@ -74,16 +85,16 @@ class RedsysAPI
         $this->setParameter('DS_MERCHANT_TRANSACTIONTYPE', config('redsys.transactiontype'));
         $this->setParameter('DS_MERCHANT_TERMINAL', config('redsys.terminal'));
         $this->setParameter('DS_MERCHANT_MERCHANTURL', config('redsys.url_notification'));
-        $this->setParameter('DS_MERCHANT_URLOK', route('checkout.ok', true));
-        $this->setParameter('DS_MERCHANT_URLKO', route('checkout.ko', true));
+        $this->setParameter('DS_MERCHANT_URLOK', route('checkout.ok'));
+        $this->setParameter('DS_MERCHANT_URLKO', route('checkout.ko'));
         $this->setParameter('DS_MERCHANT_MERCHANTNAME', config('redsys.tradename'));
 
-        if (!app()->isLocal()) { // Si no estoy en local, añado la URL de notificacion de redSys
+        if (! app()->isLocal() && ! app()->environment('testing')) { // Si no estoy en local, añado la URL de notificacion de redSys
             $this->setParameter('DS_MERCHANT_MERCHANTURL', route('pagar-pedido-response'));
         }
 
         return [
-            'Url' => self::getRedsysUrl(),
+            //            'Url' => self::getRedsysUrl(),
             'Ds_MerchantParameters' => $this->createMerchantParameters(),
             'Ds_Signature' => $this->createMerchantSignature(config('redsys.key')),
             'Ds_SignatureVersion' => config('redsys.version'),
@@ -91,23 +102,10 @@ class RedsysAPI
 
     }
 
-
-
-    // ////////////////////////////////////////////////////////////////////////////////////////////
-    // ////////////////////////////////////////////////////////////////////////////////////////////
-    // //////////	   FUNCIONES PARA LA GENERACIÓN DEL FORMULARIO DE PAGO:			  ////////////
-    // ////////////////////////////////////////////////////////////////////////////////////////////
-    // ////////////////////////////////////////////////////////////////////////////////////////////
-
     /******  Set parameter ******/
     public function setParameter($key, $value): void
     {
         $this->vars_pay[$key] = $value;
-    }
-
-    public static function getRedsysUrl(): string
-    {
-        return config('redsys.enviroment') == 'test' ? 'https://sis-t.redsys.es:25443/sis/realizarPago' : 'https://sis.redsys.es/sis/realizarPago';
     }
 
     public function createMerchantParameters(): string
@@ -134,7 +132,7 @@ class RedsysAPI
 
     public function encodeBase64($data): string
     {
-        return base64_encode((string)$data);
+        return base64_encode((string) $data);
     }
 
     public function createMerchantSignature($key): string
@@ -154,16 +152,16 @@ class RedsysAPI
 
     public function decodeBase64($data): false|string
     {
-        return base64_decode((string)$data);
+        return base64_decode((string) $data);
     }
 
     /******  3DES Function  ******/
     public function encrypt_3DES($message, $key): string
     {
         // Se cifra
-        $l = ceil(strlen((string)$message) / 8) * 8;
+        $l = ceil(strlen((string) $message) / 8) * 8;
 
-        return substr(openssl_encrypt($message . str_repeat("\0", $l - strlen((string)$message)), 'des-ede3-cbc', $key,
+        return substr(openssl_encrypt($message.str_repeat("\0", $l - strlen((string) $message)), 'des-ede3-cbc', $key,
             OPENSSL_RAW_DATA, "\0\0\0\0\0\0\0\0"), 0, $l);
 
     }
@@ -184,7 +182,7 @@ class RedsysAPI
     public function mac256($ent, $key): string
     {
         // (PHP 5 >= 5.1.2)
-        return hash_hmac('sha256', (string)$ent, (string)$key, true);
+        return hash_hmac('sha256', (string) $ent, (string) $key, true);
     }
 
     public function checkSignature($key, $postData): bool
@@ -225,6 +223,6 @@ class RedsysAPI
     /******  Base64 Functions  ******/
     public function base64_url_encode($input): string
     {
-        return strtr(base64_encode((string)$input), '+/', '-_');
+        return strtr(base64_encode((string) $input), '+/', '-_');
     }
 }

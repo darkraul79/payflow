@@ -25,7 +25,7 @@ test('puedo crear factory con items', function () {
 test('puedo crear factory con diferentes estados', function (string $estado) {
     $order = Order::factory()->{$estado}()->create();
     expect($order->states)->toHaveCount(2)
-        ->and($order->state->name)->toBe(constant(OrderState::class . '::' . strtoupper($estado)));
+        ->and($order->state->name)->toBe(constant(OrderState::class.'::'.strtoupper($estado)));
 })->with([
     'pagado',
     'enviado',
@@ -60,7 +60,6 @@ test('vacio cesta después de crear pedido', function () {
 
     creaPedido();
 
-
     expect(Cart::getItems())->toBeArray()
         ->and(Cart::getItems())->toHaveCount(0);
 
@@ -83,7 +82,6 @@ test('puedo obtener las imagenes de los productos del pedido', function () {
         ->count(2)
         ->create();
 
-
     $order = Order::factory()
         ->hasItems(2, [
             'product_id' => $productos->random()->id,
@@ -91,4 +89,16 @@ test('puedo obtener las imagenes de los productos del pedido', function () {
         ->create();
 
     expect($order->images()->first()->first())->toBeInstanceOf(Media::class);
+});
+
+test('cuando realizdo pedido resto del stock de producto', function () {
+    $producto = Product::factory()->create([
+        'name' => 'Producto de prueba',
+        'price' => 10,
+        'stock' => 5,
+    ]);
+    $pedido = creaPedido($producto);
+    $pedido->payed('Pago realizado correctamente');
+    $producto->refresh();
+    expect($producto->stock)->toBe(4);
 });
