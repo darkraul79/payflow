@@ -11,7 +11,7 @@
             <livewire:cart-button-component wire:key="cart-button-mobile" />
 
             <flux:sidebar.toggle
-                class="border-azul-sea stroke-azul-sea text-azul-sea me-4 rounded-full! border"
+                class="border-azul-sea stroke-azul-sea text-azul-sea me-4 cursor-pointer rounded-full! border"
                 size="base"
                 icon:variant="outline"
                 icon="bars-3"
