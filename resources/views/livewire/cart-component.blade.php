@@ -31,6 +31,7 @@
     </svg>
     @if ($quantity > 0)
         <div
+            id="cart-count-badge"
             class="bg-amarillo text-azul-mist absolute top-2 right-1 flex h-4 w-4 items-center justify-center rounded-full text-xs font-semibold"
             {{-- wire:model="quantity" --}}
         >

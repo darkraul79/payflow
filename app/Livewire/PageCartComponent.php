@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Product;
 use App\Services\Cart;
 use Illuminate\Support\Collection;
+use Illuminate\View\View;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -70,7 +71,7 @@ class PageCartComponent extends Component
         }
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.page-cart-component');
     }
@@ -93,7 +94,7 @@ class PageCartComponent extends Component
 
     }
 
-    public function submit()
+    public function submit(): void
     {
         if ($this->disabled) {
             $this->dispatch('showAlert', 'No hay productos en el carrito');
@@ -123,6 +124,8 @@ class PageCartComponent extends Component
         $this->total = 0;
         $this->envio = 0;
         Cart::resetCart();
+
+        $this->dispatch('updatedCart');
 
     }
 }

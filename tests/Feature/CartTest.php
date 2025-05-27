@@ -96,3 +96,18 @@ test(' puedo acceder al checkout pasando por la cesta', function () {
     $this->get(route('checkout'))
         ->assertOk();
 });
+
+test('si vació cesta no aparece en el icono superior', function () {
+    $producto = Product::factory()->create();
+    livewire(CardProduct::class, [
+        'product' => $producto,
+    ])
+        ->call('addToCart', $producto);
+    $this->get(route('cart'))
+        ->assertSeeHtml('id="cart-count-badge"');
+    livewire(PageCartComponent::class)
+        ->call('clearCart')
+        ->assertDispatched('updatedCart');
+    $this->get(route('cart'))
+        ->assertDontSeeHtml('id="cart-count-badge"');
+});
