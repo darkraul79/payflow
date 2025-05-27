@@ -105,3 +105,29 @@ if (!function_exists('getPgenerateOrderNumberrovincias')) {
         return $orderNumber;
     }
 }
+
+
+/**
+ * Genera número de pedido, 4 primeros caracteres numéricos y 8 caracteres alfanuméricos
+ *
+ * @return string
+ */
+if (!function_exists('estado_redsys')) {
+    function estado_redsys($codigo): string
+    {
+        $codigoOriginal = $codigo;
+        $codigo = intval($codigo);
+
+        return match ($codigo) {
+            101 => 'Tarjeta Caducada',
+            102 => 'Tarjeta en excepción transitoria o bajo sospecha de fraude',
+            106 => 'Intentos de PIN excedidos',
+            125 => 'Tarjeta no efectiva',
+            129 => 'Código de seguridad (CVV2/CVC2) incorrecto',
+            9915 => 'A petición del usuario se ha cancelado el pago',
+            9093 => 'Tarjeta no existente',
+            9078 => 'Tipo de operación no permitida para esa tarjeta',
+            default => 'Error RedSys - ' . $codigoOriginal,
+        };
+    }
+}

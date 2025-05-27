@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use ReflectionClass;
 
 /**
@@ -203,5 +204,12 @@ class Order extends Model
         $query->whereHas('state', function ($query): void {
             $query->where('name', OrderState::ERROR);
         });
+    }
+
+    protected function totalRedsys(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => Str::replace('.', '', number_format($this->attributes['total'], 2)),
+        );
     }
 }

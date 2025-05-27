@@ -16,7 +16,7 @@ class FinishOrderComponent extends Component
 
     public string $name;
 
-    public $payment_method;
+    public $payment_method = 'tarjeta';
 
     public $shipping = [
         'name' => '',
@@ -30,13 +30,13 @@ class FinishOrderComponent extends Component
     ];
 
     public $billing = [
-        'name' => '',
-        'last_name' => '',
-        'address' => '',
-        'cp' => '',
-        'city' => '',
-        'province' => '',
-        'email' => '',
+        'name' => 'Raul',
+        'last_name' => 'Sebastian',
+        'address' => 'Prueba',
+        'cp' => '28522',
+        'city' => 'Madrid',
+        'province' => 'Madrid',
+        'email' => 'info@raulsebastian.es',
         'phone' => '',
     ];
 
@@ -74,7 +74,6 @@ class FinishOrderComponent extends Component
         'shipping.phone' => 'nullable|string|max:20',
     ];
 
-
     public array $rules = [];
 
     public function mount()
@@ -83,35 +82,26 @@ class FinishOrderComponent extends Component
             $this->redirectRoute('cart');
         }
 
-
         $this->cart = session()->get('cart');
-
 
     }
 
     public function submit()
     {
-        $this->updateRules();
-        $this->validate();
+        //        $this->updateRules();
+        //        $this->validate();
 
-        $this->orderCreate();
+        $order = $this->orderCreate();
 
-        session()->forget('cart');
-        $this->redirectRoute('checkout.response');
+        //        session()->forget('cart');
+
+        $order->refresh();
+        $this->redirectRoute('pagar-pedido', $order);
+        //        $this->redirectRoute('checkout.response');
 
     }
 
-    public function updateRules(): void
-    {
-        if ($this->addSendAddress) {
-            $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling, $this->rulesShipping);
-        } else {
-            $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling);
-
-        }
-    }
-
-    public function orderCreate(): void
+    public function orderCreate()
     {
         $order = Order::create([
             'number' => generateOrderNumber(),
@@ -127,6 +117,8 @@ class FinishOrderComponent extends Component
 
         $this->createAddresses($order);
         $this->addItemsToOrder($order);
+
+        return $order;
     }
 
     public function createAddresses(Order $order): void
@@ -171,6 +163,16 @@ class FinishOrderComponent extends Component
                 'subtotal' => $item['subtotal'],
                 'data' => Product::find($idItem)->toArray(),
             ]);
+
+        }
+    }
+
+    public function updateRules(): void
+    {
+        if ($this->addSendAddress) {
+            $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling, $this->rulesShipping);
+        } else {
+            $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling);
 
         }
     }
