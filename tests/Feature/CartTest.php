@@ -96,6 +96,17 @@ test(' puedo acceder al checkout pasando por la cesta', function () {
         ->assertOk();
 });
 
+test('el usuario puede vaciar la cesta', function () {
+    $producto = Product::factory()->create();
+    livewire(CardProduct::class, [
+        'product' => $producto,
+    ])
+        ->call('addToCart', $producto);
+    livewire(PageCartComponent::class)
+        ->call('clearCart');
+    expect(Cart::getTotalQuantity())->toBe(0)
+        ->and(Cart::getItems())->toHaveCount(0);
+});
 test('si vació cesta no aparece en el icono superior', function () {
     $producto = Product::factory()->create();
     livewire(CardProduct::class, [
