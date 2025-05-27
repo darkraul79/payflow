@@ -35,20 +35,10 @@ class QuantityButtons extends Component
         $this->updateQuantity($this->quantity + 1);
     }
 
-    public function substract(): void
-    {
-        $this->updateQuantity($this->quantity - 1);
-    }
-
-    public function update(): void
-    {
-        $this->updateQuantity($this->quantity);
-    }
-
-    private function updateQuantity(int $newQuantity): void
+    public function updateQuantity(int $newQuantity): void
     {
         if ($newQuantity > $this->product->stock) {
-            $this->errorMessage = 'No hay suficiente stock ('.$this->product->stock.' max)';
+            $this->errorMessage = 'No hay suficiente stock (' . $this->product->stock . ' max)';
             $this->quantity = $this->product->stock;
         } elseif ($newQuantity < 1) {
             $this->errorMessage = 'No puedes agregar menos de 1 producto';
@@ -64,5 +54,15 @@ class QuantityButtons extends Component
     public function updateEvent(): void
     {
         $this->dispatch('updateQuantity', $this->quantity, $this->product);
+    }
+
+    public function substract(): void
+    {
+        $this->updateQuantity($this->quantity - 1);
+    }
+
+    public function update(): void
+    {
+        $this->updateQuantity($this->quantity);
     }
 }
