@@ -28,7 +28,7 @@ class PageCartComponent extends Component
     public function mount(): void
     {
         $this->refreshCart();
-        $this->envio = convertPriceNumber(setting('store.price_send')) ?? 3.5;
+        $this->envio = convertPriceNumber(setting('store.price_send', "3.5"));
         $this->updateTotals();
 
     }

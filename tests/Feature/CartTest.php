@@ -2,11 +2,13 @@
 
 use App\Livewire\CardProduct;
 use App\Livewire\CartButtonComponent;
+use App\Livewire\FinishOrderComponent;
 use App\Livewire\PageCartComponent;
 use App\Livewire\ProductAddCart;
 use App\Livewire\QuantityButtons;
 use App\Models\Product;
 use App\Services\Cart;
+use Outerweb\Settings\Models\Setting;
 use function Pest\Livewire\livewire;
 
 test('puedo añadir producto a carrito desde la página de producto', function () {
@@ -80,6 +82,11 @@ test('puedo acceder a la cesta', function () {
 
 test('no puedo acceder al checkout sin tener rellena la sesión', function () {
     $this->get(route('checkout'))
+        ->assertRedirect(route('cart'));
+});
+
+test('no puedo acceder al checkout si la cesta está vacía', function () {
+    livewire(FinishOrderComponent::class)
         ->assertRedirect(route('cart'));
 });
 
@@ -225,7 +232,6 @@ test('puedo eliminar productos de la página de carrito', function () {
         ->assertSeeText($producto2->name)
         ->assertDispatched('updatedCart');
 
-
     expect(isset(Cart::getItems()[$productoBorrar->id]))->toBeFalse();
 });
 
@@ -246,4 +252,55 @@ test('no puedo agregar más cantidad de productos mayor que el stock', function 
     expect(Cart::getQuantityProduct($producto->id))->toBe(1);
 });
 
+test('el precio del envío se hace a través de ajustes', function () {
 
+    $producto = Product::factory()->create([
+        'stock' => 1,
+    ]);
+
+    livewire(CardProduct::class, [
+        'product' => $producto,
+    ])->call('addToCart', $producto);
+
+    Setting::create([
+        'key' => 'store.price_send',
+        'value' => '5.25',
+    ]);
+
+    livewire(PageCartComponent::class)
+        ->assertSet('envio', 5.25)
+        ->assertSeeTextInOrder([
+            'Total del carrito',
+            'Envío',
+            '5,25',
+            '€',
+        ]);
+});
+
+test('si no existe ajuste de envío se establece por defecto', function () {
+
+    $producto = Product::factory()->create([
+        'stock' => 1,
+    ]);
+
+    livewire(CardProduct::class, [
+        'product' => $producto,
+    ])->call('addToCart', $producto);
+
+    livewire(PageCartComponent::class)
+        ->assertSet('envio', 3.5)
+        ->assertSeeTextInOrder([
+            'Total del carrito',
+            'Envío',
+            '3,50',
+            '€',
+        ]);
+});
+
+test('si no hay productos en carrito no muestro totales', function () {
+
+    livewire(PageCartComponent::class)
+        ->assertSet('envio', 3.5)
+        ->assertDontSeeText('Total del carrito')
+        ->assertDontSeeHtml('<button class="btn btn-primary mt-4 w-full cursor-pointer rounded-full" wire:click="submit"> Finalizar compra </button>');
+});
