@@ -245,3 +245,5 @@ test('no puedo agregar más cantidad de productos mayor que el stock', function 
 
     expect(Cart::getQuantityProduct($producto->id))->toBe(1);
 });
+
+

@@ -67,7 +67,7 @@ test('no puedo agregar productos sin stock a carrito', function () {
         'product' => $producto,
     ])
         ->call('addToCart')
-        ->assertDispatched('showAlert', 'No hay suficiente stock')
+        ->assertDispatched('showAlert', type: 'warning', title: 'No se puede agregar al carrito', message: 'No hay suficiente stock')
         ->assertNotDispatched('updatedCart');
 
     expect(Cart::getItems())->toHaveCount(1);
@@ -85,7 +85,7 @@ test('no puedo agregar más cantidad de productos mayor que el stock en la tarje
     livewire(CardProduct::class, [
         'product' => $producto,
     ])->call('addToCart', $producto)
-        ->assertDispatched('showAlert', 'No hay suficiente stock')
+        ->assertDispatched('showAlert', type: 'error', title: 'No se puede agregar el producto', message: 'No hay suficiente stock')
         ->assertNotDispatched('updatedCart');
 
 
