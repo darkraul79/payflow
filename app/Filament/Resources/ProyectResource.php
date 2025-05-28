@@ -21,7 +21,10 @@ use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 
 class ProyectResource extends Resource
 {
@@ -38,6 +41,9 @@ class ProyectResource extends Resource
     protected static ?string $navigationGroup = 'Contenido';
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+
+    protected static ?string $recordTitleAttribute = 'title';
+
 
     public static function form(Form $form): Form
     {
@@ -99,5 +105,13 @@ class ProyectResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return ['title'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Contenido' => new HtmlString(strip_tags(Str::limit($record->content, 20))),
+
+        ];
     }
 }

@@ -30,8 +30,11 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 
 class ProductResource extends Resource
 {
@@ -44,6 +47,8 @@ class ProductResource extends Resource
     protected static ?string $pluralModelLabel = 'Productos';
 
     protected static ?string $modelLabel = 'Producto';
+
+    protected static ?string $recordTitleAttribute = 'name';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -101,9 +106,9 @@ class ProductResource extends Resource
 
                                 TextInput::make('offer_price')
                                     ->label('Precio en oferta')
-                                    ->hidden(fn(callable $get): bool => !$get('oferta'))
+                                    ->hidden(fn (callable $get): bool => ! $get('oferta'))
                                     ->placeholder('0.00')
-                                    ->required(fn(callable $get): bool => $get('oferta')),
+                                    ->required(fn (callable $get): bool => $get('oferta')),
                             ])->columnSpanFull(),
 
                         Reusable::donacion(),
@@ -132,7 +137,7 @@ class ProductResource extends Resource
             ->columns([
                 SpatieMediaLibraryImageColumn::make('image')
                     ->filterMediaUsing(
-                        fn(Collection $media): Collection => $media->where(
+                        fn (Collection $media): Collection => $media->where(
                             'order_column',
                             1,
                         ),
@@ -151,11 +156,11 @@ class ProductResource extends Resource
                 TextColumn::make('price')
                     ->label('Precio')
                     ->html()
-                    ->formatStateUsing(fn(Product $record): string => $record->getFormatedPriceWithDiscount()),
+                    ->formatStateUsing(fn (Product $record): string => $record->getFormatedPriceWithDiscount()),
 
                 TextColumn::make('stock')
                     ->alignCenter()
-                    ->color(fn($record) => $record->stock > 0 ? 'success' : 'danger'),
+                    ->color(fn ($record) => $record->stock > 0 ? 'success' : 'danger'),
 
                 TextColumn::make('description')
                     ->limit(20)
@@ -210,6 +215,15 @@ class ProductResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['name'];
+        return ['name', 'description'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Descripción' => new HtmlString(strip_tags(Str::limit($record->description, 20))),
+            'Precio' => new HtmlString($record->getFormatedPriceWithDiscount()),
+            'Stock' => $record->stock,
+        ];
     }
 }

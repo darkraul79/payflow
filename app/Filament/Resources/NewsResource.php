@@ -21,7 +21,10 @@ use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 
 class NewsResource extends Resource
 {
@@ -38,6 +41,8 @@ class NewsResource extends Resource
     protected static ?string $navigationGroup = 'Contenido';
 
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
+
+    protected static ?string $recordTitleAttribute = 'title';
 
     public static function form(Form $form): Form
     {
@@ -62,7 +67,7 @@ class NewsResource extends Resource
                     Action::make('visit')
                         ->label('Visitar')
                         ->icon('heroicon-o-arrow-top-right-on-square')
-                        ->url(fn($record): string => route('news.show', ['slug' => $record->slug]), true),
+                        ->url(fn ($record): string => route('news.show', ['slug' => $record->slug]), true),
                     EditAction::make(),
                     DeleteAction::make(),
                     RestoreAction::make(),
@@ -98,5 +103,13 @@ class NewsResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return ['title'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Contenido' => new HtmlString(strip_tags(Str::limit($record->content, 20))),
+
+        ];
     }
 }

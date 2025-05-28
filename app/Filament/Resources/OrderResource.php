@@ -38,6 +38,9 @@ class OrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-s-shopping-bag';
 
+    protected static ?string $recordTitleAttribute = 'number';
+
+
     /** @noinspection PhpPossiblePolymorphicInvocationInspection */
     /**
      * @throws Exception
@@ -49,8 +52,8 @@ class OrderResource extends Resource
                 TextColumn::make('number')
                     ->label('Nº'),
                 TextColumn::make('state.name')
-                    ->icon(fn ($record) => $record->state->icono())
-                    ->color(fn ($record) => $record->state->colorEstado())
+                    ->icon(fn($record) => $record->state->icono())
+                    ->color(fn($record) => $record->state->colorEstado())
                     ->label('Estado')
                     ->badge()
                     ->searchable(),
@@ -92,17 +95,17 @@ class OrderResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when($data['estado'] == 1,
-                                fn (Builder $query, $date): Builder => $query->finalizados())
+                                fn(Builder $query, $date): Builder => $query->finalizados())
                             ->when($data['estado'] == 2,
-                                fn (Builder $query, $date): Builder => $query->pendientePago())
+                                fn(Builder $query, $date): Builder => $query->pendientePago())
                             ->when($data['estado'] == 3,
-                                fn (Builder $query, $date): Builder => $query->pagados())
+                                fn(Builder $query, $date): Builder => $query->pagados())
                             ->when($data['estado'] == 4,
-                                fn (Builder $query, $date): Builder => $query->enviados())
+                                fn(Builder $query, $date): Builder => $query->enviados())
                             ->when($data['estado'] == 5,
-                                fn (Builder $query, $date): Builder => $query->cancelados())
+                                fn(Builder $query, $date): Builder => $query->cancelados())
                             ->when($data['estado'] == 6,
-                                fn (Builder $query, $date): Builder => $query->conErrores());
+                                fn(Builder $query, $date): Builder => $query->conErrores());
                     }),
             ])
             ->actions([
@@ -110,7 +113,7 @@ class OrderResource extends Resource
                     ->tooltip('Actualizar estado')
                     ->label('Estado')
                     ->icon('heroicon-o-arrow-path')
-                    ->url(fn ($record): string => self::getUrl('update', ['record' => $record->getKey()])),
+                    ->url(fn($record): string => self::getUrl('update', ['record' => $record->getKey()])),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -150,11 +153,11 @@ class OrderResource extends Resource
 
                                 Placeholder::make('created_at')
                                     ->label('Created Date')
-                                    ->content(fn (?Order $record): string => $record?->created_at?->diffForHumans() ?? '-'),
+                                    ->content(fn(?Order $record): string => $record?->created_at?->diffForHumans() ?? '-'),
 
                                 Placeholder::make('updated_at')
                                     ->label('Last Modified Date')
-                                    ->content(fn (?Order $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
+                                    ->content(fn(?Order $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
                             ]),
                         Tabs\Tab::make('Tab 2')
                             ->schema([
@@ -184,10 +187,6 @@ class OrderResource extends Resource
         return false;
     }
 
-    public static function getGloballySearchableAttributes(): array
-    {
-        return [];
-    }
 
     public static function getRelations(): array
     {
@@ -204,5 +203,25 @@ class OrderResource extends Resource
     public static function getNavigationBadgeColor(): ?string
     {
         return 'danger';
+    }
+
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with(['states']);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['number'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+
+            'Productos' => $record->items->count(),
+            'Estado' => $record->state->name,
+        ];
     }
 }

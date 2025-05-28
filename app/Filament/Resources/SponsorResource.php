@@ -119,8 +119,5 @@ class SponsorResource extends Resource
         ];
     }
 
-    public static function getGloballySearchableAttributes(): array
-    {
-        return ['name'];
-    }
+
 }
