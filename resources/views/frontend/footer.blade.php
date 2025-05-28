@@ -9,7 +9,7 @@
 >
     <div class="@container container">
         <div
-            class="flex w-full flex-col justify-between gap-5 gap-y-8 md:flex-row lg:gap-y-0"
+            class="flex w-full flex-col justify-between gap-5 gap-y-8 lg:flex-row lg:gap-y-0"
         >
             <div class="contact lg:min-h-[250px]">
                 <div class="space-y-2 font-semibold">

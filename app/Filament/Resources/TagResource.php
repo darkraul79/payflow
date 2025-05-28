@@ -20,9 +20,11 @@ class TagResource extends Resource
     protected static ?string $model = Tag::class;
 
     protected static ?string $slug = 'etiquetas';
-    protected static ?string $pluralModelLabel = "etiquetas";
 
-    protected static ?string $label = "etiqueta";
+    protected static ?string $pluralModelLabel = 'etiquetas';
+
+    protected static ?string $label = 'etiqueta';
+
     protected static ?int $navigationSort = 32;
 
     protected static ?string $navigationGroup = 'Configuración';
@@ -38,11 +40,11 @@ class TagResource extends Resource
 
                 Placeholder::make('created_at')
                     ->label('Created Date')
-                    ->content(fn(?Tag $record): string => $record?->created_at?->diffForHumans() ?? '-'),
+                    ->content(fn (?Tag $record): string => $record?->created_at?->diffForHumans() ?? '-'),
 
                 Placeholder::make('updated_at')
                     ->label('Last Modified Date')
-                    ->content(fn(?Tag $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
+                    ->content(fn (?Tag $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
             ]);
     }
 

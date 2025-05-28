@@ -10,12 +10,13 @@
         </div>
         @if ($menu)
             <flux:navlist variant="outline">
-                @foreach ($menu?->menuItems as $navItem)
+                @foreach ($menu->menuItems as $navItem)
                     @if ($navItem?->children->count() && $navItem->title != 'Home')
                         <flux:navlist.group
                             expandable="true"
+                            class="cursor-pointer"
                             :expanded="false"
-                            href="{{ $navItem->url }}"
+                            :href="$navItem->linkable->blocks ? $navItem->url:false"
                             heading="{{ $navItem->title }}"
                         >
                             @foreach ($navItem->children as $child)
@@ -26,7 +27,7 @@
                         </flux:navlist.group>
                     @else
                         <flux:navlist.item
-                            href="{{ $navItem->url == '/home' ? '/' : $navItem->url }}"
+                            href="{{ $navItem->url == '/home' ? '/' : ($navItem->linkable->blocks ? $navItem->url:'') }}"
                         >
                             {{ $navItem->title }}
                         </flux:navlist.item>
@@ -34,6 +35,8 @@
                 @endforeach
             </flux:navlist>
         @endif
+        <hr class="border- my-3 w-full border-gray-200 ">
+
 
         <flux:spacer />
         <flux:navlist variant="outline">

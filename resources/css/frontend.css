@@ -1,4 +1,5 @@
 @reference 'tailwindcss';
+@reference './theme.css';
 
 @layer base {
     .sponsorship {
@@ -38,6 +39,122 @@
                 .flip-card-inner {
                     @apply rotate-y-180;
                 }
+            }
+        }
+    }
+
+    .cartTable {
+        @apply border-gris mb-10 border-collapse overflow-x-auto rounded-lg border;
+
+        table {
+            @apply border-gris w-full;
+
+            thead {
+                @apply border-gris border-b text-left;
+
+                th {
+                    @apply text-xs font-light text-[#808080] uppercase;
+                }
+            }
+
+            th {
+                @apply p-1.5 md:px-2 lg:px-6 lg:py-4;
+            }
+
+            td {
+                @apply px-1 py-2.5 text-xs font-light text-[#333333] md:px-2 md:text-sm lg:px-6 lg:py-4;
+
+                &.placeholder {
+                    @apply py-6 text-xs font-light text-[#808080]/60;
+                }
+            }
+
+            tbody {
+                tr {
+                    @apply border-gris not-last:border-b;
+
+                    td {
+                        @apply text-azul-sea;
+                    }
+                }
+            }
+
+            tfoot {
+                @apply border-gris border-t py-3;
+            }
+        }
+
+        h2 {
+            @apply mb-4 w-full text-[20px] leading-[1.2] font-semibold text-black;
+        }
+
+        ul {
+            @apply text-azul-sea m-0 list-none font-light;
+
+            li {
+                @apply border-gris flex flex-row items-center justify-between py-3 text-[14px] not-last:border-b;
+
+                span,
+                strong {
+                    @apply block;
+
+                    &.total {
+                        @apply text-base;
+                    }
+                }
+
+                strong {
+                    @apply text-right font-bold;
+
+                    span {
+                        @apply text-[11px] leading-[1.2] font-light text-[#AEBECC];
+                    }
+                }
+            }
+        }
+
+        .items {
+            @apply mb-8 flex flex-col gap-2;
+
+            li {
+                @apply border-gris flex flex-row items-center justify-between py-3 text-[14px] not-last:border-b;
+            }
+        }
+    }
+
+    .no-img {
+        @apply border-gris bg-gris text-azul-sea flex h-full max-h-[100px] w-full max-w-[100px] items-center justify-center rounded-lg border p-4;
+
+        svg {
+            @apply fill-azul-sea/20 h-[40px] w-[40px];
+        }
+    }
+
+    .order-form {
+        label {
+            @apply mt-2 mb-1.5 block text-[14px] leading-[1.2];
+
+            span {
+                @apply text-azul-gray;
+            }
+        }
+
+        .form-error {
+            @apply text-error/80 text-[11px];
+        }
+
+        input,
+        select {
+            @apply border-gris! text-azul-sea! rounded-md border;
+
+            &[type='text'],
+            &[type='email'],
+            &[type='tel'] {
+                @apply w-full px-4 py-3 text-[14px] leading-[1.2] font-light;
+            }
+
+            &::placeholder {
+                @apply text-gris;
             }
         }
     }

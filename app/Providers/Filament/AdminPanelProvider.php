@@ -12,7 +12,6 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Assets\Css;
@@ -41,12 +40,26 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#003c6b',
+                'secondary' => '#36a0bf',
+                'info' => '#3d7eb4',
+                'success' => '#02b5a7',
+                'warning' => '#ea8648',
+                'danger' => '#ea4b48',
+                'principal' => '#003c6b',
+                'purple' => Color::Purple,
+                'rose' => Color::Rose,
+                'blue' => Color::Blue,
+                'red' => Color::Red,
+                'green' => Color::Green,
+                'lime' => Color::Lime,
+                'gris-claro' => Color::Gray,
+                'gris-oscuro' => Color::Gray,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                //                Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
@@ -70,7 +83,7 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 FilamentSettingsPlugin::make()
                     ->pages([
-                        Settings::class
+                        Settings::class,
                     ]),
                 FilamentFabricatorPlugin::make(),
                 FilamentMenuBuilderPlugin::make()
@@ -95,6 +108,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => '#1a598c',
                 'secondary' => '#36A0BF',
                 'danger' => '#EA4B48',
-            ]);
+            ])
+            ->sidebarCollapsibleOnDesktop();
     }
 }

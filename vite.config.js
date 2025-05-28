@@ -22,10 +22,12 @@ export default defineConfig({
                 'app/Http/Livewire/**', // Custom Livewire components
                 'app/Filament/**', // Filament Resources
             ],
+            // Enable host for local development
         }),
         tailwindcss(),
     ],
     server: {
         cors: true,
+        host: true,
     },
 });

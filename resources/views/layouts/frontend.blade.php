@@ -10,6 +10,8 @@
             class="@container {{ $page ? $page->slug : '' }} full-container content bg-white"
         >
             @yield('main')
+
+            <livewire:toast-component />
         </main>
 
         @include('frontend.footer')

@@ -45,12 +45,10 @@ class PageResource extends Resource
 
     protected static ?string $navigationGroup = 'Contenido';
 
-
     public static function getModel(): string
     {
         return Page::class;
     }
-
 
     public static function form(Form $form): Form
     {
@@ -79,7 +77,7 @@ class PageResource extends Resource
                                 TextInput::make('title')
                                     ->label('Título')
                                     ->afterStateUpdated(function (Get $get, Set $set, ?string $state, ?PageContract $record) {
-                                        if (!$get('is_slug_changed_manually') && filled($state) && blank($record)) {
+                                        if (! $get('is_slug_changed_manually') && filled($state) && blank($record)) {
                                             $set('slug', Str::slug($state, language: config('app.locale', 'en')));
                                         }
                                     })
@@ -92,7 +90,7 @@ class PageResource extends Resource
 
                                 TextInput::make('slug')
                                     ->label('Url')
-                                    ->unique(ignoreRecord: true, modifyRuleUsing: fn(Unique $rule, Get $get) => $rule->where('parent_id', $get('parent_id')))
+                                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('parent_id', $get('parent_id')))
                                     ->afterStateUpdated(function (Set $set) {
                                         $set('is_slug_changed_manually', true);
                                     })
@@ -106,13 +104,13 @@ class PageResource extends Resource
                                     ->required(),
                                 Placeholder::make('page_url')
                                     ->label('')
-                                    ->visible(fn(?PageContract $record) => config('filament-fabricator.routing.enabled') && filled($record))
-                                    ->content(fn(?PageContract $record) => FilamentFabricator::getPageUrlFromId($record?->id)),
+                                    ->visible(fn (?PageContract $record) => config('filament-fabricator.routing.enabled') && filled($record))
+                                    ->content(fn (?PageContract $record) => FilamentFabricator::getPageUrlFromId($record?->id)),
 
                                 Select::make('layout')
                                     ->label('Plantilla')
                                     ->options(FilamentFabricator::getLayouts())
-                                    ->default(fn() => FilamentFabricator::getDefaultLayoutName())
+                                    ->default(fn () => FilamentFabricator::getDefaultLayoutName())
                                     ->live()
                                     ->required(),
 
@@ -122,11 +120,11 @@ class PageResource extends Resource
                                     ->preload()
                                     ->reactive()
                                     ->suffixAction(
-                                        fn($get, $context) => FormAction::make($context . '-parent')
+                                        fn ($get, $context) => FormAction::make($context.'-parent')
                                             ->icon('heroicon-o-arrow-top-right-on-square')
-                                            ->url(fn() => PageResource::getUrl($context, ['record' => $get('parent_id')]))
+                                            ->url(fn () => PageResource::getUrl($context, ['record' => $get('parent_id')]))
                                             ->openUrlInNewTab()
-                                            ->visible(fn() => filled($get('parent_id')))
+                                            ->visible(fn () => filled($get('parent_id')))
                                     )
                                     ->relationship(
                                         'parent',
@@ -138,7 +136,7 @@ class PageResource extends Resource
                                         }
                                     ),
                                 Select::make('blockquotes')
-                                    ->hidden(fn(Get $get) => $get('is_home'))
+                                    ->hidden(fn (Get $get) => $get('is_home'))
                                     ->searchable()
                                     ->label('Frase inspiración')
                                     ->preload()
@@ -168,11 +166,11 @@ class PageResource extends Resource
                     ->label('Pertenece a')
                     ->extraAttributes(['class' => 'text-gray-500'])
                     ->toggleable()
-                    ->formatStateUsing(fn($state): HtmlString => new HtmlString('<span class="text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-3 inline-block">
+                    ->formatStateUsing(fn ($state): HtmlString => new HtmlString('<span class="text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-3 inline-block">
   <path fill-rule="evenodd" d="M3.74 3.749a.75.75 0 0 1 .75.75V15h13.938l-2.47-2.47a.75.75 0 0 1 1.061-1.06l3.75 3.75a.75.75 0 0 1 0 1.06l-3.75 3.75a.75.75 0 0 1-1.06-1.06l2.47-2.47H3.738a.75.75 0 0 1-.75-.75V4.5a.75.75 0 0 1 .75-.751Z" clip-rule="evenodd" />
 </svg>
-' . $state . '</span>' ?? '-'))
-                    ->url(fn(?PageContract $record) => filled($record->parent_id) ? PageResource::getUrl('edit', ['record' => $record->parent_id]) : null),
+'.$state.'</span>' ?? '-'))
+                    ->url(fn (?PageContract $record) => filled($record->parent_id) ? PageResource::getUrl('edit', ['record' => $record->parent_id]) : null),
 
                 TextColumn::make('blockquotes.text')
                     ->label('Frase inspiración')
@@ -188,7 +186,7 @@ class PageResource extends Resource
                 TextColumn::make('layout')
                     ->label('Plantilla')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'default' => 'primary',
                         'donacion' => 'success',
                     })
@@ -209,7 +207,7 @@ class PageResource extends Resource
                 EditAction::make(),
                 Action::make('visit')
                     ->label('Visitar')
-                    ->url(fn(?PageContract $record) => FilamentFabricator::getPageUrlFromId($record->id, true) ?: null)
+                    ->url(fn (?PageContract $record) => FilamentFabricator::getPageUrlFromId($record->id, true) ?: null)
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->openUrlInNewTab()
                     ->color('secondary')

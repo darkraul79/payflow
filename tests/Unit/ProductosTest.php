@@ -2,7 +2,10 @@
 
 use App\Filament\Resources\ProductResource\Pages\CreateProduct;
 use App\Filament\Resources\ProductResource\Pages\EditProduct;
+use App\Livewire\CardProduct;
+use App\Livewire\ProductAddCart;
 use App\Models\Product;
+use App\Services\Cart;
 use function Pest\Livewire\livewire;
 
 test('puedo crear Productos', function () {
@@ -44,4 +47,73 @@ test('puedo editar productos', function () {
 
 test('urlPrefix es correcto', function () {
     expect(Product::factory()->make()->getUrlPrefix())->toBe('/tienda-solidaria/');
+});
+
+test('no puedo agregar productos sin stock a carrito', function () {
+
+    $producto = Product::factory()->create([
+        'stock' => 0,
+    ]);
+    $productoStock = Product::factory()->create([
+        'stock' => 1,
+    ]);
+
+    livewire(ProductAddCart::class, [
+        'product' => $productoStock,
+    ])
+        ->call('addToCart');
+
+    livewire(ProductAddCart::class, [
+        'product' => $producto,
+    ])
+        ->call('addToCart')
+        ->assertDispatched('showAlert', type: 'warning', title: 'No se puede agregar al carrito', message: 'No hay suficiente stock')
+        ->assertNotDispatched('updatedCart');
+
+    expect(Cart::getItems())->toHaveCount(1);
+
+});
+
+test('no puedo agregar más cantidad de productos mayor que el stock en la tarjeta de producto ', function () {
+    $producto = Product::factory()->create([
+        'stock' => 1,
+    ]);
+
+    livewire(CardProduct::class, [
+        'product' => $producto,
+    ])->call('addToCart', $producto);
+    livewire(CardProduct::class, [
+        'product' => $producto,
+    ])->call('addToCart', $producto)
+        ->assertDispatched('showAlert', type: 'error', title: 'No se puede agregar el producto', message: 'No hay suficiente stock')
+        ->assertNotDispatched('updatedCart');
+
+
+    expect(Cart::getQuantityProduct($producto->id))->toBe(1);
+
+});
+
+test('si el producto está en oferta puedo ver el badge porcentaje en listado de productos', function () {
+
+    $producto = Product::factory()->create([
+        'price' => 10,
+        'offer_price' => 5,
+    ]);
+
+    livewire(CardProduct::class, [
+        'product' => $producto,
+    ])
+        ->assertSeeText('Oferta 50 %');
+});
+
+test('si el producto no tiene stock puedo ver el badge agotado en listado de productos', function () {
+
+    $producto = Product::factory()->create([
+        'stock' => 0,
+    ]);
+
+    livewire(CardProduct::class, [
+        'product' => $producto,
+    ])
+        ->assertSeeText('Agotado');
 });

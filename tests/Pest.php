@@ -11,9 +11,16 @@
 |
 */
 
+use App\Livewire\CardProduct;
+use App\Livewire\FinishOrderComponent;
+use App\Livewire\PageCartComponent;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
+
 use function Pest\Laravel\actingAs;
+use function Pest\Livewire\livewire;
 
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
@@ -53,7 +60,6 @@ function something()
     // ..
 }
 
-
 function asUser(): User
 {
 
@@ -66,4 +72,43 @@ function asUser(): User
 
     return $user;
 
+}
+
+function creaPedido(?Product $producto = null): Order
+{
+    if (! $producto) {
+        $producto = Product::factory()->create([
+            'name' => 'Producto de prueba',
+            'price' => 10,
+            'stock' => 2,
+        ]);
+    }
+
+    livewire(CardProduct::class, [
+        'product' => $producto,
+        'quantity' => 1,
+    ])->call('addToCart');
+
+    livewire(PageCartComponent::class)->call('submit');
+
+    livewire(FinishOrderComponent::class)
+        ->assertOk()
+        ->set([
+            'payment_method' => 'tarjeta',
+            'billing' => [
+                'name' => 'Juan',
+                'last_name' => 'Pérez',
+                'company' => 'Mi empresa',
+                'address' => 'Calle Falsa 123',
+                'province' => 'Madrid',
+                'city' => 'Madrid',
+                'cp' => '28001',
+                'email' => 'info@raulsebastian.es',
+            ],
+        ])->call('submit')
+        ->assertHasNoErrors();
+
+    session()->flush();
+
+    return Order::latest()->first();
 }

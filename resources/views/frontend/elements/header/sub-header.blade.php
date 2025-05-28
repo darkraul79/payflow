@@ -4,6 +4,5 @@
 <x-title-section :model="$page" />
 
 @if (! $page->is_home_page)
-    {{-- @dump($page->getParentsFromMenu()) --}}
     <x-breadcrumbs :page="$page" type="{{getTypeContent($page)}}" />
 @endif

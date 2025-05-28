@@ -3,13 +3,17 @@
 >
     @if ($menu)
         <flux:navbar class="mx-auto -mb-px max-lg:hidden">
-            @foreach ($menu?->menuItems as $item)
-                @if ($item?->children->count() && $item->title != 'Home')
+            @foreach ($menu->menuItems as $item)
+                @if ($item->children->count() && $item->title != 'Home')
                     <flux:dropdown>
                         <flux:navbar.item icon:trailing="chevron-down">
-                            <a href="{{ $item->url }}">
+                            @if ($item->linkable->blocks)
+                                <a href="{{ $item->url }}">
+                                    {{ $item->title }}
+                                </a>
+                            @else
                                 {{ $item->title }}
-                            </a>
+                            @endif
                         </flux:navbar.item>
                         <flux:navmenu>
                             @foreach ($item->children as $child)
@@ -27,6 +31,8 @@
                     </flux:navbar.item>
                 @endif
             @endforeach
+
+            <livewire:cart-button-component wire:key="cart-button-desktop" />
         </flux:navbar>
     @endif
 

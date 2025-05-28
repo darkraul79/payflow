@@ -1,0 +1,10 @@
+<x-filament-panels::page>
+    <div class="flex flex-col-reverse gap-6 lg:flex-row">
+        <div class="lg:flex-grow">
+            @include('filament.resources.order-resource.pages.order-items')
+        </div>
+        <div class="lg:flex-1/5">
+            @include('filament.resources.order-resource.pages.order-states', ['update' => true])
+        </div>
+    </div>
+</x-filament-panels::page>

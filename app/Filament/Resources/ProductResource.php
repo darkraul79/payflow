@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
+use Exception;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -120,6 +121,9 @@ class ProductResource extends Resource
             ]);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function table(Table $table): Table
     {
         $type = 'App\Models\Product';

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\ProyectResource\Pages;
 use App\Models\Proyect;
+use Exception;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
@@ -31,9 +32,11 @@ class ProyectResource extends Resource
     protected static ?string $label = 'Proyecto';
 
     protected static ?string $pluralModelLabel = 'Proyectos';
+
     protected static ?int $navigationSort = 24;
 
     protected static ?string $navigationGroup = 'Contenido';
+
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
     public static function form(Form $form): Form
@@ -45,6 +48,9 @@ class ProyectResource extends Resource
             ]);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function table(Table $table): Table
     {
         return $table

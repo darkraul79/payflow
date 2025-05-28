@@ -3,7 +3,7 @@ import '@splidejs/splide/dist/css/splide.min.css';
 
 // document.addEventListener('DOMContentLoaded', () => {
 var splide = new Splide('#productGallery', {
-    width: 530,
+    // width: 530,
     pagination: false,
     arrows: false,
 });

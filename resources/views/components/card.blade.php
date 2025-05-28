@@ -2,7 +2,7 @@
     {{
         $attributes
             ->class([
-                'rounded-lg bg-white p-3 border-azul-cobalt border shadow-lg flex flex-col justify-between hover:scale-102 transition-all duration-300 ease-out',
+                'rounded-lg bg-white p-3 border-azul-cobalt border shadow-md flex flex-col justify-between  transition-all duration-300 ease-out',
             ])
             ->merge(['class'])
     }}

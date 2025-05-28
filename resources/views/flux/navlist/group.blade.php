@@ -27,11 +27,17 @@
             />
         </div>
 
-        <a href="{{ $href }}">
+        @if ($href)
+            <a href="{{ $href }}">
+                <span class="text-sm leading-none font-normal">
+                    {{ $heading }}
+                </span>
+            </a>
+        @else
             <span class="text-sm leading-none font-normal">
                 {{ $heading }}
             </span>
-        </a>
+        @endif
     </button>
 
     <div

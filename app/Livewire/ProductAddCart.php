@@ -3,44 +3,57 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Services\Cart;
+use Illuminate\View\View;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ProductAddCart extends Component
 {
-
     public Product $product;
-
-    public bool|string $errorMessage = '';
 
     public int $quantity = 1;
 
-    public function mount(Product $product): void
-    {
-    }
+    public function mount(Product $product): void {}
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.product-add-cart');
     }
 
-    public function add(): void
+    #[On('updateQuantity')]
+    public function updateQuantity(int $quantity): void
     {
-        if ($this->quantity > $this->product->stock) {
-            $this->errorMessage = 'No hay suficiente stock';
-            return;
-        }
-        $this->quantity += 1;
+        $this->quantity = $quantity;
 
-        $this->errorMessage = false;
     }
 
-    public function substract(): void
+    public function addToCart(): void
     {
-        if ($this->quantity <= 1) {
-            $this->errorMessage = 'No puedes agregar menos de 1 producto';
-            return;
+        if ($this->checkStock()) {
+            $this->dispatch('showAlert', type: 'warning', title: 'No se puede agregar al carrito', message: 'No hay suficiente stock');
+
+        } else {
+            Cart::addItem($this->product, $this->quantity);
+
+            $this->dispatch('updatedCart');
+            $this->dispatch('showAlert', type: 'success', title: 'Producto agregado', message: 'El producto ha sido agregado al carrito.');
         }
-        $this->quantity -= 1;
-        $this->errorMessage = false;
+
+    }
+
+    public function checkStock(): bool
+    {
+        if ((Cart::getQuantityProduct($this->product->id) + $this->quantity) <= $this->product->stock) {
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public function resetCart(): void
+    {
+        Cart::clearCart();
     }
 }
