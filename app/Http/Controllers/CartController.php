@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Helpers\RedsysAPI;
 use App\Models\Order;
-use App\Models\OrderState;
 use App\Models\Page;
-use Illuminate\Support\Facades\Session;
+use App\Models\State;
 
 class CartController extends Controller
 {
@@ -36,7 +35,7 @@ class CartController extends Controller
 
     public function form()
     {
-        if (! session()->has('cart') || empty(session('cart'))) {
+        if (!session()->has('cart') || empty(session('cart'))) {
             return redirect()->route('cart');
         }
 
@@ -55,32 +54,6 @@ class CartController extends Controller
 
     }
 
-    public function responseNotification(): void
-    {
-        Session::forget('cart');
-        $redSys = new RedsysAPI;
-
-        $datos = request('Ds_MerchantParameters');
-        $signatureRecibida = request('Ds_Signature');
-
-        if (empty($datos) || empty($signatureRecibida)) {
-            abort(404, 'Datos de Redsys no recibidos');
-        }
-
-        $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
-        $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
-        $pedido = Order::where('number', $decodec['Ds_Order'])->firstOrFail();
-
-        if ($redSys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
-            $pedido->payed($decodec);
-        } else {
-            $error = hash_equals($firma, $signatureRecibida)
-                ? estado_redsys($decodec['Ds_Response'])
-                : 'Firma no válida';
-            $pedido->error($error);
-        }
-
-    }
 
     public function orderKO()
     {
@@ -93,13 +66,15 @@ class CartController extends Controller
 
     public function pagar_pedido(Order $pedido)
     {
-        if ($pedido->state->name != OrderState::PENDIENTE) {
+        if ($pedido->state->name != State::PENDIENTE) {
             abort(404);
         }
 
         $redSys = new RedsysAPI;
-        $data = $redSys->actualizaDatosRedSys($pedido);
+        $data = $redSys->getFormDirectPay($pedido);
 
         return view('frontend.pagar-pedido', compact('data'));
     }
+
+
 }

@@ -9,6 +9,10 @@
         </div>
         <div class="lg:flex-1/5">
             @include('filament.resources.order-resource.pages.order-states', ['update' => false])
+
+            <div class="my-6">
+                @include('filament.resources.payments', ['update' => false])
+            </div>
         </div>
     </div>
 </x-filament-panels::page>

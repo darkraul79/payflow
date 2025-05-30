@@ -2,12 +2,16 @@
 
 namespace App\Livewire;
 
+use App\Http\Classes\PaymentProcess;
+use App\Models\Address;
 use App\Models\Order;
-use App\Models\OrderAddress;
 use App\Models\Product;
 use App\Services\Cart;
+use Illuminate\View\View;
 use Livewire\Attributes\Session;
 use Livewire\Component;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class FinishOrderComponent extends Component
 {
@@ -75,10 +79,30 @@ class FinishOrderComponent extends Component
     ];
 
     public array $rules = [];
+    public mixed $MerchantParameters;
+    public mixed $MerchantSignature;
+    public mixed $SignatureVersion;
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function mount(): void
     {
-        if (! Cart::canCheckout()) {
+        if (app()->isLocal()) {
+            $this->billing = [
+                'name' => 'Raúl',
+                'last_name' => 'Sebasitán',
+                'address' => 'Wistera Street 21',
+                'cp' => '28292',
+                'city' => 'Madrid',
+                'province' => 'Madrid',
+                'email' => 'info@raulsebastian.es',
+                'phone' => '666666666',
+            ];
+        }
+
+        if (!Cart::canCheckout()) {
             $this->redirectRoute('cart');
         }
 
@@ -95,7 +119,14 @@ class FinishOrderComponent extends Component
         Cart::clearCart();
 
         $order->refresh();
-        $this->redirectRoute('pagar-pedido', $order);
+        $paymentProcess = new PaymentProcess($order);
+
+
+        $formData = $paymentProcess->getFormRedSysData();
+
+        $this->MerchantParameters = $formData['Ds_MerchantParameters'];
+        $this->MerchantSignature = $formData['Ds_Signature'];
+        $this->SignatureVersion = $formData['Ds_SignatureVersion'];
 
     }
 
@@ -117,7 +148,7 @@ class FinishOrderComponent extends Component
             'shipping_cost' => $this->cart['totals']['shipping_cost'],
             'subtotal' => $this->cart['totals']['subtotal'],
             'taxes' => $this->cart['totals']['taxes'],
-            'total' => $this->cart['totals']['total'],
+            'amount' => $this->cart['totals']['total'],
             'payment_method' => $this->payment_method,
         ]);
 
@@ -132,7 +163,7 @@ class FinishOrderComponent extends Component
     public function createAddresses(Order $order): void
     {
         $order->addresses()->create([
-            'type' => OrderAddress::BILLING,
+            'type' => Address::BILLING,
             'name' => $this->billing['name'],
             'last_name' => $this->billing['last_name'],
             'company' => $this->billing['company'] ?? null,
@@ -147,7 +178,7 @@ class FinishOrderComponent extends Component
 
         if ($this->addSendAddress) {
             $order->addresses()->create([
-                'type' => OrderAddress::SHIPPING,
+                'type' => Address::SHIPPING,
                 'name' => $this->shipping['name'],
                 'last_name' => $this->shipping['last_name'],
                 'company' => $this->shipping['company'] ?? null,
@@ -162,7 +193,7 @@ class FinishOrderComponent extends Component
         }
     }
 
-    public function addItemsToOrder(Order $order)
+    public function addItemsToOrder(Order $order): void
     {
         foreach ($this->cart['items'] as $idItem => $item) {
             $order->items()->create([
@@ -175,12 +206,12 @@ class FinishOrderComponent extends Component
         }
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.finish-order');
     }
 
-    protected function messages()
+    protected function messages(): array
     {
         return [
             'required' => 'El campo es obligatorio.',

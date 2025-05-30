@@ -116,12 +116,16 @@ test('el usuario puede vaciar la cesta', function () {
 });
 test('si vació cesta no aparece en el icono superior', function () {
     $producto = Product::factory()->create();
+
     livewire(CardProduct::class, [
         'product' => $producto,
     ])
         ->call('addToCart', $producto);
+
+    $this->travel(1)->seconds();
     $this->get(route('cart'))
         ->assertSeeHtml('id="cart-count-badge"');
+
     livewire(PageCartComponent::class)
         ->call('clearCart')
         ->assertDispatched('updatedCart');

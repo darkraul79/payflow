@@ -11,6 +11,7 @@
 |
 */
 
+use App\Helpers\RedsysAPI;
 use App\Livewire\CardProduct;
 use App\Livewire\FinishOrderComponent;
 use App\Livewire\PageCartComponent;
@@ -18,7 +19,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
-
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
 
@@ -76,7 +76,7 @@ function asUser(): User
 
 function creaPedido(?Product $producto = null): Order
 {
-    if (! $producto) {
+    if (!$producto) {
         $producto = Product::factory()->create([
             'name' => 'Producto de prueba',
             'price' => 10,
@@ -111,4 +111,35 @@ function creaPedido(?Product $producto = null): Order
     session()->flush();
 
     return Order::latest()->first();
+}
+
+/**
+ * @param array $data
+ * @return array
+ */
+function getMerchanParamasOrderOk($amount, $order_number): string
+{
+
+    $data = [
+        'Ds_Date' => '27%2F05%2F2025',
+        'Ds_Hour' => '14%3A18',
+        'Ds_SecurePayment' => '1',
+        'Ds_Amount' => $amount,
+        'Ds_Currency' => '978',
+        'Ds_Order' => $order_number,
+        'Ds_MerchantCode' => config('redsys.merchant_code'),
+        'Ds_Terminal' => config('redsys.terminal'),
+        'Ds_Response' => '0000',
+        'Ds_TransactionType' => config('redsys.transaction_type'),
+        'Ds_MerchantData' => '',
+        'Ds_AuthorisationCode' => '025172',
+        'Ds_ConsumerLanguage' => '1',
+        'Ds_Card_Country' => '724',
+        'Ds_Card_Brand' => '1',
+        'Ds_ProcessedPayMethod' => '78',
+        'Ds_Control_1748348283917' => '1748348283917',
+    ];
+    $redSys = new RedsysAPI;
+
+    return $redSys->encodeBase64(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 }

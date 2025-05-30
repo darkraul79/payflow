@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
-class OrderState extends Model
+class State extends Model
 {
     use HasFactory;
 
@@ -23,8 +24,11 @@ class OrderState extends Model
 
     public const CANCELADO = 'Cancelado';
 
+    public const ACEPTADO = 'Aceptado';
+
     protected $fillable = [
-        'order_id',
+        'stateable_id',
+        'stateable_type',
         'name',
         'message',
         'info',
@@ -32,9 +36,9 @@ class OrderState extends Model
         'updated_at',
     ];
 
-    public function order(): BelongsTo
+    public function stateable(): MorphTo
     {
-        return $this->belongsTo(Order::class);
+        return $this->morphTo();
     }
 
     /**
@@ -74,21 +78,11 @@ class OrderState extends Model
         return Carbon::parse($this->created_at)->diffForHumans();
     }
 
-    /**
-     * Devuelve true si el campo info es Json
-     */
-    public function infoIsJson(): bool
+    protected function casts(): array
     {
-
-        $resultado = json_decode($this->info);
-
-        // Verificamos si el JSON es válido
-        // La función json_decode() devuelve null si la cadena no es un JSON válido
-        if ($resultado === null && json_last_error() !== JSON_ERROR_NONE) {
-            return false;
-        }
-
-        return true;
+        return [
+            'info' => AsArrayObject::class,
+        ];
     }
 
 

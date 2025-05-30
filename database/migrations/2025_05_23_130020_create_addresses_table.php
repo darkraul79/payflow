@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('order_addresses', function (Blueprint $table) {
+        Schema::create('addresses', function (Blueprint $table) {
             $table->id();
             $table->string('type');
             $table->string('name');
@@ -15,18 +15,18 @@ return new class extends Migration {
             $table->string('company')->nullable();
             $table->string('nif')->nullable();
             $table->string('address');
-            $table->foreignId('order_id')->constrained('orders');
             $table->string('province');
             $table->string('city');
             $table->string('cp');
             $table->string('email');
             $table->string('phone')->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('order_addresses');
+        Schema::dropIfExists('addresses');
     }
 };

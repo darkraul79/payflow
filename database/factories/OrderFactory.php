@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Address;
 use App\Models\Order;
-use App\Models\OrderAddress;
-use App\Models\OrderState;
+use App\Models\State;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
@@ -16,13 +16,13 @@ class OrderFactory extends Factory
     {
 
         return [
-            'number' => fake()->unique()->randomNumber(4),
+            'number' => generateOrderNumber(),
             'shipping' => 'Precio fijo',
             'shipping_cost' => 3.5,
             'subtotal' => $this->faker->randomFloat(2, 1, 100),
-            'total' => $this->faker->randomFloat(2, 1, 100),
+            'amount' => $this->faker->randomFloat(2, 1, 100),
             'taxes' => $this->faker->randomFloat(),
-            'payment_method' => $this->faker->word(),
+            'payment_method' => fake()->word(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];
@@ -31,27 +31,21 @@ class OrderFactory extends Factory
     public function configure(): static
     {
         return $this->afterMaking(function (Order $pedido) {
-
-            OrderAddress::factory()->make([
-                'type' => OrderAddress::BILLING,
-                'order_id' => $pedido->id,
-            ]);
         })->afterCreating(function (Order $pedido) {
-            
-            OrderAddress::factory()->create([
-                'type' => OrderAddress::BILLING,
-                'order_id' => $pedido->id,
+
+            $address = Address::factory()->create([
+                'type' => ADDRESS::BILLING,
             ]);
+            $pedido->addresses()->attach($address);
 
         });
     }
-
 
     public function pagado(): OrderFactory|Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $pedido->states()->create([
-                'name' => OrderState::PAGADO,
+                'name' => State::PAGADO,
             ]);
         });
     }
@@ -60,7 +54,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $pedido->states()->create([
-                'name' => OrderState::ENVIADO,
+                'name' => State::ENVIADO,
             ]);
         });
     }
@@ -69,7 +63,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $pedido->states()->create([
-                'name' => OrderState::FINALIZADO,
+                'name' => State::FINALIZADO,
             ]);
         });
     }
@@ -78,7 +72,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $pedido->states()->create([
-                'name' => OrderState::ERROR,
+                'name' => State::ERROR,
             ]);
         });
     }
@@ -87,23 +81,25 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $pedido->states()->create([
-                'name' => OrderState::CANCELADO,
+                'name' => State::CANCELADO,
             ]);
         });
     }
 
-    public function withDirecionEnvio()
+    public function withDirecionEnvio(): Factory
     {
-        return $this->afterMaking(function (Order $pedido) {
-            OrderAddress::factory()->create([
-                'type' => OrderAddress::BILLING,
-                'order_id' => $pedido->id,
+        return $this->has(Address::factory()->state([
+            'type' => Address::SHIPPING,
+        ]), 'addresses');
+    }
+
+    public function withCertificado(): Factory
+    {
+        return $this->afterCreating(function (Order $pedido) {
+            $address = Address::factory()->create([
+                'type' => ADDRESS::CERTIFICATE,
             ]);
-        })->afterCreating(function (Order $pedido) {
-            OrderAddress::factory()->create([
-                'type' => OrderAddress::BILLING,
-                'order_id' => $pedido->id,
-            ]);
+            $pedido->addresses()->attach($address);
         });
     }
 }

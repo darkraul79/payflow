@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class OrderAddress extends Model
+class Address extends Model
 {
     use HasFactory;
 
-    public const BILLING = 'facturación';
+    public const BILLING = 'Facturación';
 
-    public const SHIPPING = 'envío';
+    public const SHIPPING = 'Envío';
+    public const CERTIFICATE = 'Certificado';
 
     protected $fillable = [
         'type',
@@ -21,21 +21,21 @@ class OrderAddress extends Model
         'company',
         'nif',
         'address',
-        'order_id',
         'province',
         'city',
         'cp',
         'email',
         'phone',
+        'notes'
     ];
 
-    public function order(): BelongsTo
-    {
-        return $this->belongsTo(Order::class);
-    }
+//    public function order(): BelongsTo
+//    {
+//        return $this->belongsTo(Order::class);
+//    }
 
     public function getFullNameAttribute(): string
     {
-        return $this->name.' '.$this->last_name;
+        return $this->name . ' ' . $this->last_name;
     }
 }

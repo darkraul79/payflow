@@ -17,14 +17,15 @@
             <label
                 for="{{ $id }}"
                 class="btn btn-primary-outline flex w-full cursor-pointer flex-nowrap items-center justify-center text-sm"
+                wire:model.live="{{ $name }}"
             >
                 <input
                     class="hidden"
                     type="radio"
                     id="{{ $id }}"
                     name="{{ $name }}"
-                    value="email"
-                    {{ $default == $index ? 'checked' : '' }}
+                    value="{{ $option['value'] }}"
+                    {{ $default == $option['value'] ? 'checked' : '' }}
                 />
 
                 <img
