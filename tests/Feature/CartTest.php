@@ -11,23 +11,6 @@ use App\Services\Cart;
 use Outerweb\Settings\Models\Setting;
 use function Pest\Livewire\livewire;
 
-test('puedo añadir producto a carrito desde la página de producto', function () {
-
-    $producto = Product::factory()->create([
-        'stock' => 5,
-    ]);
-
-    livewire(QuantityButtons::class, [
-        'product' => $producto,
-    ]);
-    livewire(ProductAddCart::class, [
-        'product' => $producto,
-    ])
-        ->assertSet('quantity', 2)
-        ->call('addToCart', $producto);
-
-    expect(Cart::getTotalQuantity())->toBe(1);
-})->skip();
 
 test('suma correctamente el número de artículos', function () {
     $producto = Product::factory()->create([

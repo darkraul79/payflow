@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\donationResource\Pages;
+namespace App\Filament\Resources\DonationResource\Pages;
 
 use App\Filament\Resources\DonationResource;
 use Filament\Actions\DeleteAction;

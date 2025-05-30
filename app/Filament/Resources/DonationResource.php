@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\donationResource\Pages;
+use App\Filament\Resources\DonationResource\Pages;
 use App\Filament\Resources\DonationResource\RelationManagers\PaymentsRelationManager;
 use App\Models\Donation;
 use Filament\Forms\Form;

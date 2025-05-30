@@ -44,25 +44,6 @@ class CartController extends Controller
         );
     }
 
-    public function orderOK()
-    {
-        if (app()->isLocal() || app()->environment('testing')) {// En local obtengo la actualización de Redsys por parámetros
-            $this->responseNotification();
-        }
-
-        return view('cart.ok', $this->getParams('Pedido'));
-
-    }
-
-
-    public function orderKO()
-    {
-        if (app()->isLocal() || app()->environment('testing')) { // En local obtengo la actualización de Redsys por parámetros
-            $this->responseNotification();
-        }
-
-        return view('cart.ko', $this->getParams('Pedido'));
-    }
 
     public function pagar_pedido(Order $pedido)
     {
