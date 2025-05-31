@@ -2,6 +2,7 @@
 
 /** @noinspection PhpUndefinedMethodInspection */
 
+use App\Models\Donation;
 use App\Models\Payment;
 
 test('puedo crear pagos en diferentes modelos', function ($modelo) {
@@ -69,7 +70,7 @@ test('puedo obtener el modelo a traves del pago', function ($modelo) {
 test('la funcinon generación de número de Pago funciona correctamente', function ($modelo) {
     $modelClass = "App\\Models\\$modelo";
     $model = $modelClass::factory()->create([
-        'number' => call_user_func_array('generate'.$modelo.'Number', []),
+        'number' => call_user_func_array('generate' . $modelo . 'Number', []),
     ]);
 
     if ($modelo === 'Donation') {
@@ -84,7 +85,7 @@ test('la funcinon generación de número de Pago funciona correctamente', functi
     $model->refresh();
 
     if ($modelo === 'Donation') {
-        expect($model->payment->number)->toBe($model->number.'_2');
+        expect($model->payment->number)->toBe($model->number . '_2');
     } else {
         expect($model->payment->number)->toBe($model->number);
     }
@@ -93,3 +94,18 @@ test('la funcinon generación de número de Pago funciona correctamente', functi
     'Donation',
     'Order',
 ]);
+
+test('puedo hacer pagos a una donacion recurrente', function () {
+
+    $donacion = Donation::factory()->create([
+        'type' => Donation::RECURRENTE,
+        'info' => json_decode('{"Ds_Date":"31%2F05%2F2025","Ds_Hour":"00%3A39","Ds_SecurePayment":"1","Ds_Amount":"1000","Ds_Currency":"978","Ds_Order":"9V97ISQQ","Ds_MerchantCode":"357328590","Ds_Terminal":"001","Ds_Response":"0000","Ds_TransactionType":"0","Ds_MerchantData":"","Ds_AuthorisationCode":"031853","Ds_ExpiryDate":"4912","Ds_Merchant_Identifier":"625d3d2506fefefb9e79990f192fc3de74c08317","Ds_ConsumerLanguage":"1","Ds_Card_Country":"724","Ds_Card_Brand":"1","Ds_Merchant_Cof_Txnid":"2505310039010","Ds_ProcessedPayMethod":"78","Ds_Control_1748644741093":"1748644741093"}')
+    ]);
+
+    Payment::factory()->for($donacion, 'payable')->create([
+        'number' => generatePaymentNumber($donacion),
+
+    ]);
+
+    $donacion->recurrentPay();
+});

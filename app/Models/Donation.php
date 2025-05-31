@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\RedsysAPI;
 use App\Models\Traits\HasAddresses;
 use App\Models\Traits\HasPayments;
 use App\Models\Traits\HasStates;
@@ -147,6 +148,27 @@ class Donation extends Model
     public function fechaHumanos(): string
     {
         return Carbon::parse($this->created_at)->diffForHumans();
+    }
+
+    public function recurrentPay(): void
+    {
+        if ($this->state != State::ACTIVA) {
+
+            $this->payments()->create([
+                'number' => generatePaymentNumber($this),
+                'amount' => 0,
+                'info' => [],
+            ]);
+
+
+            $redsys = new RedsysAPI();
+
+            $redsys->getFormPagoAutomatico($this);
+            $result = $redsys->send();
+            dd($result);
+
+        }
+
     }
 
     protected function casts(): array

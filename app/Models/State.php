@@ -26,6 +26,8 @@ class State extends Model
 
     public const ACEPTADO = 'Aceptado';
 
+    public const ACTIVA = 'Activa';
+
     protected $fillable = [
         'stateable_id',
         'stateable_type',
