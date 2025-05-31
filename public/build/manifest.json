@@ -11,17 +11,17 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-D8PZ_3IR.css",
+    "file": "assets/app-zwkRt7oK.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-COEixJ4l.css",
+    "file": "assets/theme-Bhsxlxbx.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },
   "resources/css/frontend.css": {
-    "file": "assets/frontend-CxpQdSQ3.css",
+    "file": "assets/frontend-C6UBQEgj.css",
     "src": "resources/css/frontend.css",
     "isEntry": true
   },
@@ -36,7 +36,7 @@
     "isEntry": true
   },
   "resources/css/theme.css": {
-    "file": "assets/theme-B5cDFzjH.css",
+    "file": "assets/theme-HDqsQTLB.css",
     "src": "resources/css/theme.css",
     "isEntry": true
   },
@@ -62,7 +62,7 @@
     ]
   },
   "resources/js/sliderProductGallery.js": {
-    "file": "assets/sliderProductGallery-Vlr_pK58.js",
+    "file": "assets/sliderProductGallery-BfEMgfBT.js",
     "name": "sliderProductGallery",
     "src": "resources/js/sliderProductGallery.js",
     "isEntry": true,
