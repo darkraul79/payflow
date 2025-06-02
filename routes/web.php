@@ -14,18 +14,21 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontEndController::class, 'index'])->name('home');
 
+Route::get('/kk', [RedsysController::class, 'kk'])->name('kk');
+
 Route::get('/tienda-solidaria/cesta', [CartController::class, 'index'])->name('cart');
 Route::get('/tienda-solidaria/cesta/pedido', [CartController::class, 'form'])->name('checkout');
 
 Route::any('/pedido/response', [RedsysController::class, 'responseOrder'])->name('pedido.response');
 Route::any('/donacion/response', [RedsysController::class, 'donationResponse'])->name('donation.response');
+Route::any('/pago/response', [RedsysController::class, 'pagoResponse'])->name('pago.response');
 Route::get('/tienda-solidaria/cesta/pedido/{pedido}', [RedsysController::class, 'result'])->name('pedido.finalizado');
 Route::get('/donacion/{donacion}', [RedsysController::class, 'result'])->name('donacion.finalizada');
 
-Route::get(Activity::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'activities'])->name('activities.show');
-Route::get(News::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'news'])->name('news.show');
-Route::get(Proyect::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'proyects'])->name('proyects.show');
-Route::get(Product::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'products'])->name('products.show');
+Route::get(Activity::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'activities'])->name('activities.show');
+Route::get(News::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'news'])->name('news.show');
+Route::get(Proyect::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'proyects'])->name('proyects.show');
+Route::get(Product::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'products'])->name('products.show');
 
 // Route::get('/pagina', function () {
 //    return view('page');
@@ -43,4 +46,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

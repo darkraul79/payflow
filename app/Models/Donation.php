@@ -61,7 +61,7 @@ class Donation extends Model
     {
         return [
             'page' => Page::factory()->make([
-                'title' => 'Pedido',
+                'title' => 'Donación',
                 'is_home' => false,
                 'donation' => false,
                 'parent_id' => Page::where('slug', 'tienda-solidaria')->first() ?? null,
@@ -150,24 +150,26 @@ class Donation extends Model
         return Carbon::parse($this->created_at)->diffForHumans();
     }
 
-    public function recurrentPay(): void
+    public function recurrentPay()
     {
-        if ($this->state != State::ACTIVA) {
+//        if ($this->state != State::ACTIVA) {
+        $number = generatePaymentNumber($this);
 
-            $this->payments()->create([
-                'number' => generatePaymentNumber($this),
-                'amount' => 0,
-                'info' => [],
-            ]);
+        $this->payments()->create([
+            'number' => $number,
+            'amount' => 0,
+            'info' => [],
+        ]);
 
 
-            $redsys = new RedsysAPI();
+        $redsys = new RedsysAPI();
 
-            $redsys->getFormPagoAutomatico($this);
-            $result = $redsys->send();
-            dd($result);
+        $parms = $redsys->getFormPagoAutomatico($this, $number);
 
-        }
+        return $parms;
+        return $redsys->send();
+
+//        }
 
     }
 

@@ -204,20 +204,20 @@ class RedsysAPI
         return hash_hmac('sha256', (string)$ent, (string)$key, true);
     }
 
-    public function getFormPagoAutomatico(Donation $donation): array
+    public function getFormPagoAutomatico(Donation $donation, $number): array
     {
 
         $this->setCommonParameters();
         $this->setParameter('DS_MERCHANT_AMOUNT', $donation->totalRedsys);
-        $this->setParameter('DS_MERCHANT_ORDER', $donation->number);
-        $this->setParameter('DS_MERCHANT_URLOK', route('donation.response'));
-        $this->setParameter('DS_MERCHANT_URLKO', route('donation.response'));
+        $this->setParameter('DS_MERCHANT_ORDER', $number);
+        $this->setParameter('DS_MERCHANT_URLOK', route('pago.response'));
+        $this->setParameter('DS_MERCHANT_URLKO', route('pago.response'));
         $this->setParameter('DS_MERCHANT_COF_INI', 'S');
         $this->setParameter('DS_MERCHANT_COF_TYPE', 'R');
         $this->setNotificationUrl($donation);
 
         $this->setParameter('DS_MERCHANT_IDENTIFIER', $donation->info->Ds_Merchant_Identifier);
-        $this->setParameter('DS_MERCHANT_COF_TXNID', $donation->info->Ds_Merchant_Cof_Txnid);
+        $this->setParameter('Ds_Merchant_Cof_Txnid', $donation->info->Ds_Merchant_Cof_Txnid);
         $this->setParameter('DS_MERCHANT_EXCEP_SCA', 'MIT');
         $this->setParameter('DS_MERCHANT_DIRECTPAYMENT', 'true');
 
@@ -231,12 +231,12 @@ class RedsysAPI
 
     }
 
-    public function getFormPagoRecurrente(Donation $donation, $isNew = true): array
+    public function getFormPagoRecurrente(Donation $donation, $isNew = true, $number): array
     {
 
         $this->setCommonParameters();
         $this->setParameter('DS_MERCHANT_AMOUNT', $donation->totalRedsys);
-        $this->setParameter('DS_MERCHANT_ORDER', $donation->number);
+        $this->setParameter('DS_MERCHANT_ORDER', $number);
         $this->setParameter('DS_MERCHANT_URLOK', route('donation.response'));
         $this->setParameter('DS_MERCHANT_URLKO', route('donation.response'));
         $this->setParameter('DS_MERCHANT_IDENTIFIER', 'REQUIRED');
@@ -246,7 +246,7 @@ class RedsysAPI
 
         if (!$isNew) {
             $this->setParameter('DS_MERCHANT_IDENTIFIER', $donation->info->Ds_Merchant_Identifier);
-            $this->setParameter('DS_MERCHANT_COF_TXNID', $donation->info->Ds_Merchant_Cof_Txnid);
+            $this->setParameter('Ds_Merchant_Cof_Txnid', $donation->info->Ds_Merchant_Cof_Txnid);
             $this->setParameter('DS_MERCHANT_EXCEP_SCA', 'MIT');
             $this->setParameter('DS_MERCHANT_DIRECTPAYMENT', 'true');
         }
@@ -304,12 +304,13 @@ class RedsysAPI
 
     public function send()
     {
+
         $data['Ds_MerchantParameters'] = $this->createMerchantParameters();
-        dd($this);
         $data['Ds_Signature'] = $this->createMerchantSignature(config('redsys.key'));
         $data['Ds_SignatureVersion'] = config('redsys.version');
 
         $jsonCode = json_encode($data);
+
 
         $rest = curl_init();
         curl_setopt($rest, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);

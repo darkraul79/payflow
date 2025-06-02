@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\RedsysAPI;
+use App\Models\Donation;
 use App\Models\Order;
 use App\Models\Page;
 use App\Models\Payment;
@@ -28,7 +29,6 @@ class RedsysController extends Controller
         $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
         $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
 
-
         $donacion = Payment::where('number', $decodec['Ds_Order'])->firstOrFail()->payable;
 
         if ($redSys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
@@ -41,13 +41,54 @@ class RedsysController extends Controller
                 : 'Firma no válida';
             $donacion->error($error, $decodec);
 
-
         }
-
 
         return redirect()->route('donacion.finalizada', [
             'donacion' => $donacion->number,
         ])->with('model', class_basename($donacion));
+
+    }
+
+    public function pagoResponse(): RedirectResponse|Response
+    {
+
+        $redSys = new RedsysAPI;
+
+        $datos = request('Ds_MerchantParameters');
+        $signatureRecibida = request('Ds_Signature');
+
+        if (empty($datos) || empty($signatureRecibida)) {
+            abort(404, 'Datos de Redsys no recibidos');
+        }
+
+        $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
+        $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
+
+        $pago = Payment::where('number', $decodec['Ds_Order'])->firstOrFail();
+        $donacion = $pago->payable;
+
+        $cantidad = 0;
+        $info = $decodec;
+
+        if ($redSys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
+
+            $cantidad = convertPriceFromRedsys($decodec['Ds_Amount']);
+
+        } else {
+            $error = hash_equals($firma, $signatureRecibida)
+                ? estado_redsys($decodec['Ds_Response'])
+                : 'Firma no válida';
+            $info['error'] = $error;
+
+        }
+        $pago->update([
+            'info' => $info,
+            'amount' => $cantidad,
+        ]);
+
+        return redirect()->route('donacion.finalizada', [
+            'donacion' => $pago->number,
+        ]);
 
     }
 
@@ -118,5 +159,18 @@ class RedsysController extends Controller
         $modelo = $pago->payable;
 
         return view($modelo->getResultView(), $modelo->getStaticViewParams());
+    }
+
+    public function kk()
+    {
+        $donacion = Donation::find(7);
+        $par = $donacion->recurrentPay();
+        //        $redSys = new RedsysAPI();
+        //        $par = $redSys->getFormPagoAutomatico($donacion, false, $nu);
+
+        return view('kk', [
+            'form' => $par,
+            'donacion' => $donacion,
+        ]);
     }
 }
