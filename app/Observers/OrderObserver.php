@@ -9,6 +9,7 @@ class OrderObserver
 {
     public function created(Order $order): void
     {
+//        CreateOrderEvent::dispatch($order);
         $order->states()->create([
             'name' => State::PENDIENTE,
         ]);

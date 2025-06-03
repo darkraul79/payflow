@@ -163,14 +163,15 @@ class RedsysController extends Controller
 
     public function kk()
     {
+
         $donacion = Donation::find(7);
         $par = $donacion->recurrentPay();
         //        $redSys = new RedsysAPI();
         //        $par = $redSys->getFormPagoAutomatico($donacion, false, $nu);
 
-        return view('kk', [
-            'form' => $par,
-            'donacion' => $donacion,
-        ]);
+//        return view('kk', [
+//            'form' => $par,
+//            'donacion' => $donacion,
+//        ]);
     }
 }

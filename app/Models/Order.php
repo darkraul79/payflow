@@ -43,6 +43,7 @@ class Order extends Model
         'addresses',
     ];
 
+
     public function fechaHumanos(): string
     {
 
@@ -100,7 +101,7 @@ class Order extends Model
         return array_flip($estados);
     }
 
-    public function error($mensaje = null, $redSysResponse): void
+    public function error($mensaje, $redSysResponse): void
     {
         $estado = [
             'name' => State::ERROR,
@@ -122,14 +123,12 @@ class Order extends Model
     public function payed(array $redSysResponse): void
     {
 
-
         $this->payments->where('number', $redSysResponse['Ds_Order'])->firstOrFail()->update(
             [
                 'amount' => convertPriceFromRedsys($redSysResponse['Ds_Amount']),
                 'info' => $redSysResponse,
 
             ]);
-
 
         // Si no existe el estado PAGADO, lo creo
         if (!$this->states()->where('name', State::PAGADO)->exists()) {
@@ -175,10 +174,10 @@ class Order extends Model
         return $this->addresses()->where('type', Address::BILLING)->latest()->first();
     }
 
-    public function shipping_address(): Address
+    public function shipping_address(): Address|null
     {
         // Devuelve la dirección de facturación del pedido
-        return $this->addresses()->where('type', Address::SHIPPING)->get()->first();
+        return $this->addresses()->where('type', Address::SHIPPING)->get()->first() ?? null;
     }
 
     /**
@@ -204,6 +203,23 @@ class Order extends Model
             ]),
             'static' => true,
         ];
+    }
+
+    public function itemsArray(): array
+    {
+        // Devuelve un array con los items del pedido
+        $items = [];
+        foreach ($this->items as $item) {
+            $items[] = [
+                'name' => $item->product->name,
+                'quantity' => $item->quantity,
+                'price' => $item->product->getFormatedPriceWithDiscount(),
+                'subtotal' => convertPrice($item->subtotal),
+                'image' => $item->product->getFirstMedia('product_images')->getPath('thumb') ?? '',
+            ];
+        }
+
+        return $items;
     }
 
     /**

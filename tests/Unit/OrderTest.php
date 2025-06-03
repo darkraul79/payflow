@@ -159,3 +159,20 @@ test('cuando realizo pedido resto del stock de producto', function () {
     $producto->refresh();
     expect($producto->stock)->toBe(4);
 });
+
+
+test('puedo obtener listado de items para emails', function () {
+    $productos = Product::factory()
+        ->imagen(public_path('storage/productos/botella-azul.webp'))
+        ->count(2)
+        ->create();
+
+
+    $order = Order::factory()->hasItems(2)->create();
+
+    expect($order->itemsArray())->toBeArray()
+        ->and($order->itemsArray())->toHaveCount(2)
+        ->and($order->itemsArray()[0])->toHaveKeys(["name", "price", "quantity", "subtotal", "image"]);
+
+
+});

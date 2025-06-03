@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Events\CreateOrderEvent;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\State;
@@ -33,10 +34,13 @@ class OrderFactory extends Factory
         return $this->afterMaking(function (Order $pedido) {
         })->afterCreating(function (Order $pedido) {
 
-            $address = Address::factory()->create([
-                'type' => ADDRESS::BILLING,
-            ]);
-            $pedido->addresses()->attach($address);
+            if (!$pedido->address?->exists()) {
+                $address = Address::factory()->create([
+                    'type' => Address::BILLING,
+                ]);
+                $pedido->addresses()->attach($address);
+            }
+            CreateOrderEvent::dispatch($pedido);
 
         });
     }
@@ -86,10 +90,11 @@ class OrderFactory extends Factory
         });
     }
 
-    public function withDirecionEnvio(): Factory
+    public function withDirecionEnvio($params): Factory
     {
         return $this->has(Address::factory()->state([
             'type' => Address::SHIPPING,
+            ...$params,
         ]), 'addresses');
     }
 
@@ -101,5 +106,28 @@ class OrderFactory extends Factory
             ]);
             $pedido->addresses()->attach($address);
         });
+    }
+
+    public function withDireccion($params = null): Factory
+    {
+
+        return $this->has(Address::factory()->state([
+            'type' => Address::BILLING,
+            ...$params ?? [],
+        ]), 'addresses');
+    }
+
+    public function withDirecciones($billingAddress = null, $shippingAddress = null): Factory
+    {
+
+        return $this
+            ->has(Address::factory()->state([
+                'type' => Address::BILLING,
+                ...$billingAddress ?? [],
+            ]), 'addresses')
+            ->has(Address::factory()->state([
+                'type' => Address::SHIPPING,
+                ...$shippingAddress ?? [],
+            ]), 'addresses');
     }
 }

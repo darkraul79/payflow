@@ -6,6 +6,7 @@ use App\Http\Controllers\RedsysController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
+use App\Mail\OrderNew;
 use App\Models\Activity;
 use App\Models\News;
 use App\Models\Product;
@@ -15,6 +16,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [FrontEndController::class, 'index'])->name('home');
 
 Route::get('/kk', [RedsysController::class, 'kk'])->name('kk');
+Route::get('/mailable', function () {
+    $order = App\Models\Order::find(69);
+    return new OrderNew($order);
+});
 
 Route::get('/tienda-solidaria/cesta', [CartController::class, 'index'])->name('cart');
 Route::get('/tienda-solidaria/cesta/pedido', [CartController::class, 'form'])->name('checkout');
