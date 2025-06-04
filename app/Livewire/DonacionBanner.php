@@ -72,7 +72,7 @@ class DonacionBanner extends Component
         $paymentProcess = new PaymentProcess(Donation::class, [
             'amount' => convertPriceNumber($this->amount),
             'type' => $this->type,
-            'frequency' => $this->frequency,
+            'frequency' => $this->frequency ?? null,
         ]);
         $formData = $paymentProcess->getFormRedSysData();
 
