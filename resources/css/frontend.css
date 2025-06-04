@@ -139,10 +139,6 @@
             }
         }
 
-        .form-error {
-            @apply text-error/80 text-[11px];
-        }
-
         input,
         select {
             @apply border-gris! text-azul-sea! rounded-md border;
@@ -157,5 +153,9 @@
                 @apply text-gris;
             }
         }
+    }
+
+    .form-error {
+        @apply text-error/80 text-[11px];
     }
 }

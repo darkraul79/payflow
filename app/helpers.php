@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\Donation;
 use App\Models\Order;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Number;
+use Illuminate\Support\Str;
 
 if (!function_exists('getUrlDownloads')) {
     function getUrlDownloads(string $file): string
@@ -56,6 +59,7 @@ if (!function_exists('convertPrice')) {
         if (!$items_number) {
             $price = 0;
         }
+
         return Number::currency($price, 'EUR', locale: 'es-ES', precision: 2);
     }
 }
@@ -69,6 +73,19 @@ if (!function_exists('convertPriceNumber')) {
 
         // Asegúrate de que sea un número flotante
         return round((float)$price, 2);
+    }
+}
+if (!function_exists('convertNumberToRedSys')) {
+    function convertNumberToRedSys($price): int
+    {
+        // Reemplaza la coma por un punto para convertirlo a un formato numérico válido
+        $price = str_replace(',', '.', $price);
+
+        // Asegúrate de que sea un número flotante con dos decimales
+        $price = number_format((float)$price, 2, '.', '');
+
+        // Elimina el punto decimal y devuelve el número como entero
+        return (int)str_replace('.', '', $price);
     }
 }
 
@@ -94,7 +111,7 @@ if (!function_exists('getProvincias')) {
 
 }
 
-if (!function_exists('getPgenerateOrderNumberrovincias')) {
+if (!function_exists('generateOrderNumber')) {
 
     function generateOrderNumber(): string
     {
@@ -105,7 +122,6 @@ if (!function_exists('getPgenerateOrderNumberrovincias')) {
         return $orderNumber;
     }
 }
-
 
 /**
  * Genera número de pedido, 4 primeros caracteres numéricos y 8 caracteres alfanuméricos
@@ -129,5 +145,37 @@ if (!function_exists('estado_redsys')) {
             9078 => 'Tipo de operación no permitida para esa tarjeta',
             default => 'Error RedSys - ' . $codigoOriginal,
         };
+    }
+}
+if (!function_exists('convertPriceFromRedsys')) {
+    function convertPriceFromRedsys($price): float
+    {
+        // Convertir el precio de redsys a float
+        return (float)$price / 100 ?? 0.0;
+
+    }
+}
+if (!function_exists('generateDonationNumber')) {
+    function generateDonationNumber(): string
+    {
+
+        do {
+            $orderNumber = Str::upper(Str::random(8));
+        } while (Donation::where('number', $orderNumber)->exists());
+
+        return $orderNumber;
+    }
+}
+
+if (!function_exists('generatePaymentNumber')) {
+    function generatePaymentNumber(Model $model): string
+    {
+        $suffix = '';
+        if ($model->payments()->count()) {
+            $suffix = '_' . ($model->payments()->count() + 1);
+        }
+
+
+        return $model->number . $suffix; // Incrementar en 1
     }
 }

@@ -2,19 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Models\Order;
-use App\Models\OrderAddress;
+use App\Models\Address;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class OrderAddressFactory extends Factory
+class AddressFactory extends Factory
 {
-    protected $model = OrderAddress::class;
+    protected $model = Address::class;
 
     public function definition(): array
     {
         return [
-            'type' => OrderAddress::BILLING,
+            'type' => Address::BILLING,
             'name' => $this->faker->name(),
             'last_name' => $this->faker->lastName(),
             'company' => $this->faker->company(),
@@ -27,8 +26,17 @@ class OrderAddressFactory extends Factory
             'phone' => $this->faker->phoneNumber(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
+            'notes' => $this->faker->optional()->sentence(),
 
-            'order_id' => Order::factory(),
         ];
+    }
+
+    public function certificado(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'type' => Address::CERTIFICATE,
+            ];
+        });
     }
 }

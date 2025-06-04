@@ -5,7 +5,6 @@ namespace App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -48,10 +47,10 @@ class UpdateOrder extends Page implements HasForms
                 Select::make('estado')
                     ->label('Estado')
                     ->options(fn() => method_exists($this->record, 'available_states') ? $this->record->available_states() : []),
-                TextInput::make('mensaje')
+                /*TextInput::make('mensaje')
                     ->helperText('Mensaje opcional, que el usuario podrá ver en su historial de pedidos')
                     ->label('Mensaje')
-                    ->default(''),
+                    ->default(''),*/
             ]);
 
     }
@@ -60,18 +59,27 @@ class UpdateOrder extends Page implements HasForms
     {
         $campos = $this->validate([
             'estado' => 'required',
-            'mensaje' => 'nullable',
+            'mensaje' => 'nullable|string|max:255',
         ]);
 
         $this->record->states()->create([
             'name' => $this->pedido->getStates()[$campos['estado']],
             'message' => $campos['mensaje'],
         ]);
+        $this->estado = false;
 
         $this->record->touch('updated_at');
 
         $this->record->refresh();
         $this->pedido->refresh();
+
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'estado.required' => 'Debes seleccionar un estado.',
+        ];
 
     }
 }

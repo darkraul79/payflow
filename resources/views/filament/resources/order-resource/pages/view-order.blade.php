@@ -8,7 +8,11 @@
             @include('filament.resources.order-resource.pages.order-items')
         </div>
         <div class="lg:flex-1/5">
-            @include('filament.resources.order-resource.pages.order-states', ['update' => false])
+            @include('filament.resources.order-resource.pages.order-states', ['update' => false, 'infotext' => 'Comprueba los estados por lo que ha pasado el pedido.'])
+
+            <div class="my-6">
+                @include('filament.resources.payments', ['update' => false])
+            </div>
         </div>
     </div>
 </x-filament-panels::page>

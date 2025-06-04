@@ -7,7 +7,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\ItemsRelationManager;
 use App\Models\Order;
-use App\Models\OrderState;
+use App\Models\State;
 use Exception;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -82,12 +82,12 @@ class OrderResource extends Resource
                         Select::make('estado')
                             ->options([
 
-                                1 => OrderState::FINALIZADO,
-                                2 => OrderState::PENDIENTE,
-                                3 => OrderState::PAGADO,
-                                4 => OrderState::ENVIADO,
-                                5 => OrderState::CANCELADO,
-                                6 => OrderState::ERROR,
+                                1 => State::FINALIZADO,
+                                2 => State::PENDIENTE,
+                                3 => State::PAGADO,
+                                4 => State::ENVIADO,
+                                5 => State::CANCELADO,
+                                6 => State::ERROR,
                             ])
                             ->label('Estado')
                             ->default(false),

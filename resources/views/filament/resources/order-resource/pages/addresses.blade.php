@@ -1,10 +1,18 @@
+@php
+    use App\Models\Address;
+@endphp
+
 @foreach ($record->addresses as $address)
     <x-filament::section
         class="mb-6 gap-2 {{ $record->addresses->count()>1?' w-1/2 ': 'w-full' }} text-xs"
     >
         <x-slot name="description">
             <span class="font-semibold text-gray-400!">
-                Dirección de {{ $address->type }}
+                @if ($address->type === Address::CERTIFICATE)
+                    {{ $address->type }}
+                @else
+                    Dirección de {{ $address->type }}
+                @endif
             </span>
         </x-slot>
 

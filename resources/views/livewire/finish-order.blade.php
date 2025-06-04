@@ -5,4 +5,6 @@
     <div class="col-span-5 lg:col-span-2">
         @include('frontend.elements.order.info')
     </div>
+
+    @include('components.formRedSys')
 </div>

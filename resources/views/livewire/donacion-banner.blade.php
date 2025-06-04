@@ -1,3 +1,8 @@
+@php
+    use App\Helpers\RedsysAPI;
+    use App\Models\Donation;
+@endphp
+
 <div
     class="card top-0 right-0 mb-6 h-auto w-full p-6 md:sticky md:max-w-[400px]"
 >
@@ -7,24 +12,47 @@
 
     <div class="my-6 flex w-full">
         <x-radiobutton-donacion
-            name="socio"
-            :default="0"
+            name="type"
+            :default="$type"
             :options="[
                 [
                     'text' => 'Donación única',
-                    'value' => false,
+                    'value' => Donation::UNICA,
                 ],
                 [
                     'text' => 'Hazte Socio',
-                    'value' => true,
+                    'value' => Donation::RECURRENTE,
                 ],
             ]"
         />
     </div>
-    <div class="my-6 flex w-full">
+    @if ($type === Donation::RECURRENTE)
+        <div class="my-6 flex w-full" wire:model="frequency">
+            <x-radiobutton-donacion
+                name="frequency"
+                :default="$frequency"
+                :options="[
+                    [
+                        'text' => 'Mensual',
+                        'value' => Donation::FREQUENCY['MENSUAL'],
+                    ],
+                    [
+                        'text' => 'Trimestral',
+                        'value' => Donation::FREQUENCY['TRIMESTRAL'],
+                    ],
+                    [
+                        'text' => 'Anual',
+                        'value' => Donation::FREQUENCY['ANUAL'],
+                    ],
+                ]"
+            />
+        </div>
+    @endif
+
+    <div class="my-6 flex w-full" wire:model="amount_select">
         <x-radiobutton-donacion
-            name="cantidad"
-            :default="1"
+            name="amount_select"
+            :default="$amount_select"
             :options="[
                 [
                     'text' => '10',
@@ -48,9 +76,10 @@
         >
             <input
                 type="text"
-                name="price"
-                id="price"
-                class="w-full border-0 p-1 font-semibold shadow-none focus:border-0! focus:ring-0 focus:outline-0!"
+                name="amount"
+                id="amount"
+                class="w-full border-0 p-1 text-end font-semibold shadow-none focus:border-0! focus:ring-0 focus:outline-0!"
+                wire:model.live="amount"
             />
             <div
                 class="text-azul-mist shrink-0 px-2 text-base font-semibold select-none"
@@ -61,15 +90,20 @@
         <small class="text-azul-gray block w-full text-[11px]">
             O si lo prefieres, puedes escribir otra cantidad
         </small>
+
+        <x-error class="form-error" field="amount" />
     </div>
 
     <div class="my-6">
         <button
             class="btn bg-amarillo text-azul-mist! hover:bg-amarillo/70 w-full cursor-pointer font-semibold"
+            wire:click="submit"
         >
             Hacer una donacion
         </button>
     </div>
+
+    @include('components.formRedSys')
 
     <div
         class="text-azul-gray font-teacher before:border-azul-cobalt after:border-azul-cobalt relative flex items-center justify-between text-center text-[11px] font-thin tracking-widest before:flex-1 before:border-t before:content-[''] after:block after:flex-1 after:border-t after:content-['']"

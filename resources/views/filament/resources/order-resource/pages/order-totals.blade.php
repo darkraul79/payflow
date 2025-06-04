@@ -26,7 +26,7 @@
             Total:
         </span>
         <span class="w-fit min-w-[80px] text-end font-bold">
-            {{ convertPrice($record->total) }}
+            {{ convertPrice($record->amount) }}
         </span>
     </div>
 

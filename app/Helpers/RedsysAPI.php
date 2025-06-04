@@ -2,7 +2,9 @@
 
 namespace App\Helpers;
 
+use App\Models\Donation;
 use App\Models\Order;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * NOTA SOBRE LA LICENCIA DE USO DEL SOFTWARE
@@ -27,6 +29,12 @@ use App\Models\Order;
  */
 class RedsysAPI
 {
+    const TIMEOUT = 10;
+
+    const READ_TIMEOUT = 120;
+
+    const SSLVERSION_TLSv1_2 = 6;
+
     /****** Array de DatosEntrada ******/
     public array $vars_pay = [];
 
@@ -35,11 +43,6 @@ class RedsysAPI
     // //////////					FUNCIONES AUXILIARES:							  ////////////
     // ////////////////////////////////////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static function getRedsysUrl(): string
-    {
-        return config('redsys.enviroment') == 'test' ? 'https://sis-t.redsys.es:25443/sis/realizarPago' : 'https://sis.redsys.es/sis/realizarPago';
-    }
 
     /******  Get parameter ******/
     public function getParameter($key)
@@ -62,50 +65,68 @@ class RedsysAPI
         return base64_decode(strtr($input, '-_', '+/'));
     }
 
+    /******  Convertir String en Array ******/
+
+    public function stringToArray($datosDecod): void
+    {
+        $this->vars_pay = json_decode((string)$datosDecod, true); // (PHP 5 >= 5.2.0)
+    }
+
     // ////////////////////////////////////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////////////////////////
     // //////////	   FUNCIONES PARA LA GENERACIÓN DEL FORMULARIO DE PAGO:			  ////////////
     // ////////////////////////////////////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////////////////////////
 
-    /******  Convertir String en Array ******/
-
-    public function stringToArray($datosDecod): void
-    {
-        $this->vars_pay = json_decode((string) $datosDecod, true); // (PHP 5 >= 5.2.0)
-    }
-
-    public function actualizaDatosRedSys(Order $pedido): array
+    public function getFormDirectPay(Model $model): array
     {
 
-        $this->setParameter('DS_MERCHANT_AMOUNT', $pedido->totalRedsys);
-        $this->setParameter('DS_MERCHANT_ORDER', $pedido->number);
-        $this->setParameter('DS_MERCHANT_MERCHANTCODE', config('redsys.merchantcode'));
-        $this->setParameter('DS_MERCHANT_CURRENCY', config('redsys.currency'));
-        $this->setParameter('DS_MERCHANT_TRANSACTIONTYPE', config('redsys.transactiontype'));
-        $this->setParameter('DS_MERCHANT_TERMINAL', config('redsys.terminal'));
-        $this->setParameter('DS_MERCHANT_MERCHANTURL', config('redsys.url_notification'));
-        $this->setParameter('DS_MERCHANT_URLOK', route('checkout.ok'));
-        $this->setParameter('DS_MERCHANT_URLKO', route('checkout.ko'));
-        $this->setParameter('DS_MERCHANT_MERCHANTNAME', config('redsys.tradename'));
+        $this->setCommonParameters();
 
-        if (! app()->isLocal() && ! app()->environment('testing')) { // Si no estoy en local, añado la URL de notificacion de redSys
-            $this->setParameter('DS_MERCHANT_MERCHANTURL', route('pagar-pedido-response'));
+        $this->setParameter('DS_MERCHANT_AMOUNT', $model->totalRedsys);
+        $this->setParameter('DS_MERCHANT_ORDER', $model->number);
+
+        if ($model instanceof Donation) {
+            $this->setParameter('DS_MERCHANT_URLOK', route('donation.response'));
+            $this->setParameter('DS_MERCHANT_URLKO', route('donation.response'));
+        } else {
+            $this->setParameter('DS_MERCHANT_URLOK', route('pedido.response'));
+            $this->setParameter('DS_MERCHANT_URLKO', route('pedido.response'));
         }
 
+        $this->setNotificationUrl($model);
+
         return [
-            //            'Url' => self::getRedsysUrl(),
             'Ds_MerchantParameters' => $this->createMerchantParameters(),
             'Ds_Signature' => $this->createMerchantSignature(config('redsys.key')),
             'Ds_SignatureVersion' => config('redsys.version'),
+            'Raw' => $this->vars_pay,
         ];
 
+    }
+
+    public function setCommonParameters(): void
+    {
+        $this->setParameter('DS_MERCHANT_MERCHANTCODE', config('redsys.merchantcode'));
+        $this->setParameter('DS_MERCHANT_CURRENCY', config('redsys.currency'));
+        $this->setParameter('DS_MERCHANT_TRANSACTIONTYPE', config('redsys.transactiontype'));
+        $this->setParameter('DS_MERCHANT_MERCHANTNAME', config('redsys.tradename'));
+        $this->setParameter('DS_MERCHANT_TERMINAL', config('redsys.terminal'));
     }
 
     /******  Set parameter ******/
     public function setParameter($key, $value): void
     {
         $this->vars_pay[$key] = $value;
+    }
+
+    public function setNotificationUrl(Model $model): void
+    {
+        if (!app()->isLocal() && !app()->environment('testing')) { // Si no estoy en local, añado la URL de notificacion de redSys
+            $this->setParameter('DS_MERCHANT_MERCHANTURL',
+                $model instanceof Order ? route('pedido.response') : route('donation.response')
+            );
+        }
     }
 
     // ////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,7 +153,7 @@ class RedsysAPI
 
     public function encodeBase64($data): string
     {
-        return base64_encode((string) $data);
+        return base64_encode((string)$data);
     }
 
     public function createMerchantSignature($key): string
@@ -152,16 +173,16 @@ class RedsysAPI
 
     public function decodeBase64($data): false|string
     {
-        return base64_decode((string) $data);
+        return base64_decode((string)$data);
     }
 
     /******  3DES Function  ******/
     public function encrypt_3DES($message, $key): string
     {
         // Se cifra
-        $l = ceil(strlen((string) $message) / 8) * 8;
+        $l = ceil(strlen((string)$message) / 8) * 8;
 
-        return substr(openssl_encrypt($message.str_repeat("\0", $l - strlen((string) $message)), 'des-ede3-cbc', $key,
+        return substr(openssl_encrypt($message . str_repeat("\0", $l - strlen((string)$message)), 'des-ede3-cbc', $key,
             OPENSSL_RAW_DATA, "\0\0\0\0\0\0\0\0"), 0, $l);
 
     }
@@ -182,7 +203,55 @@ class RedsysAPI
     public function mac256($ent, $key): string
     {
         // (PHP 5 >= 5.1.2)
-        return hash_hmac('sha256', (string) $ent, (string) $key, true);
+        return hash_hmac('sha256', (string)$ent, (string)$key, true);
+    }
+
+    public function getFormPagoAutomatico(Donation $donation, $number): array
+    {
+
+        $this->setCommonParameters();
+        $this->setParameter('DS_MERCHANT_AMOUNT', $donation->totalRedsys);
+        $this->setParameter('DS_MERCHANT_ORDER', $number);
+        $this->setParameter('DS_MERCHANT_URLOK', route('pago.response'));
+        $this->setParameter('DS_MERCHANT_URLKO', route('pago.response'));
+        //        $this->setParameter('DS_MERCHANT_COF_INI', 'S');
+        $this->setParameter('DS_MERCHANT_COF_TYPE', 'R');
+        //        $this->setNotificationUrl($donation);
+
+        $this->setParameter('DS_MERCHANT_IDENTIFIER', $donation->info->Ds_Merchant_Identifier);
+        $this->setParameter('Ds_Merchant_Cof_Txnid', $donation->info->Ds_Merchant_Cof_Txnid);
+        $this->setParameter('DS_MERCHANT_EXCEP_SCA', 'MIT');
+        $this->setParameter('DS_MERCHANT_DIRECTPAYMENT', 'true');
+
+        return [
+            'Ds_MerchantParameters' => $this->createMerchantParameters(),
+            'Ds_Signature' => $this->createMerchantSignature(config('redsys.key')),
+            'Ds_SignatureVersion' => config('redsys.version'),
+            'Raw' => $this->vars_pay,
+        ];
+
+    }
+
+    public function getFormNewPagoRecurrente(Donation $donation): array
+    {
+
+        $this->setCommonParameters();
+        $this->setParameter('DS_MERCHANT_AMOUNT', $donation->totalRedsys);
+        $this->setParameter('DS_MERCHANT_ORDER', $donation->number);
+        $this->setParameter('DS_MERCHANT_URLOK', route('donation.response'));
+        $this->setParameter('DS_MERCHANT_URLKO', route('donation.response'));
+        $this->setParameter('DS_MERCHANT_IDENTIFIER', 'REQUIRED');
+        $this->setParameter('DS_MERCHANT_COF_INI', 'S');
+        $this->setParameter('DS_MERCHANT_COF_TYPE', 'R');
+        $this->setNotificationUrl($donation);
+
+        return [
+            'Ds_MerchantParameters' => $this->createMerchantParameters(),
+            'Ds_Signature' => $this->createMerchantSignature(config('redsys.key')),
+            'Ds_SignatureVersion' => config('redsys.version'),
+            'Raw' => $this->vars_pay,
+        ];
+
     }
 
     public function checkSignature($key, $postData): bool
@@ -223,6 +292,55 @@ class RedsysAPI
     /******  Base64 Functions  ******/
     public function base64_url_encode($input): string
     {
-        return strtr(base64_encode((string) $input), '+/', '-_');
+        return strtr(base64_encode((string)$input), '+/', '-_');
+    }
+
+    public function send()
+    {
+
+        $data['Ds_MerchantParameters'] = $this->createMerchantParameters();
+        $data['Ds_Signature'] = $this->createMerchantSignature(config('redsys.key'));
+        $data['Ds_SignatureVersion'] = config('redsys.version');
+
+        $jsonCode = json_encode($data);
+
+        $rest = curl_init();
+        curl_setopt($rest, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($rest, CURLOPT_URL, self::getRedsysUrl(true));
+        curl_setopt($rest, CURLOPT_CONNECTTIMEOUT, self::TIMEOUT);
+        curl_setopt($rest, CURLOPT_TIMEOUT, self::READ_TIMEOUT);
+        curl_setopt($rest, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($rest, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($rest, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($rest, CURLOPT_SSLVERSION, self::SSLVERSION_TLSv1_2);
+        curl_setopt($rest, CURLOPT_POST, true);
+        curl_setopt($rest, CURLOPT_POSTFIELDS, $jsonCode);
+
+        $tmp = curl_exec($rest);
+        $httpCode = curl_getinfo($rest, CURLINFO_HTTP_CODE);
+
+        if ($tmp !== false && $httpCode == 200) {
+            $result = $tmp;
+        } else {
+            $strError = 'Request failure ' . (($httpCode != 200) ? "[HttpCode: '" . $httpCode . "']" : '') . ((curl_error($rest)) ? " [Error: '" . curl_error($rest) . "']" : '');
+            exit($strError);
+        }
+
+        curl_close($rest);
+
+        return $result;
+    }
+
+    public static function getRedsysUrl($payDirect = false): string
+    {
+        if (!$payDirect) {
+            return config('redsys.enviroment') == 'test' ? 'https://sis-t.redsys.es:25443/sis/realizarPago' : 'https://sis.redsys.es/sis/realizarPago';
+        }
+
+        return config('redsys.enviroment') == 'test' ? 'https://sis-t.redsys.es:25443/sis/rest/trataPeticionREST' : 'https://sis.redsys.es/sis/rest/trataPeticionREST';
+    }
+
+    public function setParamsRedsys(array $formData)
+    {
     }
 }

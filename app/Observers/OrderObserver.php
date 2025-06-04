@@ -3,15 +3,15 @@
 namespace App\Observers;
 
 use App\Models\Order;
-use App\Models\OrderState;
 
 class OrderObserver
 {
     public function created(Order $order): void
     {
-        $order->states()->create([
-            'name' => OrderState::PENDIENTE,
-        ]);
+//        CreateOrderEvent::dispatch($order);
+        /*$order->states()->create([
+            'name' => State::PENDIENTE,
+        ]);*/
     }
 
     public function deleted(Order $order): void
