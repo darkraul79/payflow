@@ -23,6 +23,8 @@ class FinishOrderComponent extends Component
 
     public $payment_method = 'tarjeta';
 
+    public $isValid = false;
+
     public $shipping = [
         'name' => '',
         'last_name' => '',
@@ -80,8 +82,11 @@ class FinishOrderComponent extends Component
     ];
 
     public array $rules = [];
+
     public mixed $MerchantParameters;
+
     public mixed $MerchantSignature;
+
     public mixed $SignatureVersion;
 
     /**
@@ -103,7 +108,7 @@ class FinishOrderComponent extends Component
             ];
         }
 
-        if (!Cart::canCheckout()) {
+        if (! Cart::canCheckout()) {
             $this->redirectRoute('cart');
         }
 
@@ -120,8 +125,16 @@ class FinishOrderComponent extends Component
         Cart::clearCart();
 
         $order->refresh();
-        $paymentProcess = new PaymentProcess($order);
 
+        $paymentProcess = new PaymentProcess(Order::class, [
+            'amount' => $order->amount,
+            'id' => $order->id,
+            'shipping' => $order->shipping,
+            'shipping_cost' => $order->shipping_cost,
+            'subtotal' => $order->subtotal,
+            'taxes' => $order->taxes,
+            'payment_method' => $this->payment_method,
+        ]);
 
         $formData = $paymentProcess->getFormRedSysData();
 
@@ -129,6 +142,9 @@ class FinishOrderComponent extends Component
         $this->MerchantSignature = $formData['Ds_Signature'];
         $this->SignatureVersion = $formData['Ds_SignatureVersion'];
 
+        // Disparar evento para enviar el formulario
+        $this->isValid = true;
+        $this->dispatch('submit-redsys-form');
     }
 
     public function updateRules(): void
@@ -153,12 +169,11 @@ class FinishOrderComponent extends Component
             'payment_method' => $this->payment_method,
         ]);
 
-        /* $order; */
-
         $this->createAddresses($order);
         $this->addItemsToOrder($order);
 
         CreateOrderEvent::dispatch($order);
+
         return $order;
     }
 

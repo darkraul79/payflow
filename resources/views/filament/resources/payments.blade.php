@@ -1,4 +1,9 @@
-<x-filament::section icon="bi-cash-stack" heading="Pagos" :compact="true">
+<x-filament::section
+    icon="bi-cash-stack"
+    heading="Pagos"
+    :compact="true"
+    class="w-full"
+>
     <ul>
         @foreach ($record->payments as $payment)
             <li

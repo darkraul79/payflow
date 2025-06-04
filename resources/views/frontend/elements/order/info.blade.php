@@ -81,9 +81,13 @@
     <div class="px-4">
         <button
             class="btn btn-primary mt-4 w-full cursor-pointer rounded-full"
+            wire:loading.attr="disabled"
             wire:click="submit"
         >
-            Realizar pedido
+            <span wire:loading.class="inline-block" class="hidden">
+                Enviando...
+            </span>
+            <span wire:loading.class="hidden">Realizar pedido</span>
         </button>
     </div>
 </div>

@@ -26,8 +26,30 @@
             ]"
         />
     </div>
+    @if ($type === Donation::RECURRENTE)
+        <div class="my-6 flex w-full" wire:model="frequency">
+            <x-radiobutton-donacion
+                name="frequency"
+                :default="$frequency"
+                :options="[
+                    [
+                        'text' => 'Mensual',
+                        'value' => Donation::FREQUENCY['MENSUAL'],
+                    ],
+                    [
+                        'text' => 'Trimestral',
+                        'value' => Donation::FREQUENCY['TRIMESTRAL'],
+                    ],
+                    [
+                        'text' => 'Anual',
+                        'value' => Donation::FREQUENCY['ANUAL'],
+                    ],
+                ]"
+            />
+        </div>
+    @endif
+
     <div class="my-6 flex w-full" wire:model="amount_select">
-        {{ $amount }} - {{ $amount_select }}
         <x-radiobutton-donacion
             name="amount_select"
             :default="$amount_select"

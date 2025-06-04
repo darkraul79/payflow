@@ -1,6 +1,6 @@
 <x-filament::section
     icon="bi-truck"
-    description="Comprueba los estados por lo que ha pasado el pedido."
+    description="{{$infotext ?? 'Comprueba los estados por los que ha pasado el pedido.'}}"
     heading="Seguimiento"
 >
     <x-order-time-line :pedido="$record" />

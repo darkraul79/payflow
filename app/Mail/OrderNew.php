@@ -31,7 +31,7 @@ class OrderNew extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Nuevo Pedido' . $this->order->number,
+            subject: 'Asunto: ¡Gracias por tu compra solidaria!',
         );
     }
 
@@ -53,9 +53,7 @@ class OrderNew extends Mailable
                 'shipping_cost' => convertPrice($this->order->shipping_cost),
             ],
         );
-        return new Content(
-            view: 'emails.new-order',
-        );
+
     }
 
     /**

@@ -4,9 +4,10 @@
 
 <form
     action="{{ RedsysAPI::getRedsysUrl() }}"
-    id="redsys_form_donacion"
+    id="redsys_form"
     method="post"
     name="redsys_form"
+    class="hidden"
 >
     <input
         name="Ds_MerchantParameters"
@@ -31,3 +32,14 @@
     />
     <button type="submit" id="redsys_submit_donacion">Enviar</button>
 </form>
+@script
+    <script>
+        $wire.on('submit-redsys-form', () => {
+            Livewire.hook('morph.updated', ({ el, component }) => {
+                if (el.id === 'redsys_form') {
+                    el.submit();
+                }
+            });
+        });
+    </script>
+@endscript

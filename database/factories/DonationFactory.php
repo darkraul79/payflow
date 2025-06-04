@@ -21,6 +21,7 @@ class DonationFactory extends Factory
         return [
             'amount' => fake()->randomFloat(2, 1, 1000), // Random amount between 1 and 1000
             'number' => generateDonationNumber(),
+            'frequency' => null, // Default frequency
             'info' => [
                 'donor_name' => $this->faker->name(),
                 'donor_email' => $this->faker->email(),
@@ -46,7 +47,7 @@ class DonationFactory extends Factory
             ]);
 
             State::factory()->make([
-                'name' => State::ACEPTADO,
+                'name' => State::ACTIVA,
                 'stateable_id_id' => $donacion->id,
                 'stateable_type_type' => Donation::class,
             ]);
@@ -54,7 +55,7 @@ class DonationFactory extends Factory
 
 
             $donacion->states()->create([
-                'name' => State::ACEPTADO,
+                'name' => State::ACTIVA,
                 'message' => 'Pago aceptado',
             ]);
 

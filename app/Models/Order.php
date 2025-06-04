@@ -69,8 +69,7 @@ class Order extends Model
 
     public function statesWithStateInitial(): Collection
     {
-        // devuelvo los estados y agrega un estado de reccibido
-        //        dd($this->states);
+
         return $this->states
             ->prepend(State::make([
 
@@ -91,14 +90,10 @@ class Order extends Model
     public function available_states(): array
     {
 
-        $estados = array_flip(self::getStates());
+        $estados = collect(self::getStates());
 
-        foreach ($this->states as $estadoYaUsado) {
-            unset($estados[$estadoYaUsado->name]);
-        }
-        unset($estados[State::ACEPTADO]); // no se puede asignar el estado pendiente
+        return $estados->except(['ACTIVA', 'ACEPTADO'])->toArray();
 
-        return array_flip($estados);
     }
 
     public function error($mensaje, $redSysResponse): void
@@ -168,7 +163,7 @@ class Order extends Model
 
     }
 
-    public function billing_address(): Address
+    public function billing_address(): Address|null
     {
         // Devuelve la dirección de facturación del pedido
         return $this->addresses()->where('type', Address::BILLING)->latest()->first();
@@ -215,7 +210,7 @@ class Order extends Model
                 'quantity' => $item->quantity,
                 'price' => $item->product->getFormatedPriceWithDiscount(),
                 'subtotal' => convertPrice($item->subtotal),
-                'image' => $item->product->getFirstMedia('product_images')->getPath('thumb') ?? '',
+                'image' => $item->product->getFirstMedia('product_images')?->getPath('thumb') ?? '',
             ];
         }
 

@@ -6,6 +6,7 @@
             @include('filament.resources.payments')
         </div>
         <div class="gap-6 lg:flex-1/3 lg:flex-row">
+            @include('filament.resources.order-resource.pages.order-states', ['update' => false, 'infotext' => 'Comprueba los estados por lo que ha pasado la donación.'])
             @include('filament.resources.order-resource.pages.addresses')
         </div>
     </div>

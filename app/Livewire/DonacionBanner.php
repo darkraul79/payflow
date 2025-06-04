@@ -16,6 +16,8 @@ class DonacionBanner extends Component
 
     public string $amount_select = '0';
 
+    public string $frequency;
+
     public string $type = Donation::UNICA;
 
     public string $MerchantParameters = '';
@@ -24,17 +26,19 @@ class DonacionBanner extends Component
 
     public string $SignatureVersion = '';
 
+    public bool $isValid = false;
+
     public function render(): View
     {
-//        $donacion = Donation::find(2);
-//        $redsys = new RedsysAPI;
-//        $formData = $redsys->getFormPagoRecurrente($donacion, false);
-//        $this->MerchantParameters = $formData['Ds_MerchantParameters'];
-//        $this->MerchantSignature = $formData['Ds_Signature'];
-//        $this->SignatureVersion = $formData['Ds_SignatureVersion'];
-//        dd($redsys);
+        //        $donacion = Donation::find(2);
+        //        $redsys = new RedsysAPI;
+        //        $formData = $redsys->getFormPagoRecurrente($donacion, false);
+        //        $this->MerchantParameters = $formData['Ds_MerchantParameters'];
+        //        $this->MerchantSignature = $formData['Ds_Signature'];
+        //        $this->SignatureVersion = $formData['Ds_SignatureVersion'];
+        //        dd($redsys);
 
-//        dd($donacion->payments()->latest()->first()->info);
+        //        dd($donacion->payments()->latest()->first()->info);
         return view('livewire.donacion-banner');
     }
 
@@ -42,6 +46,13 @@ class DonacionBanner extends Component
     {
         $this->amount_select = '0';
 
+    }
+
+    public function updatedType(): void
+    {
+        $this->frequency = $this->type === Donation::UNICA
+            ? false
+            : $this->frequency ?? Donation::FREQUENCY['MENSUAL'];
     }
 
     public function updatedAmountSelect($value): void
@@ -56,20 +67,23 @@ class DonacionBanner extends Component
     {
         $this->validate();
 
-        $donacion = Donation::create([
+        //        $this->isValid = true;
+
+        $paymentProcess = new PaymentProcess(Donation::class, [
             'amount' => convertPriceNumber($this->amount),
-            'number' => generateOrderNumber(),
             'type' => $this->type,
+            'frequency' => $this->frequency,
         ]);
-
-        $paymentProcess = new PaymentProcess($donacion);
-
-
         $formData = $paymentProcess->getFormRedSysData();
 
         $this->MerchantParameters = $formData['Ds_MerchantParameters'];
         $this->MerchantSignature = $formData['Ds_Signature'];
         $this->SignatureVersion = $formData['Ds_SignatureVersion'];
+
+        //        $this->dispatch('validForm');
+
+        $this->isValid = true;
+        $this->dispatch('submit-redsys-form');
 
     }
 

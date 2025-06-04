@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -19,11 +20,17 @@ use Illuminate\Support\Str;
  */
 class Donation extends Model
 {
-    use HasFactory, SoftDeletes, HasAddresses, HasPayments, HasStates;
+    use HasAddresses, HasFactory, HasPayments, HasStates, SoftDeletes;
 
     public const UNICA = 'Simple';
 
     public const RECURRENTE = 'Recurrente';
+
+    public const FREQUENCY = [
+        'MENSUAL' => 'Mensual',
+        'TRIMESTRAL' => 'Trimestral',
+        'ANUAL' => 'Anual',
+    ];
 
     protected $fillable = [
         'amount',
@@ -31,12 +38,12 @@ class Donation extends Model
         'info',
         'type',
         'identifier',
+        'frequency',
     ];
 
     protected $with = [
         'payments',
     ];
-
 
     public function totalRedsys(): Attribute
     {
@@ -85,43 +92,26 @@ class Donation extends Model
 
             ]);
 
-
-        // Si no existe el estado PAGADO, lo creo
-        if (!$this->states()->where('name', State::PAGADO)->exists()) {
-            $this->states()->create([
-                'name' => State::PAGADO,
-            ]);
-
-        }
-
-
-        $this->refresh();
-    }
-
-    public function error($mensaje = null, $redSysResponse): void
-    {
-        $estado = [
-            'name' => State::ERROR,
-        ];
-
-        if (!$this->states()->where($estado)->exists()) {
-
-            $estado['info'] = $redSysResponse;
-            $estado['info']['Error'] = $mensaje ?? 'Error al procesar el pedido';
-
-            $this->states()->create($estado);
-
-        }
-
+        // Si no existe el estado ACEPTADO ni CANCELADO, creo estado ACTIVA
         if ($this->type === Donation::RECURRENTE) {
-            $this->payments()->create([
-                'amount' => 0,
-                'info' => $redSysResponse,
-            ]);
+            if (!$this->states()->where('name', State::CANCELADO)->exists() &&
+                !$this->states()->where('name', State::ACTIVA)->exists()) {
+
+                $this->states()->create([
+                    'name' => State::ACTIVA,
+                ]);
+
+            }
+        } else {
+            if (!$this->states()->where('name', State::PAGADO)->exists()) {
+                $this->states()->create([
+                    'name' => State::PAGADO,
+                ]);
+
+            }
         }
 
         $this->refresh();
-
     }
 
     public function iconType(): string
@@ -145,6 +135,19 @@ class Donation extends Model
         };
     }
 
+    /**
+     * Devuelve el icono asociado al estado de pedido
+     */
+    public function colorFrequency(): string
+    {
+        return match ($this->frequency) {
+            self::FREQUENCY['MENSUAL'] => 'Purple',
+            self::FREQUENCY['TRIMESTRAL'] => 'lime',
+            self::FREQUENCY['ANUAL'] => 'rose',
+            default => 'primary',
+        };
+    }
+
     public function fechaHumanos(): string
     {
         return Carbon::parse($this->created_at)->diffForHumans();
@@ -152,25 +155,124 @@ class Donation extends Model
 
     public function recurrentPay()
     {
-//        if ($this->state != State::ACTIVA) {
+        if ($this->state->name == State::ACTIVA) {
+            return $this->processPay();
+        }
+        abort(403, 'La donación ya NO está activa y no se puede volver a pagar');
+    }
+
+    public function processPay(): Payment
+    {
         $number = generatePaymentNumber($this);
 
-        $this->payments()->create([
+        $pago = $this->payments()->create([
             'number' => $number,
             'amount' => 0,
             'info' => [],
         ]);
 
+        $redsys = new RedsysAPI;
 
-        $redsys = new RedsysAPI();
+        $redsys->getFormPagoAutomatico($this, $number);
+        $response = $redsys->send();
 
-        $parms = $redsys->getFormPagoAutomatico($this, $number);
+        $response = json_decode($response, true);
+        $datos = $response['Ds_MerchantParameters'];
+        $signatureRecibida = $response['Ds_Signature'];
 
-        return $parms;
-        return $redsys->send();
+        if (empty($datos) || empty($signatureRecibida)) {
+            abort(404, 'Datos de Redsys no recibidos');
+        }
 
-//        }
+        $decodec = json_decode($redsys->decodeMerchantParameters($datos), true);
+        $firma = $redsys->createMerchantSignatureNotif(config('redsys.key'), $datos);
 
+        $cantidad = 0;
+        $info = $decodec;
+
+        if ($redsys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
+
+            $cantidad = convertPriceFromRedsys($decodec['Ds_Amount']);
+
+        } else {
+            $error = hash_equals($firma, $signatureRecibida)
+                ? estado_redsys($decodec['Ds_Response'])
+                : 'Firma no válida';
+            $info['error'] = $error;
+
+            // ESTABLEZCO ESTADO DE ERROR
+            $this->error_pago($info, $error);
+
+        }
+        $pago->update([
+            'info' => $info,
+            'amount' => $cantidad,
+        ]);
+
+        return $pago;
+    }
+
+    public function error_pago($redSysResponse, $mensaje = null): void
+    {
+        $estado = [
+            'name' => State::ERROR,
+        ];
+
+        if (!$this->states()->where($estado)->exists()) {
+
+            $estado['info'] = $redSysResponse;
+            $estado['info']['Error'] = $mensaje ?? 'Error al procesar el pedido';
+
+            $this->states()->create($estado);
+
+        }
+
+        $this->refresh();
+
+    }
+
+    public function cancel(): void
+    {
+        $this->states()->create([
+            'name' => State::CANCELADO,
+        ]);
+    }
+
+    public function statesWithStateInitial(): Collection
+    {
+        // devuelvo los estados y agrega un estado de reccibido
+        return $this->states;
+
+    }
+
+    /**
+     *  Devuelve los estados disponibles de un pedido, sin contar los ya asignados
+     */
+    public function available_states(): array
+    {
+
+        $estados = collect(self::getStates());
+
+        return $estados->only(['PAGADO', 'ERROR', 'ACEPTADO', 'ACTIVA', 'CANCELADO'])->toArray();
+    }
+
+    public function getNextPayDateFormated(): string
+    {
+
+        return Carbon::parse($this->getNextPayDate())->format('d-m-Y');
+    }
+
+    public function getNextPayDate(): false|Carbon
+    {
+        if ($this->frequency === self::FREQUENCY['MENSUAL']) {
+            return Carbon::parse($this->created_at)->addMonth();
+        } elseif ($this->frequency === self::FREQUENCY['TRIMESTRAL']) {
+            return Carbon::parse($this->created_at)->addMonths(3);
+        } elseif ($this->frequency === self::FREQUENCY['ANUAL']) {
+            return Carbon::parse($this->created_at)->addYear();
+        }
+
+        return false;
     }
 
     protected function casts(): array
@@ -179,6 +281,4 @@ class Donation extends Model
             'info' => AsArrayObject::class,
         ];
     }
-
-
 }

@@ -27,7 +27,8 @@
         </div>
         <x-bi-info-circle
             x-on:click="openInfo = ! openInfo"
-            class="text-primary ms-2 inline h-4 w-4 cursor-pointer"
+            class="text-primary mx-2 inline h-4 w-4 cursor-pointer"
         />
+        {{ $slot }}
     </div>
 @endif

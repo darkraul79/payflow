@@ -30,8 +30,11 @@ use Illuminate\Database\Eloquent\Model;
 class RedsysAPI
 {
     const TIMEOUT = 10;
+
     const READ_TIMEOUT = 120;
+
     const SSLVERSION_TLSv1_2 = 6;
+
     /****** Array de DatosEntrada ******/
     public array $vars_pay = [];
 
@@ -92,7 +95,6 @@ class RedsysAPI
         }
 
         $this->setNotificationUrl($model);
-
 
         return [
             'Ds_MerchantParameters' => $this->createMerchantParameters(),
@@ -212,15 +214,14 @@ class RedsysAPI
         $this->setParameter('DS_MERCHANT_ORDER', $number);
         $this->setParameter('DS_MERCHANT_URLOK', route('pago.response'));
         $this->setParameter('DS_MERCHANT_URLKO', route('pago.response'));
-        $this->setParameter('DS_MERCHANT_COF_INI', 'S');
+        //        $this->setParameter('DS_MERCHANT_COF_INI', 'S');
         $this->setParameter('DS_MERCHANT_COF_TYPE', 'R');
-        $this->setNotificationUrl($donation);
+        //        $this->setNotificationUrl($donation);
 
         $this->setParameter('DS_MERCHANT_IDENTIFIER', $donation->info->Ds_Merchant_Identifier);
         $this->setParameter('Ds_Merchant_Cof_Txnid', $donation->info->Ds_Merchant_Cof_Txnid);
         $this->setParameter('DS_MERCHANT_EXCEP_SCA', 'MIT');
         $this->setParameter('DS_MERCHANT_DIRECTPAYMENT', 'true');
-
 
         return [
             'Ds_MerchantParameters' => $this->createMerchantParameters(),
@@ -231,26 +232,18 @@ class RedsysAPI
 
     }
 
-    public function getFormPagoRecurrente(Donation $donation, $isNew = true, $number): array
+    public function getFormNewPagoRecurrente(Donation $donation): array
     {
 
         $this->setCommonParameters();
         $this->setParameter('DS_MERCHANT_AMOUNT', $donation->totalRedsys);
-        $this->setParameter('DS_MERCHANT_ORDER', $number);
+        $this->setParameter('DS_MERCHANT_ORDER', $donation->number);
         $this->setParameter('DS_MERCHANT_URLOK', route('donation.response'));
         $this->setParameter('DS_MERCHANT_URLKO', route('donation.response'));
         $this->setParameter('DS_MERCHANT_IDENTIFIER', 'REQUIRED');
         $this->setParameter('DS_MERCHANT_COF_INI', 'S');
         $this->setParameter('DS_MERCHANT_COF_TYPE', 'R');
         $this->setNotificationUrl($donation);
-
-        if (!$isNew) {
-            $this->setParameter('DS_MERCHANT_IDENTIFIER', $donation->info->Ds_Merchant_Identifier);
-            $this->setParameter('Ds_Merchant_Cof_Txnid', $donation->info->Ds_Merchant_Cof_Txnid);
-            $this->setParameter('DS_MERCHANT_EXCEP_SCA', 'MIT');
-            $this->setParameter('DS_MERCHANT_DIRECTPAYMENT', 'true');
-        }
-
 
         return [
             'Ds_MerchantParameters' => $this->createMerchantParameters(),
@@ -311,10 +304,9 @@ class RedsysAPI
 
         $jsonCode = json_encode($data);
 
-
         $rest = curl_init();
         curl_setopt($rest, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($rest, CURLOPT_URL, self::getRedsysUrl());
+        curl_setopt($rest, CURLOPT_URL, self::getRedsysUrl(true));
         curl_setopt($rest, CURLOPT_CONNECTTIMEOUT, self::TIMEOUT);
         curl_setopt($rest, CURLOPT_TIMEOUT, self::READ_TIMEOUT);
         curl_setopt($rest, CURLOPT_RETURNTRANSFER, true);
@@ -330,7 +322,7 @@ class RedsysAPI
         if ($tmp !== false && $httpCode == 200) {
             $result = $tmp;
         } else {
-            $strError = "Request failure " . (($httpCode != 200) ? "[HttpCode: '" . $httpCode . "']" : "") . ((curl_error($rest)) ? " [Error: '" . curl_error($rest) . "']" : "");
+            $strError = 'Request failure ' . (($httpCode != 200) ? "[HttpCode: '" . $httpCode . "']" : '') . ((curl_error($rest)) ? " [Error: '" . curl_error($rest) . "']" : '');
             exit($strError);
         }
 
@@ -339,8 +331,16 @@ class RedsysAPI
         return $result;
     }
 
-    public static function getRedsysUrl(): string
+    public static function getRedsysUrl($payDirect = false): string
     {
-        return config('redsys.enviroment') == 'test' ? 'https://sis-t.redsys.es:25443/sis/realizarPago' : 'https://sis.redsys.es/sis/realizarPago';
+        if (!$payDirect) {
+            return config('redsys.enviroment') == 'test' ? 'https://sis-t.redsys.es:25443/sis/realizarPago' : 'https://sis.redsys.es/sis/realizarPago';
+        }
+
+        return config('redsys.enviroment') == 'test' ? 'https://sis-t.redsys.es:25443/sis/rest/trataPeticionREST' : 'https://sis.redsys.es/sis/rest/trataPeticionREST';
+    }
+
+    public function setParamsRedsys(array $formData)
+    {
     }
 }

@@ -90,12 +90,15 @@ class OrderFactory extends Factory
         });
     }
 
-    public function withDirecionEnvio($params): Factory
+    public function withDirecionEnvio($params = null): Factory
     {
-        return $this->has(Address::factory()->state([
-            'type' => Address::SHIPPING,
-            ...$params,
-        ]), 'addresses');
+        return $this->afterCreating(function (Order $pedido) {
+            $address = Address::factory()->create([
+                'type' => ADDRESS::SHIPPING,
+                ...$params ?? [],
+            ]);
+            $pedido->addresses()->attach($address);
+        });
     }
 
     public function withCertificado(): Factory
@@ -111,10 +114,13 @@ class OrderFactory extends Factory
     public function withDireccion($params = null): Factory
     {
 
-        return $this->has(Address::factory()->state([
-            'type' => Address::BILLING,
-            ...$params ?? [],
-        ]), 'addresses');
+        return $this->afterCreating(function (Order $pedido) {
+            $address = Address::factory()->create([
+                'type' => ADDRESS::BILLING,
+                ...$params ?? [],
+            ]);
+            $pedido->addresses()->attach($address);
+        });
     }
 
     public function withDirecciones($billingAddress = null, $shippingAddress = null): Factory

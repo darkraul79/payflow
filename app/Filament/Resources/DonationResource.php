@@ -76,7 +76,7 @@ class DonationResource extends Resource
                     ->badge()
                     ->label('Certificado')
                     ->formatStateUsing(function ($record) {
-                        return $record->certificate() ? 'Sí' : 'No';
+                        return $record->certificate()->get() ? 'Sí' : 'No';
                     }),
                 TextColumn::make('payments_count')
                     ->label('Pagos')
