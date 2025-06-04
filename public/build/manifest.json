@@ -11,17 +11,17 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-zwkRt7oK.css",
+    "file": "assets/app-CAccpSFi.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-Bhsxlxbx.css",
+    "file": "assets/theme--HTtb1st.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },
   "resources/css/frontend.css": {
-    "file": "assets/frontend-C6UBQEgj.css",
+    "file": "assets/frontend-DxLxuyxS.css",
     "src": "resources/css/frontend.css",
     "isEntry": true
   },
