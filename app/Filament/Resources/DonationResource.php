@@ -5,10 +5,11 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\DonationResource\Pages;
 use App\Filament\Resources\DonationResource\RelationManagers\PaymentsRelationManager;
 use App\Models\Donation;
+use App\Models\State;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -53,40 +54,46 @@ class DonationResource extends Resource
             })
             ->columns([
                 TextColumn::make('number')
+                    ->searchable()
                     ->label('Nº'),
+                TextColumn::make('state.name')
+                    ->alignCenter()
+                    ->icon(fn($record) => $record->state->icono())
+                    ->color(fn($record) => $record->state->colorEstado())
+                    ->label('Estado')
+                    ->badge()
+                    ->searchable(),
                 TextColumn::make('amount')
                     ->label('Importe')
+                    ->sortable()
                     ->alignCenter()
                     ->formatStateUsing(function ($state) {
                         return convertPrice($state);
                     }),
+
+
+                TextColumn::make('payments_count')
+                    ->label('Pagos')
+                    ->counts('payments')
+                    ->sortable()
+                    ->alignCenter(),
+
+                TextColumn::make('updated_at')
+                    ->label('Fecha')
+                    ->sortable()
+                    ->color('gray')
+                    ->dateTimeTooltip()
+                    ->size(TextColumn\TextColumnSize::ExtraSmall)
+                    ->alignRight()
+                    ->since(),
                 TextColumn::make('type')
                     ->alignCenter()
+                    ->sortable()
                     ->icon(fn($record) => $record->iconType())
                     ->color(fn($record) => $record->colorType())
                     ->label('Tipo')
                     ->badge()
                     ->searchable(),
-
-                TextColumn::make('addresses')
-                    ->alignCenter()
-                    ->color(function ($state) {
-                        return $state ? 'purple' : 'danger';
-                    })
-                    ->badge()
-                    ->label('Certificado')
-                    ->formatStateUsing(function ($record) {
-                        return $record->certificate()->get() ? 'Sí' : 'No';
-                    }),
-                TextColumn::make('payments_count')
-                    ->label('Pagos')
-                    ->counts('payments')
-                    ->alignCenter(),
-                TextColumn::make('updated_at')
-                    ->label('Fecha')
-                    ->sortable()
-                    ->alignRight()
-                    ->since(),
 
             ])
             ->defaultSort('updated_at', 'desc')
@@ -95,7 +102,15 @@ class DonationResource extends Resource
             ])
             ->actions([
 
-                ViewAction::make(),
+//                ViewAction::make(),
+                Action::make('cancelar')
+                    ->label('Cancelar')
+                    ->requiresConfirmation()
+                    ->action(fn(Donation $record) => $record->cancel())
+                    ->icon('heroicon-o-no-symbol')
+                    ->color('danger')
+                    ->visible(fn(Donation $record) => $record->type === Donation::RECURRENTE &&
+                        $record->state->name === State::ACTIVA),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

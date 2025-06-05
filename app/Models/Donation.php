@@ -129,8 +129,8 @@ class Donation extends Model
     public function colorType(): string
     {
         return match ($this->type) {
-            self::RECURRENTE => 'warning',
-            self::UNICA => 'success',
+            self::RECURRENTE => 'purple',
+            self::UNICA => 'primary',
             default => 'primary',
         };
     }
@@ -273,6 +273,11 @@ class Donation extends Model
         }
 
         return false;
+    }
+
+    public function getFormatedAmount(): string
+    {
+        return convertPrice($this->amount);
     }
 
     protected function casts(): array

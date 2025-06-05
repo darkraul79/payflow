@@ -53,6 +53,7 @@ class State extends Model
             self::PAGADO => 'bi-credit-card',
             self::ENVIADO => 'bi-truck',
             self::FINALIZADO => 'bi-check',
+            self::ACTIVA => 'bi-check',
             self::ERROR => 'bi-exclamation-circle-fill',
             self::CANCELADO => 'bi-ban',
             default => 'bi-hash',
@@ -67,6 +68,7 @@ class State extends Model
         return match ($this->name) {
             self::PENDIENTE => 'warning',
             self::PAGADO => 'success',
+            self::ACTIVA => 'green',
             self::ENVIADO => 'secondary',
             self::FINALIZADO => 'info',
             self::CANCELADO => 'danger',

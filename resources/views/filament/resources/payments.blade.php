@@ -24,10 +24,15 @@
                         {{ convertPrice($payment->amount) }}
                     </span>
                 </div>
-                <x-info-bullet-collapsible
-                    :info="$payment->info"
-                    id="{{$payment->id}}"
-                />
+                @if ($payment->info && collect($payment->info)->isNotEmpty())
+                    <x-info-bullet-collapsible
+                        class=""
+                        :info="$payment->info"
+                        id="{{$payment->id}}"
+                    >
+                        <span class="text-xs text-gray-500">Pago</span>
+                    </x-info-bullet-collapsible>
+                @endif
             </li>
         @endforeach
     </ul>

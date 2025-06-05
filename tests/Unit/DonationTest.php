@@ -187,3 +187,9 @@ test('puedo crear pago a KO donacion recurrente', function () {
         ->and($pagoRecurrente->info->Ds_Response)->toBe('0000');
 
 });
+
+
+test('puedo comprobar si tiene certificado', function () {
+    $donacion = Donation::factory()->create();
+    expect($donacion->certificate())->toBeFalse();
+});

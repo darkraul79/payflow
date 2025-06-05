@@ -39,9 +39,9 @@ trait HasAddresses
         return $this->morphToMany(Address::class, 'addressable');
     }
 
-    public function certificate(): Address
+    public function certificate(): Address|bool
     {
-        return $this->addresses()->where('type', Address::CERTIFICATE)->first();
+        return $this->addresses()->where('type', Address::CERTIFICATE)->first() ?? false;
     }
 
 

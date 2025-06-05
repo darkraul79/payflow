@@ -1,3 +1,7 @@
+@php
+    use Filament\Support\Enums\IconSize;
+@endphp
+
 <div class="w-full">
     <div class="flex flex-row items-start justify-between">
         <div class="fi-section-header-heading leading-6 text-gray-950">
@@ -7,18 +11,14 @@
                 />
                 <div class="">
                     <span class="text-base font-semibold">Donación</span>
-
+                    -
+                    <span class="text-azul-mist text-base font-semibold italic">
+                        {{ $record->getFormatedAmount() }}
+                    </span>
                     <br />
                     <span class="text-[14px] font-normal text-gray-400">
                         {{ $record->number }}
                     </span>
-
-                    <x-filament::badge
-                        :color="$record->colorType()"
-                        class="inline-flex"
-                    >
-                        {{ $record->type }}
-                    </x-filament::badge>
                 </div>
             </div>
         </div>
@@ -29,28 +29,19 @@
                 :icon="$record->iconType()"
                 class="inline-flex"
             >
-                {{ $record->state->name }}
+                {{ $record->type }}
             </x-filament::badge>
-
-            <x-filament::badge
-                :color="$record->colorFrequency()"
-                class="mx-2 mt-4 inline-flex"
-            >
-                {{ $record->frequency }}
-            </x-filament::badge>
-            <div class="my-2 w-full px-2 text-end text-xs font-normal">
-                Próximo cobro:
-                <span class="text-xs font-normal text-gray-500 italic">
-                    {{ $record->getNextPayDateFormated() }}
-                </span>
-            </div>
         </div>
     </div>
-    <x-info-bullet-collapsible
-        class="flex-row-reverse justify-start"
-        :info="$record->info"
-        id="{{$record->id}}"
+    <div
+        class="mt-4 w-full border-t border-gray-300 pt-3 text-xs text-gray-500"
     >
-        Información de autorización
-    </x-info-bullet-collapsible>
+        <x-info-bullet-collapsible
+            class="flex-row-reverse justify-start"
+            :info="$record->info"
+            id="{{$record->id}}"
+        >
+            <i>Autorización</i>
+        </x-info-bullet-collapsible>
+    </div>
 </div>

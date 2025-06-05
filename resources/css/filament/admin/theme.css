@@ -75,6 +75,46 @@
                     @apply border-azul-sapphire! bg-azul-sapphire/50;
                 }
             }
+
+            &.green {
+                .texto {
+                    @apply text-green;
+                }
+
+                .bullet {
+                    @apply border-green! bg-green/50;
+                }
+            }
+
+            &.lime {
+                .texto {
+                    @apply text-lime;
+                }
+
+                .bullet {
+                    @apply border-lime! bg-lime/50;
+                }
+            }
+
+            &.rose {
+                .texto {
+                    @apply text-rose;
+                }
+
+                .bullet {
+                    @apply border-rose! bg-rose/50;
+                }
+            }
+
+            &.purple {
+                .texto {
+                    @apply text-purple;
+                }
+
+                .bullet {
+                    @apply border-purple! bg-purple/50;
+                }
+            }
         }
 
         .timeline-block:last-child {
