@@ -1,6 +1,6 @@
 <div>
     <div
-        x-data="{ modalIsOpen: true }"
+        x-data="{ modalIsOpen: false }"
         @openmodaldonation.window=" modalIsOpen = true"
     >
         <div
