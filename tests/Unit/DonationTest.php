@@ -3,10 +3,12 @@
 namespace Tests\Unit;
 
 use App\Http\Classes\PaymentProcess;
+use App\Livewire\DonacionBanner;
 use App\Models\Address;
 use App\Models\Donation;
 use App\Models\State;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use function Pest\Livewire\livewire;
 
 test('puedo crear donación única por defecto en factory', function () {
 
@@ -192,4 +194,52 @@ test('puedo crear pago a KO donacion recurrente', function () {
 test('puedo comprobar si tiene certificado', function () {
     $donacion = Donation::factory()->create();
     expect($donacion->certificate())->toBeFalse();
+});
+
+
+test('puedo hacer donacion con certificado DonacionBanner', function () {
+
+    livewire(DonacionBanner::class)
+        ->set('amount', '10,35')
+        ->set('type', Donation::UNICA)
+        ->set('needsCertificate', true)
+        ->set('certificate.name', 'Nombre')
+        ->set('certificate.last_name', 'Apellido')
+        ->set('certificate.company', 'Empresa SL')
+        ->set('certificate.address', 'Calle Falsa 123')
+        ->set('certificate.cp', '28001')
+        ->set('certificate.city', 'Madrid')
+        ->set('certificate.province', 'Madrid')
+        ->set('certificate.email', 'info@raulsebastian.es')
+        ->call('submit');
+
+
+    expect(Donation::first()->certificate())->toBeInstanceOf(Address::class)
+        ->and(Donation::first()->addresses)->toHaveCount(1);
+});
+
+test('no permite donaciones menores a 1', function () {
+
+    livewire(DonacionBanner::class)
+        ->set('amount', '0,35')
+        ->call('toStep', 2)
+        ->assertHasErrors([
+            'amount' => 'El importe debe ser mayor o igual a 1,00 €',
+        ]);
+
+});
+
+test('valido campos de certificado', function () {
+
+    $r = livewire(DonacionBanner::class)
+        ->set('amount', '10')
+        ->call('toStep', 3)
+        ->call('submit')->assertHasErrors([
+            'certificate.name',
+            'certificate.last_name',
+            'certificate.cp',
+            'certificate.email',
+            'certificate.nif',
+        ]);
+
 });

@@ -10,18 +10,22 @@
       "assets/splide-D7wrQ6zr.css"
     ]
   },
+  "public/images/elena.jpeg": {
+    "file": "assets/elena-DkrV9ZPV.jpeg",
+    "src": "public/images/elena.jpeg"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-D7mbtyrV.css",
+    "file": "assets/app-C9LKjd7B.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-DqDr0hC1.css",
+    "file": "assets/theme-Be-i0NMc.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },
   "resources/css/frontend.css": {
-    "file": "assets/frontend-DxLxuyxS.css",
+    "file": "assets/frontend-Bx0PzPwd.css",
     "src": "resources/css/frontend.css",
     "isEntry": true
   },

@@ -42,7 +42,7 @@ class Donation extends Model
     ];
 
     protected $with = [
-        'payments',
+        'payments'
     ];
 
     public function totalRedsys(): Attribute

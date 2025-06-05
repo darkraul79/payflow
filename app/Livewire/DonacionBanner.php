@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use App\Http\Classes\PaymentProcess;
+use App\Models\Address;
 use App\Models\Donation;
+use Closure;
 use Exception;
 use Illuminate\View\View;
 use Livewire\Attributes\Validate;
@@ -18,6 +20,8 @@ class DonacionBanner extends Component
 
     public string $frequency;
 
+    public mixed $needsCertificate = true;
+
     public string $type = Donation::UNICA;
 
     public string $MerchantParameters = '';
@@ -25,6 +29,20 @@ class DonacionBanner extends Component
     public string $MerchantSignature = '';
 
     public string $SignatureVersion = '';
+
+    public int $step = 1;
+
+    public $certificate = [
+        'name' => '',
+        'last_name' => '',
+        'company' => '',
+        'address' => '',
+        'cp' => '',
+        'city' => '',
+        'province' => '',
+        'email' => '',
+        'phone' => '',
+    ];
 
     public bool $isValid = false;
 
@@ -55,9 +73,30 @@ class DonacionBanner extends Component
             : $this->frequency ?? Donation::FREQUENCY['MENSUAL'];
     }
 
+    public function mount()
+    {
+        $this->amount = 0;
+    }
+
     public function updatedAmountSelect($value): void
     {
         $this->amount = $value;
+    }
+
+    public function toStep(int $step): void
+    {
+
+
+        $this->validate();
+
+
+        if ($step == 3 && $this->needsCertificate == false) {
+            $this->submit();
+        } else {
+
+            $this->step = $step;
+        }
+
     }
 
     /**
@@ -65,34 +104,101 @@ class DonacionBanner extends Component
      */
     public function submit(): void
     {
-        $this->validate();
 
-        //        $this->isValid = true;
+        $this->validate();
 
         $paymentProcess = new PaymentProcess(Donation::class, [
             'amount' => convertPriceNumber($this->amount),
             'type' => $this->type,
             'frequency' => $this->frequency ?? null,
         ]);
+
+        if ($this->needsCertificate) {
+            $paymentProcess->modelo->addresses()->create([
+                'type' => Address::CERTIFICATE,
+                'name' => $this->certificate['name'],
+                'last_name' => $this->certificate['last_name'],
+                'company' => $this->certificate['company'] ?? null,
+                'address' => $this->certificate['address'] ?? '',
+                'cp' => $this->certificate['cp'],
+                'city' => $this->certificate['city'] ?? '',
+                'province' => $this->certificate['province'] ?? '',
+                'email' => $this->certificate['email'],
+                'phone' => $this->certificate['phone'] ?? '',
+            ]);
+        }
+
         $formData = $paymentProcess->getFormRedSysData();
 
         $this->MerchantParameters = $formData['Ds_MerchantParameters'];
         $this->MerchantSignature = $formData['Ds_Signature'];
         $this->SignatureVersion = $formData['Ds_SignatureVersion'];
 
-        //        $this->dispatch('validForm');
 
-        $this->isValid = true;
         $this->dispatch('submit-redsys-form');
 
     }
 
+    public function updatingAmount($value): void
+    {
+        $this->js('
+                    document.querySelector("#amount_select-10").checked =false;
+                    document.querySelector("#amount_select-50").checked =false;
+                    document.querySelector("#amount_select-100").checked =false;
+                    ');
+
+        switch ($value) {
+            case "10,00":
+            case "10":
+            case "10,0":
+                $this->amount_select = '0';
+                $this->js('
+                    document.querySelector("#amount_select-10").checked =true;');
+                break;
+            case "50,00":
+            case "50":
+            case "50,0":
+                $this->amount_select = '0';
+                $this->js('
+                    document.querySelector("#amount_select-50").checked =true;');
+                break;
+            case "100,00":
+            case "100":
+            case "100,0":
+                $this->amount_select = '0';
+                $this->js('
+                    document.querySelector("#amount_select-100").checked =true;');
+                break;
+        }
+    }
+
     protected function rules(): array
     {
-        return [
-            'amount' => 'required',
-            'type' => 'required|in:' . Donation::UNICA . ',' . Donation::RECURRENTE,
-        ];
+        return match ($this->step) {
+            1 => [
+                'amount' => [
+                    'required',
+                    function (string $attribute, mixed $value, Closure $fail) {
+                        $amount = convertPriceNumber($value);
+                        if ($amount < 1) {
+                            $fail('El importe debe ser mayor o igual a 1,00 €');
+                        }
+                    },
+                ],
+                'type' => 'required|in:' . Donation::UNICA . ',' . Donation::RECURRENTE,
+            ],
+            2 => [
+                'needsCertificate' => ''
+            ],
+            3 => [
+                'certificate.name' => 'required|string|max:255',
+                'certificate.last_name' => 'required|string|max:255',
+                'certificate.nif' => 'required|string|max:255',
+                'certificate.cp' => 'required|string|max:5',
+                'certificate.email' => 'required|email|max:255',
+            ]
+        };
+
     }
 
     protected function messages(): array

@@ -23,6 +23,8 @@
             <x-filament-fabricator::page-blocks :blocks="$page?->blocks" />
         </div>
         <div class="w-full md:w-2/6 flex justify-end items-start ">
-            @livewire('donacion-banner')
+            <div class="md:sticky md:max-w-[400px] top-0 right-0">
+                @livewire('donacion-banner')
+            </div>
         </div>
 @endsection

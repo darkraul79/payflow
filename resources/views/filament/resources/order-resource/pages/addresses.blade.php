@@ -4,11 +4,14 @@
 
 @foreach ($record->addresses as $address)
     <x-filament::section
-        class="mb-6 gap-2 {{ $record->addresses->count()>1?' w-1/2 ': 'w-full' }} text-xs"
+        class="mb-6 gap-2 mt-5 {{ $record->addresses->count()>1?' w-1/2 ': 'w-full' }} text-xs"
     >
         <x-slot name="description">
-            <span class="font-semibold text-gray-400!">
+            <span
+                class="flex flex-row items-center gap-1 font-semibold text-gray-400!"
+            >
                 @if ($address->type === Address::CERTIFICATE)
+                    <x-heroicon-m-check-badge class="fill-lime h-6 w-6" />
                     {{ $address->type }}
                 @else
                     Dirección de {{ $address->type }}

@@ -1,4 +1,4 @@
-<div class="col-span-6 lg:col-span-2">
+<div class="col-3">
     <label for="{{ $prefix }}name">Nombre</label>
     <x-input
         placeholder="Nombre"
@@ -9,7 +9,7 @@
     />
     <x-error class="form-error" field="{{$prefix}}name" class="form-error" />
 </div>
-<div class="col-span-6 lg:col-span-4">
+<div class="col-3">
     <label for="{{ $prefix }}last_name">Apellidos</label>
     <x-input
         placeholder="Apellidos"
@@ -20,13 +20,13 @@
     />
     <x-error class="form-error" field="{{$prefix}}last_name" />
 </div>
-<div class="col-span-6 lg:col-span-4">
+<div class="col-4">
     <label for="{{ $prefix }}company">
         Nombre de empresa
         <span>(opcional)</span>
     </label>
     <x-input
-        placeholder="Nombre de empresa"
+        placeholder="Empresa"
         type="text"
         name="{{$prefix}}company"
         id="{{$prefix}}company"
@@ -34,10 +34,10 @@
     />
     <x-error class="form-error" field="{{$prefix}}company" />
 </div>
-<div class="col-span-6 lg:col-span-2">
+<div class="col-2">
     <label for="{{ $prefix }}nif">NIF/CIF/NIE</label>
     <x-input
-        placeholder="Número NIF/CIF/NIE"
+        placeholder="NIF/CIF/NIE"
         type="text"
         name="{{$prefix}}nif"
         id="{{$prefix}}nif"
@@ -45,10 +45,10 @@
     />
     <x-error class="form-error" field="{{$prefix}}nif" />
 </div>
-<div class="col-span-6 lg:col-span-4">
+<div class="col-6">
     <label for="{{ $prefix }}address">Dirección</label>
     <x-input
-        placeholder=""
+        placeholder="Dirección"
         type="text"
         name="{{$prefix}}address"
         id="{{$prefix}}address"
@@ -57,10 +57,10 @@
     <x-error class="form-error" field="{{$prefix}}address" />
 </div>
 
-<div class="col-span-6 lg:col-span-2">
+<div class="col-2">
     <label for="{{ $prefix }}cp">C.P.</label>
     <x-input
-        placeholder=""
+        placeholder="Código Postal"
         type="text"
         name="{{$prefix}}cp"
         id="{{$prefix}}cp"
@@ -69,11 +69,11 @@
     <x-error class="form-error" field="{{$prefix}}cp" />
 </div>
 
-<div class="col-span-6 lg:col-span-2">
+<div class="col-2">
     <label for="{{ $prefix }}province">Provincia</label>
     <flux:select
         wire:model="{{ $prefix }}province"
-        placeholder="Selecciona provincia"
+        placeholder="Provincia"
         name="{{ $prefix }}province"
         id="{{ $prefix }}province"
     >
@@ -87,11 +87,11 @@
     <x-error class="form-error" field="{{$prefix}}province" />
 </div>
 
-<div class="col-span-6 lg:col-span-2">
+<div class="col-2">
     <label for="{{ $prefix }}city">Población</label>
 
     <x-input
-        placeholder=""
+        placeholder="Población"
         type="text"
         name="{{$prefix}}city"
         id="{{$prefix}}city"
@@ -99,12 +99,11 @@
     />
     <x-error class="form-error" field="{{$prefix}}city" />
 </div>
-<div class="col-span-6 hidden lg:col-span-2 lg:block"></div>
 
-<div class="col-span-6 lg:col-span-3">
+<div class="col-3">
     <label for="{{ $prefix }}email">Correo electrónico</label>
     <x-input
-        placeholder=""
+        placeholder="email"
         type="email"
         name="{{$prefix}}email"
         id="{{$prefix}}email"
@@ -113,13 +112,13 @@
     <x-error class="form-error" field="{{$prefix}}email" />
 </div>
 
-<div class="col-span-6 lg:col-span-3">
+<div class="col-3">
     <label for="{{ $prefix }}phone">
         Teléfono
         <span>(opcional)</span>
     </label>
     <x-input
-        placeholder=""
+        placeholder="Teléfono"
         type="tel"
         name="{{$prefix}}phone"
         id="{{$prefix}}phone"

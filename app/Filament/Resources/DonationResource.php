@@ -70,8 +70,13 @@ class DonationResource extends Resource
                     ->formatStateUsing(function ($state) {
                         return convertPrice($state);
                     }),
-
-
+                TextColumn::make('created_at')
+                    ->label('Certificado')
+                    ->alignCenter()
+                    ->size(TextColumn\TextColumnSize::ExtraSmall)
+                    ->icon(fn(Donation $record) => $record->certificate() ? 'heroicon-m-check-badge' : '')
+                    ->iconColor(fn(Donation $record) => $record->certificate() ? 'lime' : 'gray')
+                    ->formatStateUsing(fn(Donation $record): string => $record->certificate() ? 'Si' : ''),
                 TextColumn::make('payments_count')
                     ->label('Pagos')
                     ->counts('payments')

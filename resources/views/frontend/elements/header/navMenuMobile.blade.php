@@ -41,6 +41,8 @@
         <flux:spacer />
         <flux:navlist variant="outline">
             <a
+
+                @click="$dispatch('openmodaldonation')"
                 href="#"
                 class="bg-amarillo text-azul-mist hover:bg-azul-mist hover:text-amarillo flex h-full min-h-20 w-full items-center justify-center gap-2 p-2 text-center font-semibold lg:my-0 lg:w-[261px]"
             >

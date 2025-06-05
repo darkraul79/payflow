@@ -16,6 +16,8 @@
 
         @include('frontend.footer')
 
+        <x-modal-donation />
+
         @fluxScripts
     </body>
 </html>
