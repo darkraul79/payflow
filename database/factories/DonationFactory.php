@@ -29,6 +29,7 @@ class DonationFactory extends Factory
             ],
 
             'type' => Donation::UNICA,
+            'next_payment' => null, // Default next charge
             'identifier' => null,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
@@ -90,6 +91,15 @@ class DonationFactory extends Factory
                 'payable_id' => $donacion->id,
                 'payable_type' => Donation::class,
             ]);
+        });
+    }
+
+    public function withNextPayment(string $fecha): Factory
+    {
+        return $this->state(function (array $attributes) use ($fecha) {
+            return [
+                'next_payment' => Carbon::parse($fecha)->format('Y-m-d'),
+            ];
         });
     }
 }

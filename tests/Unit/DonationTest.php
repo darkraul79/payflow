@@ -7,6 +7,7 @@ use App\Livewire\DonacionBanner;
 use App\Models\Address;
 use App\Models\Donation;
 use App\Models\State;
+use Carbon\Carbon;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use function Pest\Livewire\livewire;
 
@@ -138,7 +139,6 @@ test('puedo crear pago a donacion recurrente', function () {
     $this->get(route('donation.response', getResponseDonation($donacion, true)));
     $donacion->refresh();
 
-
     $pagoRecurrente = $donacion->recurrentPay();
 
     expect($donacion->state->name)->toBe(State::ACTIVA)
@@ -190,12 +190,10 @@ test('puedo crear pago a KO donacion recurrente', function () {
 
 });
 
-
 test('puedo comprobar si tiene certificado', function () {
     $donacion = Donation::factory()->create();
     expect($donacion->certificate())->toBeFalse();
 });
-
 
 test('puedo hacer donacion con certificado DonacionBanner', function () {
 
@@ -212,7 +210,6 @@ test('puedo hacer donacion con certificado DonacionBanner', function () {
         ->set('certificate.province', 'Madrid')
         ->set('certificate.email', 'info@raulsebastian.es')
         ->call('submit');
-
 
     expect(Donation::first()->certificate())->toBeInstanceOf(Address::class)
         ->and(Donation::first()->addresses)->toHaveCount(1);
@@ -243,3 +240,27 @@ test('valido campos de certificado', function () {
         ]);
 
 });
+
+test('puedo crear donación con fecha de próximo cobro en factory', function () {
+
+    $donacion = Donation::factory()->withNextPayment('15-08-2031')->recurrente()->create();
+
+    expect($donacion->next_payment)->toBe('2031-08-15')
+        ->and($donacion->getNextPaymentFormated())->toBe('15-08-2031');
+});
+
+test('puedo actualizar la fecha de siguiente cobro según la frecuencia', function ($frecuencia, $date) {
+
+    $donacion = Donation::factory()->recurrente()->create([
+        'frequency' => $frecuencia,
+    ]);
+
+    $donacion->updateNextPaymentDate();
+
+    expect($donacion->next_payment)->toBe($date);
+
+})->with([
+    [Donation::FREQUENCY['MENSUAL'], Carbon::now()->addMonth()->format('Y-m-d')],
+    [Donation::FREQUENCY['TRIMESTRAL'], Carbon::now()->addMonths(3)->format('Y-m-d')],
+    [Donation::FREQUENCY['ANUAL'], Carbon::now()->addYear()->format('Y-m-d')],
+]);

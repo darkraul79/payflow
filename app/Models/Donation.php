@@ -39,10 +39,11 @@ class Donation extends Model
         'type',
         'identifier',
         'frequency',
+        'next_payment',
     ];
 
     protected $with = [
-        'payments'
+        'payments',
     ];
 
     public function totalRedsys(): Attribute
@@ -77,7 +78,7 @@ class Donation extends Model
         ];
     }
 
-    public function payed(array $redSysResponse)
+    public function payed(array $redSysResponse): void
     {
 
         $this->update([
@@ -130,7 +131,6 @@ class Donation extends Model
     {
         return match ($this->type) {
             self::RECURRENTE => 'purple',
-            self::UNICA => 'primary',
             default => 'primary',
         };
     }
@@ -236,6 +236,9 @@ class Donation extends Model
         $this->states()->create([
             'name' => State::CANCELADO,
         ]);
+        $this->update([
+            'next_payment' => null,
+        ]);
     }
 
     public function statesWithStateInitial(): Collection
@@ -278,6 +281,27 @@ class Donation extends Model
     public function getFormatedAmount(): string
     {
         return convertPrice($this->amount);
+    }
+
+    public function getNextPaymentFormated(): string
+    {
+        return Carbon::parse($this->next_payment)->format('d-m-Y');
+    }
+
+    public function updateNextPaymentDate(): string
+    {
+        $createdDate = $this->created_at;
+        $date = match ($this->frequency) {
+            self::FREQUENCY['MENSUAL'] => Carbon::parse($createdDate)->addMonth(),
+            self::FREQUENCY['TRIMESTRAL'] => Carbon::parse($createdDate)->addMonths(3),
+            self::FREQUENCY['ANUAL'] => Carbon::parse($createdDate)->addYear(),
+            default => Carbon::now(),
+        };
+        $this->update([
+            'next_payment' => $date->format('Y-m-d'),
+        ]);
+
+        return $this->next_payment;
     }
 
     protected function casts(): array
