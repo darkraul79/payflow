@@ -105,7 +105,7 @@
         }
 
         .actividades {
-            @apply flex w-fit flex-row gap-2 md:grid md:grid-cols-3 lg:w-auto lg:grid-cols-3;
+            @apply flex w-fit flex-row flex-wrap gap-2 md:grid md:grid-cols-3 lg:w-auto lg:grid-cols-3;
 
             a {
                 @apply max-h-20 w-full max-w-20 overflow-hidden rounded-xl;
