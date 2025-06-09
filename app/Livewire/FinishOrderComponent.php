@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Events\CreateOrderEvent;
 use App\Http\Classes\PaymentProcess;
 use App\Models\Address;
 use App\Models\Order;
@@ -108,7 +107,7 @@ class FinishOrderComponent extends Component
             ];
         }
 
-        if (! Cart::canCheckout()) {
+        if (!Cart::canCheckout()) {
             $this->redirectRoute('cart');
         }
 
@@ -172,7 +171,6 @@ class FinishOrderComponent extends Component
         $this->createAddresses($order);
         $this->addItemsToOrder($order);
 
-        CreateOrderEvent::dispatch($order);
 
         return $order;
     }

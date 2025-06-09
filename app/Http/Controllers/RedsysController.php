@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CreateOrderEvent;
 use App\Helpers\RedsysAPI;
 use App\Models\Donation;
 use App\Models\Order;
@@ -94,7 +95,6 @@ class RedsysController extends Controller
     public function responseOrder(): RedirectResponse
     {
         Session::forget('cart');
-        $complete = false;
         $redSys = new RedsysAPI;
 
         $datos = request('Ds_MerchantParameters');
@@ -107,6 +107,9 @@ class RedsysController extends Controller
         $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
         $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
         $pedido = Order::where('number', $decodec['Ds_Order'])->firstOrFail();
+
+        CreateOrderEvent::dispatch($pedido);
+
         if ($redSys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
             $pedido->payed($decodec);
         } else {
@@ -168,6 +171,7 @@ class RedsysController extends Controller
         //        $redSys = new RedsysAPI();
         //        $par = $redSys->getFormPagoAutomatico($donacion, false, $nu);
         dd($par);
+
         return view('kk', [
             'form' => $par,
             'donacion' => $donacion,

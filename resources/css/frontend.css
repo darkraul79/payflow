@@ -130,52 +130,6 @@
         }
     }
 
-    .form-style {
-        label {
-            @apply mt-3 mb-1.5 block text-[14px] leading-[1.2] group-[.form-xs]:hidden group-[.form-xs]:text-[12px];
-
-            span {
-                @apply text-azul-gray;
-            }
-        }
-
-        input,
-        select {
-            @apply border-gris! text-azul-sea! rounded-md border text-[14px] group-[.form-xs]:text-[12px]!;
-
-            &[type='text'],
-            &[type='email'],
-            &[type='tel'] {
-                @apply w-full px-4 py-3 leading-[1.2] font-light group-[.form-xs]:px-2 group-[.form-xs]:py-2;
-            }
-
-            &::placeholder,
-            option.placeholder {
-                @apply text-gray-300;
-            }
-        }
-
-        select {
-            @apply group-[.form-xs]:h-[33px]! group-[.form-xs]:py-1! has-[option.placeholder:checked]:text-gray-300!;
-        }
-
-        .col-2 {
-            @apply col-span-6 group-[.form-xs]:col-span-2 lg:col-span-2;
-        }
-
-        .col-3 {
-            @apply col-span-6 group-[.form-xs]:col-span-3 lg:col-span-3;
-        }
-
-        .col-4 {
-            @apply col-span-6 group-[.form-xs]:col-span-4 lg:col-span-4;
-        }
-
-        .col-6 {
-            @apply col-span-6 group-[.form-xs]:col-span-6 lg:col-span-6;
-        }
-    }
-
     .form-error {
         @apply text-error/80 text-[11px];
     }

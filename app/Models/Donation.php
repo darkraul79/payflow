@@ -209,6 +209,8 @@ class Donation extends Model
             'amount' => $cantidad,
         ]);
 
+        $this->updateNextPaymentDate();
+
         return $pago;
     }
 
@@ -229,6 +231,22 @@ class Donation extends Model
 
         $this->refresh();
 
+    }
+
+    public function updateNextPaymentDate(): string
+    {
+        $createdDate = $this->created_at;
+        $date = match ($this->frequency) {
+            self::FREQUENCY['MENSUAL'] => Carbon::parse($createdDate)->addMonth(),
+            self::FREQUENCY['TRIMESTRAL'] => Carbon::parse($createdDate)->addMonths(3),
+            self::FREQUENCY['ANUAL'] => Carbon::parse($createdDate)->addYear(),
+            default => Carbon::now(),
+        };
+        $this->update([
+            'next_payment' => $date->format('Y-m-d'),
+        ]);
+
+        return $this->next_payment;
     }
 
     public function cancel(): void
@@ -286,22 +304,6 @@ class Donation extends Model
     public function getNextPaymentFormated(): string
     {
         return Carbon::parse($this->next_payment)->format('d-m-Y');
-    }
-
-    public function updateNextPaymentDate(): string
-    {
-        $createdDate = $this->created_at;
-        $date = match ($this->frequency) {
-            self::FREQUENCY['MENSUAL'] => Carbon::parse($createdDate)->addMonth(),
-            self::FREQUENCY['TRIMESTRAL'] => Carbon::parse($createdDate)->addMonths(3),
-            self::FREQUENCY['ANUAL'] => Carbon::parse($createdDate)->addYear(),
-            default => Carbon::now(),
-        };
-        $this->update([
-            'next_payment' => $date->format('Y-m-d'),
-        ]);
-
-        return $this->next_payment;
     }
 
     protected function casts(): array

@@ -3,13 +3,16 @@
 namespace Tests\Unit;
 
 use App\Http\Classes\PaymentProcess;
+use App\Jobs\ProcessDonationPayment;
 use App\Livewire\DonacionBanner;
 use App\Models\Address;
 use App\Models\Donation;
+use App\Models\Page;
 use App\Models\State;
 use Carbon\Carbon;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use function Pest\Livewire\livewire;
+
 
 test('puedo crear donación única por defecto en factory', function () {
 
@@ -264,3 +267,46 @@ test('puedo actualizar la fecha de siguiente cobro según la frecuencia', functi
     [Donation::FREQUENCY['TRIMESTRAL'], Carbon::now()->addMonths(3)->format('Y-m-d')],
     [Donation::FREQUENCY['ANUAL'], Carbon::now()->addYear()->format('Y-m-d')],
 ]);
+
+test('puedo procesar job ProcessDonationPayment', function () {
+
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('10,35'),
+        'type' => Donation::RECURRENTE,
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+    ]);
+    $donacion = $paymentProcess->modelo;
+    $this->get(route('donation.response', getResponseDonation($donacion, true)));
+
+    $donacion->refresh();
+
+    $tomorrow = Carbon::now()->addDay()->format('Y-m-d');
+
+    $this->travel(1)->days();
+
+    ProcessDonationPayment::dispatch($donacion);
+
+    expect($donacion->payments)->toHaveCount(2)
+        ->and($donacion->payments->last()->amount)->toBe(10.35)
+        ->and($donacion->payments->last()->created_at->format('Y-m-d'))->toBe($tomorrow)
+        ->and($donacion->state->name)->toBe(State::ACTIVA);
+
+});
+
+test('cada vez que abro ventana de donación se resetea el componente', function () {
+    $home = Page::factory()->create([
+        'title' => 'Home',
+        'slug' => '',
+        'is_home' => true,
+    ]);
+
+    $this->get(route('home', ['page' => $home->slug]))
+        ->assertSeeLivewire(DonacionBanner::class);
+
+    livewire(DonacionBanner::class)
+        ->dispatch('openmodaldonation')
+        ->set('type', Donation::RECURRENTE)
+        ->dispatch('closemodaldonation')
+        ->assertSet('type', Donation::UNICA);
+
+});

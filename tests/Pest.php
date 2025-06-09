@@ -229,6 +229,31 @@ function getMerchanParamsDonationUnica(Donation $donacion, $ok = false): string
     return $redSys->encodeBase64(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 }
 
+function getMerchanParamsOrder(Order $order, $ok = false): string
+{
+    $data = [
+        'Ds_Date' => Carbon::now()->format('d%20m%20Y'),
+        'Ds_Hour' => Carbon::now()->format('H:i'),
+        'Ds_SecurePayment' => '1',
+        'Ds_Amount' => convertNumberToRedSys($order->amount) . "",
+        'Ds_Currency' => '978',
+        'Ds_Order' => $order->number,
+        'Ds_MerchantCode' => '357328590',
+        'Ds_Terminal' => '001',
+        'Ds_Response' => $ok ? '0000' : '9928',
+        'Ds_TransactionType' => '0',
+        'Ds_MerchantData' => '',
+        'Ds_AuthorisationCode' => '191312',
+        'Ds_ConsumerLanguage' => '1',
+        'Ds_Card_Country' => '724',
+        'Ds_Card_Brand' => '1',
+        'Ds_Control_1748965667893' => '1748965667893',
+    ];
+    $redSys = new RedsysAPI;
+
+    return $redSys->encodeBase64(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+}
+
 function getResponseDonation(Donation $donacion, $ok = false): array
 {
     $redSys = new RedsysAPI;
@@ -245,3 +270,19 @@ function getResponseDonation(Donation $donacion, $ok = false): array
         'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
     ];
 }
+
+function getResponseOrder(Order $order, $ok = false): array
+{
+    $redSys = new RedsysAPI;
+
+
+    $merchantParams = getMerchanParamsOrder($order, $ok);
+
+
+    return [
+        'Ds_MerchantParameters' => $merchantParams,
+        'Ds_Signature' => $redSys->createMerchantSignatureNotif(config('redsys.key'), $merchantParams),
+        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
+    ];
+}
+

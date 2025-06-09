@@ -23,7 +23,11 @@ test('al crear pedido por metodo se llama al evento CreateOrder', function () {
     Event::fake([
         CreateOrderEvent::class,
     ]);
-    creaPedido();
+
+    $pedido = creaPedido();
+    $this->get(route('pedido.response', getResponseOrder($pedido, true)));
+
+
     Event::assertDispatched(CreateOrderEvent::class);
     Event::assertListening(
         CreateOrderEvent::class,
@@ -42,7 +46,8 @@ test('al crear pedido se manda un email a los administradores', function () {
     ]);
     Notification::assertNothingSent();
 
-    creaPedido();
+    $pedido = creaPedido();
+    $this->get(route('pedido.response', getResponseOrder($pedido, true)));
 
     Notification::assertSentTo(
         [User::first()], OrderCreated::class
@@ -54,9 +59,10 @@ test('al crear pedido se manda un email al email de la dirección de facturacion
     Mail::fake();
     Mail::assertNothingSent();
 
-    $p = creaPedido();
+    $pedido = creaPedido();
+    $this->get(route('pedido.response', getResponseOrder($pedido, true)));
 
-    Mail::assertSent(OrderNew::class, $p->billing_address()->email);
+    Mail::assertSent(OrderNew::class, $pedido->billing_address()->email);
 });
 
 test('al crear pedido se manda un email al email de la dirección de facturacion desde factory ', function () {
