@@ -1,8 +1,6 @@
 <?php
 
 use App\Helpers\RedsysAPI;
-use App\Http\Classes\PaymentProcess;
-use App\Models\Donation;
 use App\Models\State;
 
 test('confirmo pedido cambia a pagado despues de llegar a ok', function () {
@@ -22,18 +20,4 @@ test('confirmo pedido cambia a pagado despues de llegar a ok', function () {
 
 });
 
-test('puruebo send a redsys pago automatico', function () {
 
-    $paymentProcess = new PaymentProcess(Donation::class, [
-        'amount' => convertPriceNumber(10.53),
-        'type' => Donation::UNICA,
-    ]);
-    $formData = $paymentProcess->getFormRedSysData();
-    $redSys = new RedsysAPI();
-    $redSys->vars_pay = $formData['Raw'];
-
-    // DEVULVE "errorCode":"SIS0218"
-    dd($redSys->send());
-
-
-})->skip();

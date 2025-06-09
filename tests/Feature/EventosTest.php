@@ -1,11 +1,15 @@
 <?php
 
 use App\Events\CreateOrderEvent;
+use App\Events\UpdateOrderStateEvent;
+use App\Filament\Resources\OrderResource\Pages\UpdateOrder;
 use App\Listeners\SendEmailsOrderListener;
 use App\Mail\OrderNew;
 use App\Models\Order;
+use App\Models\State;
 use App\Models\User;
 use App\Notifications\OrderCreated;
+use function Pest\Livewire\livewire;
 
 test('al crear pedido se llama al evento CreateOrder en factory', function () {
 
@@ -106,3 +110,26 @@ test('al crear pedido si tiene misma dirección de envío con email diferente si
         return $mail->hasTo('info@raulsebastian.es') && $mail->cc == [];
     });
 });
+
+test('al actualizar estado de pedidos se ejecuta UpdateOrderStateEvent', function () {
+
+
+    Event::fake();
+    $pedido = Order::factory()->hasItems()->create();
+
+    livewire(UpdateOrder::class, [
+        'record' => $pedido->id,
+    ])->fillForm(['estado' => 'PAGADO'])
+        ->call('submit');
+
+
+    $pedido->refresh();
+
+    Event::assertDispatched(UpdateOrderStateEvent::class);
+
+    expect($pedido->state->name)->toBe(State::PAGADO)
+        ->and($pedido->states->last()->name)->toBe(State::PAGADO);
+
+
+});
+

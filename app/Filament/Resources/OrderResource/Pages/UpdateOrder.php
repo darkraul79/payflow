@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OrderResource\Pages;
 
+use App\Events\UpdateOrderStateEvent;
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
 use Filament\Forms\Components\Select;
@@ -62,6 +63,7 @@ class UpdateOrder extends Page implements HasForms
             'mensaje' => 'nullable|string|max:255',
         ]);
 
+
         $this->record->states()->create([
             'name' => $this->pedido->getStates()[$campos['estado']],
             'message' => $campos['mensaje'],
@@ -72,6 +74,9 @@ class UpdateOrder extends Page implements HasForms
 
         $this->record->refresh();
         $this->pedido->refresh();
+
+
+        UpdateOrderStateEvent::dispatch($this->record);
 
     }
 

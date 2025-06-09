@@ -119,12 +119,6 @@ test('vacio cesta después de crear pedido', function () {
 
 });
 
-test('se crea estado pendiente al crear pedido', function () {
-    $order = creaPedido();
-
-    expect($order->state->name)->toBe(State::PENDIENTE);
-
-});
 
 test('puedo obtener las imagenes de los productos del pedido', function () {
     Storage::fake('storage');
@@ -175,4 +169,22 @@ test('puedo obtener listado de items para emails', function () {
         ->and($order->itemsArray()[0])->toHaveKeys(["name", "price", "quantity", "subtotal", "image"]);
 
 
+});
+
+
+test('al crear pedido sólo creo un estado pendiente de pago', function () {
+
+    $producto = Product::factory()->create([
+        'name' => 'Producto de prueba',
+        'price' => 10,
+        'stock' => 5,
+    ]);
+    $pedido = creaPedido($producto);
+
+    $this->get(route('pedido.response', getResponseOrder($pedido, true)));
+
+    $pedido->refresh();
+
+    expect($pedido->state->name)->toBe(State::PAGADO)
+        ->and($pedido->states)->toHaveCount(2);
 });

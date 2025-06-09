@@ -6,7 +6,7 @@
         <a href="{{ $url }}">
             <img
                 src="{{ asset('images/logo-fundacion-horizontal.png') }}"
-                alt="Laravel Logo"
+                alt="{{ config('app.name') }}"
             />
         </a>
     </td>

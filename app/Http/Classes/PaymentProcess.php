@@ -25,7 +25,7 @@ class PaymentProcess
         $this->data = $data;
         $this->createModel();
         $this->createPayment();
-        $this->createState();
+//        $this->createState();
 
     }
 

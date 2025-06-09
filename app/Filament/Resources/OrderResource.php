@@ -173,7 +173,7 @@ class OrderResource extends Resource
         return [
             'index' => Pages\ListOrders::route('/'),
             'update' => Pages\UpdateOrder::class::route('/{record}/edit'),
-            'view' => Pages\ViewOrders::route('/{record}'),
+            'view' => Pages\UpdateOrder::route('/{record}'),
         ];
     }
 

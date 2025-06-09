@@ -23,6 +23,7 @@ class OrderNew extends Mailable
     {
         $this->order = $order;
 
+
     }
 
     /**
@@ -31,7 +32,7 @@ class OrderNew extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Asunto: ¡Gracias por tu compra solidaria!',
+            subject: '¡Gracias por tu compra solidaria!',
         );
     }
 
@@ -43,8 +44,8 @@ class OrderNew extends Mailable
         return new Content(
             markdown: 'emails.new-order',
             with: [
-                'order_number' => $this->order->number,
-                'url' => OrderResource::getUrl('view', ['record' => $this->order->id]),
+                'number' => $this->order->number,
+                'url' => OrderResource::getUrl('update', ['record' => $this->order->id]),
                 'items' => $this->order->itemsArray(),
                 'total' => convertPrice($this->order->amount),
                 'subtotal' => convertPrice($this->order->subtotal),

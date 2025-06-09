@@ -138,8 +138,6 @@ class Order extends Model
 
         $this->refresh();
 
-        // Disparo evento de actualización de pedido
-        //        OrderUpdated::dispatch($this);
     }
 
     /**
@@ -215,6 +213,11 @@ class Order extends Model
         }
 
         return $items;
+    }
+
+    public function getUserName(): string
+    {
+        return Str::title($this->address->name);
     }
 
     /**

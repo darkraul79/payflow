@@ -6,7 +6,6 @@ use App\Http\Classes\PaymentProcess;
 use App\Models\Donation;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\State;
 
 test('ssdadf sdfsd sdf sdf ', function ($clase) {
 
@@ -36,20 +35,7 @@ test('crea un pago al construir PaymentProcess', function ($clase) {
     'Order',
 ]);
 
-test('crea un estado pendiente al construir PaymentProcess', function ($clase) {
 
-    $modelo = 'App\\Models\\' . $clase;
-    /** @noinspection PhpUndefinedMethodInspection */
-    $process = new PaymentProcess($modelo, $modelo::factory()->make()->attributesToArray());
-
-
-    expect($process->modelo->state)->toBeInstanceOf(State::class)
-        ->and($process->modelo->state->name)->toBe(State::PENDIENTE);
-
-})->with([
-    'Donation',
-    'Order',
-]);
 test('getFormRedSysData devuelve campos de RedSys correctos', function () {
     $process = new PaymentProcess(Donation::class, Donation::factory()->make()->attributesToArray());
 

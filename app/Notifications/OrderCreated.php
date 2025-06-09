@@ -40,7 +40,7 @@ class OrderCreated extends Notification
         return (new MailMessage)
             ->subject('Nuevo Pedido ' . $this->order->number)
             ->line('Hay un nuevo pedido.')
-            ->action('Ver pedido', OrderResource::getUrl('view', ['record' => $this->order->id]));
+            ->action('Ver pedido', OrderResource::getUrl('update', ['record' => $this->order->id]));
     }
 
     /**

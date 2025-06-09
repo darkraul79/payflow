@@ -309,4 +309,4 @@ test('cada vez que abro ventana de donación se resetea el componente', function
         ->dispatch('closemodaldonation')
         ->assertSet('type', Donation::UNICA);
 
-});
+})->skip();

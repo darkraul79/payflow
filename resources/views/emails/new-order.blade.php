@@ -1,10 +1,10 @@
 {{--@formatter:off--}}
 <x-mail::message>
-# Hemos recibido tu pedido: {{ $order_number }}.
+# Hemos recibido tu pedido: {{ $number }}.
 
 Hemos recibido tu pedido.
 
-Gracias por *subirte a la ola solidaria*. Cada compra en nuestra tienda impulsa la investigación contra el *osteosarcoma*, y nos permite acompañar mejor a las familias que lo viven.
+Gracias por **subirte a la ola solidaria**. Cada compra en nuestra tienda impulsa la investigación contra el *osteosarcoma*, y nos permite acompañar mejor a las familias que lo viven.
 
 En breve recibirás una actualización con más detalles.
 
@@ -26,6 +26,6 @@ En breve recibirás una actualización con más detalles.
 </x-mail::table>
 
 Gracias,
-<br />
-{{ config('app.name') }}
+
+💛 Fundación Elena Tertre
 </x-mail::message>
