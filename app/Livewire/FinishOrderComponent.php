@@ -27,6 +27,7 @@ class FinishOrderComponent extends Component
     public $shipping = [
         'name' => '',
         'last_name' => '',
+        'last_name2' => '',
         'address' => '',
         'cp' => '',
         'city' => '',
@@ -38,6 +39,7 @@ class FinishOrderComponent extends Component
     public $billing = [
         'name' => '',
         'last_name' => '',
+        'last_name2' => '',
         'address' => '',
         'cp' => '',
         'city' => '',
@@ -56,6 +58,7 @@ class FinishOrderComponent extends Component
     public array $rulesBilling = [
         'billing.name' => 'required|string|max:255',
         'billing.last_name' => 'required|string|max:255',
+        'billing.last_name2' => 'required|string|max:255',
         'billing.company' => 'nullable|string|max:255',
         'billing.nif' => 'nullable|string|max:255',
         'billing.address' => 'required|string|max:255',
@@ -70,6 +73,7 @@ class FinishOrderComponent extends Component
     public array $rulesShipping = [
         'shipping.name' => 'required|string|max:255',
         'shipping.last_name' => 'required|string|max:255',
+        'shipping.last_name2' => 'required|string|max:255',
         'shipping.company' => 'nullable|string|max:255',
         'shipping.nif' => 'nullable|string|max:255',
         'shipping.address' => 'required|string|max:255',
@@ -97,7 +101,8 @@ class FinishOrderComponent extends Component
         if (app()->isLocal()) {
             $this->billing = [
                 'name' => 'Raúl',
-                'last_name' => 'Sebasitán',
+                'last_name' => 'Sebastián',
+                'last_name2' => 'Pulido',
                 'address' => 'Wistera Street 21',
                 'cp' => '28292',
                 'city' => 'Madrid',
@@ -181,6 +186,7 @@ class FinishOrderComponent extends Component
             'type' => Address::BILLING,
             'name' => $this->billing['name'],
             'last_name' => $this->billing['last_name'],
+            'last_name2' => $this->billing['last_name2'],
             'company' => $this->billing['company'] ?? null,
             'nif' => $this->billing['nif'] ?? null,
             'address' => $this->billing['address'],
@@ -196,6 +202,7 @@ class FinishOrderComponent extends Component
                 'type' => Address::SHIPPING,
                 'name' => $this->shipping['name'],
                 'last_name' => $this->shipping['last_name'],
+                'last_name2' => $this->shipping['last_name2'],
                 'company' => $this->shipping['company'] ?? null,
                 'nif' => $this->shipping['nif'] ?? null,
                 'address' => $this->shipping['address'],

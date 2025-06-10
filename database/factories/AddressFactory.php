@@ -16,6 +16,7 @@ class AddressFactory extends Factory
             'type' => Address::BILLING,
             'name' => $this->faker->name(),
             'last_name' => $this->faker->lastName(),
+            'last_name2' => $this->faker->lastName(),
             'company' => $this->faker->company(),
             'nif' => '123456798A',
             'address' => $this->faker->address(),

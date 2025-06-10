@@ -206,6 +206,7 @@ test('puedo hacer donacion con certificado DonacionBanner', function () {
         ->set('needsCertificate', true)
         ->set('certificate.name', 'Nombre')
         ->set('certificate.last_name', 'Apellido')
+        ->set('certificate.last_name2', 'Apellido')
         ->set('certificate.company', 'Empresa SL')
         ->set('certificate.address', 'Calle Falsa 123')
         ->set('certificate.cp', '28001')

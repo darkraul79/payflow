@@ -21,6 +21,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use Carbon\Carbon;
+
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
 
@@ -79,7 +80,7 @@ function asUser(): User
 function creaPedido(?Product $producto = null): Order
 {
 
-    if (!$producto) {
+    if (! $producto) {
         $producto = Product::factory()->create([
             'name' => 'Producto de prueba',
             'price' => 10,
@@ -101,6 +102,7 @@ function creaPedido(?Product $producto = null): Order
             'billing' => [
                 'name' => 'Juan',
                 'last_name' => 'Pérez',
+                'last_name2' => 'Sánchez',
                 'company' => 'Mi empresa',
                 'address' => 'Calle Falsa 123',
                 'province' => 'Madrid',
@@ -116,10 +118,6 @@ function creaPedido(?Product $producto = null): Order
     return Order::latest()->first();
 }
 
-/**
- * @param array $data
- * @return array
- */
 function getMerchanParamasOrderOk($amount, $order_number): string
 {
 
@@ -235,7 +233,7 @@ function getMerchanParamsOrder(Order $order, $ok = false): string
         'Ds_Date' => Carbon::now()->format('d%20m%20Y'),
         'Ds_Hour' => Carbon::now()->format('H:i'),
         'Ds_SecurePayment' => '1',
-        'Ds_Amount' => convertNumberToRedSys($order->amount) . "",
+        'Ds_Amount' => convertNumberToRedSys($order->amount).'',
         'Ds_Currency' => '978',
         'Ds_Order' => $order->number,
         'Ds_MerchantCode' => '357328590',
@@ -275,9 +273,7 @@ function getResponseOrder(Order $order, $ok = false): array
 {
     $redSys = new RedsysAPI;
 
-
     $merchantParams = getMerchanParamsOrder($order, $ok);
-
 
     return [
         'Ds_MerchantParameters' => $merchantParams,
@@ -285,4 +281,3 @@ function getResponseOrder(Order $order, $ok = false): array
         'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
     ];
 }
-

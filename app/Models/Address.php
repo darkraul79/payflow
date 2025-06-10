@@ -12,12 +12,14 @@ class Address extends Model
     public const BILLING = 'Facturación';
 
     public const SHIPPING = 'Envío';
+
     public const CERTIFICATE = 'Certificado';
 
     protected $fillable = [
         'type',
         'name',
         'last_name',
+        'last_name2',
         'company',
         'nif',
         'address',
@@ -26,16 +28,11 @@ class Address extends Model
         'cp',
         'email',
         'phone',
-        'notes'
+        'notes',
     ];
-
-//    public function order(): BelongsTo
-//    {
-//        return $this->belongsTo(Order::class);
-//    }
 
     public function getFullNameAttribute(): string
     {
-        return $this->name . ' ' . $this->last_name;
+        return $this->name.' '.$this->last_name.' '.$this->last_name2;
     }
 }

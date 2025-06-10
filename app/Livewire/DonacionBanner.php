@@ -35,6 +35,7 @@ class DonacionBanner extends Component
     public $certificate = [
         'name' => '',
         'last_name' => '',
+        'last_name2' => '',
         'company' => '',
         'address' => '',
         'cp' => '',
@@ -118,6 +119,7 @@ class DonacionBanner extends Component
                 'type' => Address::CERTIFICATE,
                 'name' => $this->certificate['name'],
                 'last_name' => $this->certificate['last_name'],
+                'last_name2' => $this->certificate['last_name2'],
                 'company' => $this->certificate['company'] ?? null,
                 'address' => $this->certificate['address'] ?? '',
                 'cp' => $this->certificate['cp'],
@@ -193,6 +195,7 @@ class DonacionBanner extends Component
             3 => [
                 'certificate.name' => 'required|string|max:255',
                 'certificate.last_name' => 'required|string|max:255',
+                'certificate.last_name2' => 'required|string|max:255',
                 'certificate.nif' => 'required|string|max:255',
                 'certificate.cp' => 'required|string|max:5',
                 'certificate.email' => 'required|email|max:255',

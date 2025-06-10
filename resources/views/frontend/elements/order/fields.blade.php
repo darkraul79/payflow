@@ -1,4 +1,4 @@
-<div class="col-3">
+<div class="col-6">
     <label for="{{ $prefix }}name">Nombre</label>
     <x-input
         placeholder="Nombre"
@@ -10,15 +10,26 @@
     <x-error class="form-error" field="{{$prefix}}name" class="form-error" />
 </div>
 <div class="col-3">
-    <label for="{{ $prefix }}last_name">Apellidos</label>
+    <label for="{{ $prefix }}last_name">Primer Apellido</label>
     <x-input
-        placeholder="Apellidos"
+        placeholder="Primer apellido"
         type="text"
         name="{{$prefix}}last_name"
         id="{{$prefix}}last_name"
         wire:model="{{$prefix}}last_name"
     />
     <x-error class="form-error" field="{{$prefix}}last_name" />
+</div>
+<div class="col-3">
+    <label for="{{ $prefix }}last_name2">Segundo Apellidos</label>
+    <x-input
+        placeholder="Segundo apellido"
+        type="text"
+        name="{{$prefix}}last_name2"
+        id="{{$prefix}}last_name2"
+        wire:model="{{$prefix}}last_name2"
+    />
+    <x-error class="form-error" field="{{$prefix}}last_name2" />
 </div>
 <div class="col-4">
     <label for="{{ $prefix }}company">
