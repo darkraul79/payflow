@@ -28,7 +28,7 @@
         </span>
         <h4 class="my-1">{{ $title }}</h4>
         <p>
-            {{ Str::limit($text, 120) }}
+            {!! Str::limit($text, 120) !!}
         </p>
     </div>
 
