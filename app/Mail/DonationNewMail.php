@@ -42,7 +42,7 @@ class DonationNewMail extends Mailable
         return new Content(
             markdown: $this->getView(),
             with: [
-                'name' => $this->donation->certificate->name,
+                'name' => $this->donation->certificate()->name,
             ],
         );
     }
