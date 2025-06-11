@@ -22,7 +22,7 @@
                 x-transition:enter="transition delay-100 duration-200 ease-out motion-reduce:transition-opacity"
                 x-transition:enter-start="scale-110 opacity-0"
                 x-transition:enter-end="scale-100 opacity-100"
-                class="top-[100px]"
+                class="top-[100px] lg:top-0"
             >
                 <div
                     class="z-50 flex w-full flex-col items-end justify-end p-4 lg:max-w-xl"
