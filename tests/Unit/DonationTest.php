@@ -209,7 +209,6 @@ test('puedo hacer donacion con certificado DonacionBanner', function () {
         ->set('certificate.company', 'Empresa SL')
         ->set('certificate.address', 'Calle Falsa 123')
         ->set('certificate.cp', '28001')
-        ->set('certificate.city', 'Madrid')
         ->set('certificate.province', 'Madrid')
         ->set('certificate.email', 'info@raulsebastian.es')
         ->call('submit');
@@ -368,3 +367,5 @@ test('obtengo correctamente los pagos del mes', function () {
     Queue::assertPushed(ProcessDonationPaymentJob::class, 1);
 
 });
+
+

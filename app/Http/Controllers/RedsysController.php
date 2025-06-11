@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\CreateOrderEvent;
+use App\Events\NewDonationEvent;
 use App\Helpers\RedsysAPI;
 use App\Models\Donation;
 use App\Models\Order;
@@ -43,6 +44,8 @@ class RedsysController extends Controller
             $donacion->error_pago($decodec, $error);
 
         }
+
+        NewDonationEvent::dispatch($donacion);
 
         return redirect()->route('donacion.finalizada', [
             'donacion' => $donacion->number,

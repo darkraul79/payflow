@@ -1,10 +1,15 @@
 <?php
 
 use App\Events\CreateOrderEvent;
+use App\Events\NewDonationEvent;
 use App\Events\UpdateOrderStateEvent;
 use App\Filament\Resources\OrderResource\Pages\UpdateOrder;
+use App\Http\Classes\PaymentProcess;
 use App\Listeners\SendEmailsOrderListener;
+use App\Mail\DonationNewMail;
 use App\Mail\OrderNew;
+use App\Models\Address;
+use App\Models\Donation;
 use App\Models\Order;
 use App\Models\State;
 use App\Models\User;
@@ -132,4 +137,57 @@ test('al actualizar estado de pedidos se ejecuta UpdateOrderStateEvent', functio
 
 
 });
+
+test('al crear donación recurrente se ejecuta evento New Donation', function () {
+    Event::fake();
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('10,35'),
+        'type' => Donation::RECURRENTE,
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+    ]);
+    $donacion = $paymentProcess->modelo;
+
+    $this->get(route('donation.response', getResponseDonation($donacion, true)));
+    $donacion->refresh();
+
+    Event::assertDispatched(NewDonationEvent::class);
+
+
+});
+
+test('al crear donación recurrente envío email al donante', function ($state, $subject) {
+
+    Mail::fake();
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('10,35'),
+        'type' => Donation::RECURRENTE,
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+    ]);
+    $donacion = $paymentProcess->modelo;
+    $donacion->addresses()->create([
+        'type' => Address::CERTIFICATE,
+        'name' => 'Nombre',
+        'last_name' => 'Apellido',
+        'last_name2' => 'Apellido2',
+        'company' => 'Empresa SL',
+        'address' => 'Calle Falsa 123',
+        'cp' => '28001',
+        'city' => 'Madrid',
+        'province' => 'Madrid',
+        'email' => 'info@raulsebastian.es',
+    ]);
+
+    Mail::assertNothingSent();
+
+    $this->get(route('donation.response', getResponseDonation($donacion, $state)));
+    $donacion->refresh();
+
+    Mail::assertSent(DonationNewMail::class, function (DonationNewMail $mail) use ($subject) {
+        return $mail->hasTo('info@raulsebastian.es') && $mail->hasSubject($subject);
+    });
+})
+    ->with([
+        ['state' => true, 'subject' => '¡Gracias por unirte como socio/amigo! 🌊'],
+        ['state' => false, 'subject' => 'Problema con tu alta como socio/amigo'],
+    ]);
 
