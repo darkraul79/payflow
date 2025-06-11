@@ -7,7 +7,7 @@
             class="flex items-center justify-start py-4 lg:justify-center lg:py-0"
         />
 
-        <div class="flex items-end justify-end gap-10 lg:hidden">
+        <div class="flex items-end justify-end gap-4 lg:hidden lg:gap-10">
             <livewire:cart-button-component wire:key="cart-button-mobile" />
 
             <flux:sidebar.toggle

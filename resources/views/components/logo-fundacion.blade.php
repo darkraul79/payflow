@@ -1,6 +1,6 @@
 <a
     href="{{ route('home') }}"
-    {{ $attributes->class([''])->merge(['class']) }}
+    {{ $attributes->class(['max-w-[180px] md:max-w-[200px] lg:max-w-none'])->merge(['class']) }}
 >
     <img
         src="{{ asset('images/logo-fundacion-horizontal.svg') }}"
