@@ -39,7 +39,7 @@ trait HasStates
      * Delimita el listado de modelos a los finalizados.
      */
     #[Scope]
-    protected function aceptados(Builder $query): void
+    public function aceptados(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
             $query->where('name', State::ACEPTADO);
@@ -50,7 +50,7 @@ trait HasStates
      * Delimita el listado de modelos a los finalizados.
      */
     #[Scope]
-    protected function finalizados(Builder $query): void
+    public function finalizados(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
             $query->where('name', State::FINALIZADO);
@@ -61,7 +61,7 @@ trait HasStates
      * Delimita el listado de modelos a los pendientes de pago.
      */
     #[Scope]
-    protected function pendientePago(Builder $query): void
+    public function pendientePago(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
             $query->where('name', State::PENDIENTE);
@@ -72,7 +72,7 @@ trait HasStates
      * Delimita el listado de modelos a los modelps cancelados.
      */
     #[Scope]
-    protected function cancelados(Builder $query): void
+    public function cancelados(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
             $query->where('name', State::CANCELADO);
@@ -83,7 +83,7 @@ trait HasStates
      * Delimita el listado de modelos a los pagados.
      */
     #[Scope]
-    protected function pagados(Builder $query): void
+    public function pagados(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
             $query->where('name', State::PAGADO);
@@ -94,7 +94,7 @@ trait HasStates
      * Delimita el listado de modelos a los modelps enviados.
      */
     #[Scope]
-    protected function enviados(Builder $query): void
+    public function enviados(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
             $query->where('name', State::ENVIADO);
@@ -105,10 +105,21 @@ trait HasStates
      * Delimita el listado de modelos a los modelps con error.
      */
     #[Scope]
-    protected function conErrores(Builder $query): void
+    public function conErrores(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
             $query->where('name', State::ERROR);
+        });
+    }
+
+    /**
+     * Delimita el listado de modelos a los modelos con estado ACTIVA.
+     */
+    #[Scope]
+    public function activas(Builder $query): void
+    {
+        $query->whereHas('state', function ($query): void {
+            $query->where('name', State::ACTIVA);
         });
     }
 

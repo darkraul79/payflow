@@ -1,11 +1,15 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 namespace App\Models;
 
 use App\Helpers\RedsysAPI;
 use App\Models\Traits\HasAddresses;
 use App\Models\Traits\HasPayments;
 use App\Models\Traits\HasStates;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -237,10 +241,14 @@ class Donation extends Model
     {
         $createdDate = $this->created_at;
         $date = match ($this->frequency) {
-            self::FREQUENCY['MENSUAL'] => Carbon::parse($createdDate)->addMonth(),
-            self::FREQUENCY['TRIMESTRAL'] => Carbon::parse($createdDate)->addMonths(3),
-            self::FREQUENCY['ANUAL'] => Carbon::parse($createdDate)->addYear(),
-            default => Carbon::now(),
+            self::FREQUENCY['MENSUAL'] => Carbon::parse($createdDate)->addMonth()->day(5),
+            self::FREQUENCY['TRIMESTRAL'] => Carbon::parse($createdDate)
+                ->addMonths(3 - (Carbon::parse($createdDate)->month - 1) % 3)
+                ->startOfMonth()
+                ->addMonths(2)
+                ->day(5),
+            self::FREQUENCY['ANUAL'] => Carbon::parse($createdDate)->addYear()->day(5),
+            default => null,
         };
         $this->update([
             'next_payment' => $date->format('Y-m-d'),
@@ -280,20 +288,7 @@ class Donation extends Model
     public function getNextPayDateFormated(): string
     {
 
-        return Carbon::parse($this->getNextPayDate())->format('d-m-Y');
-    }
-
-    public function getNextPayDate(): false|Carbon
-    {
-        if ($this->frequency === self::FREQUENCY['MENSUAL']) {
-            return Carbon::parse($this->created_at)->addMonth();
-        } elseif ($this->frequency === self::FREQUENCY['TRIMESTRAL']) {
-            return Carbon::parse($this->created_at)->addMonths(3);
-        } elseif ($this->frequency === self::FREQUENCY['ANUAL']) {
-            return Carbon::parse($this->created_at)->addYear();
-        }
-
-        return false;
+        return Carbon::parse($this->next_payment)->format('d-m-Y');
     }
 
     public function getFormatedAmount(): string
@@ -306,10 +301,22 @@ class Donation extends Model
         return Carbon::parse($this->next_payment)->format('d-m-Y');
     }
 
+    /**
+     * Delimita el listado de modelos a los modelos con estado ACTIVA.
+     */
+    #[Scope]
+    protected function recurrents(Builder $query): void
+    {
+
+        $query->where('type', self::RECURRENTE);
+
+    }
+
     protected function casts(): array
     {
         return [
             'info' => AsArrayObject::class,
+            //            'next_payment' => 'date:Y-m-d',
         ];
     }
 }

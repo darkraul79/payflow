@@ -6,11 +6,11 @@ use App\Models\Donation;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-class ProcessDonationPayment implements ShouldQueue
+class ProcessDonationPaymentJob implements ShouldQueue
 {
     use Queueable;
 
-    private Donation $donation;
+    public Donation $donation;
 
     /**
      * Create a new job instance.

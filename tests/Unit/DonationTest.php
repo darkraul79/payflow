@@ -3,16 +3,16 @@
 namespace Tests\Unit;
 
 use App\Http\Classes\PaymentProcess;
-use App\Jobs\ProcessDonationPayment;
+use App\Jobs\ProcessDonationPaymentJob;
 use App\Livewire\DonacionBanner;
 use App\Models\Address;
 use App\Models\Donation;
 use App\Models\Page;
 use App\Models\State;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use function Pest\Livewire\livewire;
-
 
 test('puedo crear donación única por defecto en factory', function () {
 
@@ -167,9 +167,8 @@ test('NO puedo crear pago a donacion cancelada', function () {
     expect(fn() => $donacion->recurrentPay())->toThrow(
         HttpException::class,
         'La donación ya NO está activa y no se puede volver a pagar'
-    );
-
-    expect($donacion->state->name)->toBe(State::CANCELADO);
+    )
+        ->and($donacion->state->name)->toBe(State::CANCELADO);
 
 });
 
@@ -232,7 +231,7 @@ test('no permite donaciones menores a 1', function () {
 
 test('valido campos de certificado', function () {
 
-    $r = livewire(DonacionBanner::class)
+    livewire(DonacionBanner::class)
         ->set('amount', '10')
         ->call('toStep', 3)
         ->call('submit')->assertHasErrors([
@@ -257,6 +256,7 @@ test('puedo actualizar la fecha de siguiente cobro según la frecuencia', functi
 
     $donacion = Donation::factory()->recurrente()->create([
         'frequency' => $frecuencia,
+        'created_at' => '2025-06-11',
     ]);
 
     $donacion->updateNextPaymentDate();
@@ -264,12 +264,12 @@ test('puedo actualizar la fecha de siguiente cobro según la frecuencia', functi
     expect($donacion->next_payment)->toBe($date);
 
 })->with([
-    [Donation::FREQUENCY['MENSUAL'], Carbon::now()->addMonth()->format('Y-m-d')],
-    [Donation::FREQUENCY['TRIMESTRAL'], Carbon::now()->addMonths(3)->format('Y-m-d')],
-    [Donation::FREQUENCY['ANUAL'], Carbon::now()->addYear()->format('Y-m-d')],
+    [Donation::FREQUENCY['MENSUAL'], '2025-07-05'],
+    [Donation::FREQUENCY['TRIMESTRAL'], '2025-09-05'],
+    [Donation::FREQUENCY['ANUAL'], '2026-06-05'],
 ]);
 
-test('puedo procesar job ProcessDonationPayment', function () {
+test('puedo procesar job ProcessDonationPaymentJob', function () {
 
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
@@ -285,7 +285,7 @@ test('puedo procesar job ProcessDonationPayment', function () {
 
     $this->travel(1)->days();
 
-    ProcessDonationPayment::dispatch($donacion);
+    ProcessDonationPaymentJob::dispatch($donacion);
 
     expect($donacion->payments)->toHaveCount(2)
         ->and($donacion->payments->last()->amount)->toBe(10.35)
@@ -311,3 +311,60 @@ test('cada vez que abro ventana de donación se resetea el componente', function
         ->assertSet('type', Donation::UNICA);
 
 })->skip();
+
+test('actualizo correctamente la fecha de próximo cobro', function ($tipo) {
+
+    $donacion = Donation::factory()->recurrente()->create([
+        'frequency' => $tipo,
+        'created_at' => '2025-06-11',
+    ]);
+    $donacion->updateNextPaymentDate();
+
+    $fechas = [
+        Donation::FREQUENCY['MENSUAL'] => '2025-07-05',
+        Donation::FREQUENCY['TRIMESTRAL'] => '2025-09-05',
+        Donation::FREQUENCY['ANUAL'] => '2026-06-05',
+    ];
+
+    expect($donacion->next_payment)->toBe($fechas[$tipo]);
+
+})
+    ->with([
+        Donation::FREQUENCY['MENSUAL'],
+        Donation::FREQUENCY['TRIMESTRAL'],
+        Donation::FREQUENCY['ANUAL'],
+    ]);
+
+test('obtengo correctamente los pagos del mes', function () {
+    Queue::fake();
+
+    $donacion = Donation::factory()->recurrente()->create([
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'created_at' => '2025-06-11',
+    ]);
+    $donacion->updateNextPaymentDate();
+
+    $donacionCancelada = Donation::factory()->recurrente()->create([
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'created_at' => '2025-06-11',
+    ]);
+    $donacionCancelada->updateNextPaymentDate();
+    $donacionCancelada->states()->create([
+        'name' => State::CANCELADO,
+    ]);
+
+    Queue::assertNothingPushed();
+
+    $this->travelTo('2025-07-05');
+    $this->artisan('payments-of-month:process')->assertSuccessful();
+
+    Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacion) {
+        return $job->donation->id === $donacion->id;
+    });
+
+
+//    $d = $this->artisan('queue:work');
+
+    Queue::assertPushed(ProcessDonationPaymentJob::class, 1);
+
+});
