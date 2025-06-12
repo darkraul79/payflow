@@ -2,8 +2,6 @@
 <x-mail::message>
 # Hemos recibido tu pedido: {{ $number }}.
 
-Hemos recibido tu pedido.
-
 Gracias por **subirte a la ola solidaria**. Cada compra en nuestra tienda impulsa la investigación contra el *osteosarcoma*, y nos permite acompañar mejor a las familias que lo viven.
 
 En breve recibirás una actualización con más detalles.
