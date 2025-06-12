@@ -7,7 +7,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="color-scheme" content="light">
     <meta name="supported-color-schemes" content="light">
-    <style>
+    <style type="text/css">
         @media only screen and (max-width: 600px) {
             .inner-body {
                 width: 100% !important;

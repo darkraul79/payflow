@@ -8,8 +8,9 @@ volver a intentarlo, estamos aquí para ayudarte.
 
 Recuerda que cada compra ayuda a seguir avanzando en la investigación contra el
 osteosarcoma.
+<br><br>
 
-💛 Fundación Elena Tertre
-
-*#UnidosContraElOsteosarcoma*
+<x-footer-mail :tags="[
+'UnidosContraElOsteosarcoma',
+]"/>
 </x-mail::message>

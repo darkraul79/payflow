@@ -9,10 +9,14 @@ No te preocupes, todavía estás a tiempo de sumarte a la ola solidaria y seguir
 
 Si quieres, puedes intentar completar el proceso de nuevo o contactarnos para ayudarte.
 
-
+<br><br>
 Estamos aquí para acompañarte en cada paso.
 
+<br><br>
 Un saludo,
 El equipo de la Fundación Elena Tertre
-💛 *#UnidosContraElOsteosarcoma*
+
+<x-footer-mail :tags="[
+'UnidosContraElOsteosarcoma',
+]"/>
 </x-mail::message>

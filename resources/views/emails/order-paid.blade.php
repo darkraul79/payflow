@@ -8,7 +8,7 @@ contigo.
 Con cada compra, impulsas la investigación y el apoyo a las familias que luchan contra
 el osteosarcoma.
 
-💛 Fundación Elena Tertre
-
-*#JuntosContraElOsteosarcoma*
+<x-footer-mail :tags="[
+'JuntosContraElOsteosarcoma'
+]"/>
 </x-mail::message>

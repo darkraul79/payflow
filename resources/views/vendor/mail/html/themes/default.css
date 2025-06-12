@@ -12,9 +12,10 @@ body *:not(html):not(style):not(br):not(tr):not(code) {
 body {
     -webkit-text-size-adjust: none;
     background-color: #ffffff;
-    color: #718096;
+    color: #003c6b;
     height: 100%;
     line-height: 1.4;
+    font-size: 12px;
     margin: 0;
     padding: 0;
     width: 100% !important;
@@ -24,6 +25,7 @@ p,
 ul,
 ol,
 blockquote {
+    font-size: 12px;
     line-height: 1.4;
     text-align: left;
 }
@@ -61,7 +63,7 @@ h3 {
 }
 
 p {
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.5em;
     margin-top: 0;
     text-align: left;
@@ -205,7 +207,7 @@ img {
 
 .table td {
     color: #74787e;
-    font-size: 15px;
+    font-size: 12px;
     line-height: 18px;
     margin: 0;
     padding: 10px 0;
@@ -295,4 +297,17 @@ img {
 
 .break-all {
     word-break: break-all;
+}
+
+.cierre {
+    font-size: 14px;
+    color: #3d7eb4;
+    font-weight: bold;
+}
+
+.tag {
+    color: #aebecc;
+    font-size: 13px;
+    line-height: 1.2em;
+    font-style: italic;
 }

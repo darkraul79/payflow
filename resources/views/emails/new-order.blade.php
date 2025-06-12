@@ -8,7 +8,7 @@ Gracias por **subirte a la ola solidaria**. Cada compra en nuestra tienda impuls
 
 En breve recibirás una actualización con más detalles.
 
-
+<br/><br/>
 
 <x-mail::table>
     |                  Producto      || Cantidad      | Total         |
@@ -27,5 +27,7 @@ En breve recibirás una actualización con más detalles.
 
 Gracias,
 
-💛 Fundación Elena Tertre
+<x-footer-mail :tags="[
+'JuntosContraElOsteosarcoma','SúbeteALaOlaSolidaria'
+]"/>
 </x-mail::message>

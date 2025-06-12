@@ -9,8 +9,7 @@ Si tienes cualquier duda o necesitas ayuda, estamos aquí para acompañarte.
 
 
 
-
-💛 Fundación Elena Tertre
-
-*#UnidosContraElOsteosarcoma*
+<x-footer-mail :tags="[
+'UnidosContraElOsteosarcoma'
+]"/>
 </x-mail::message>

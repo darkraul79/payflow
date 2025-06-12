@@ -6,5 +6,8 @@
 
 Gracias por subirte a la ola solidaria.
 
-💛 Fundación Elena Tertre
+
+<x-footer-mail :tags="[
+'UnidosContraElOsteosarcoma'
+]"/>
 </x-mail::message>
