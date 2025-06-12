@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -47,7 +48,9 @@ class Activity extends Model implements HasMedia
         'donacion',
     ];
 
-    public static function getFooterActivities()
+
+    /** @noinspection PhpIncompatibleReturnTypeInspection */
+    public static function getFooterActivities(): Collection
     {
         return Activity::query()
             ->published()
@@ -124,7 +127,7 @@ class Activity extends Model implements HasMedia
     protected function latest_activities(Builder $query): void
     {
         $query->where('date', '>=', now())->published()
-            ->orderBy('date', 'asc');
+            ->orderBy('date');
     }
 
     #[Scope]
