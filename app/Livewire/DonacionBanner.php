@@ -8,6 +8,7 @@ use App\Models\Donation;
 use Closure;
 use Exception;
 use Illuminate\View\View;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -17,6 +18,12 @@ class DonacionBanner extends Component
     public string $amount = '0';
 
     public string $amount_select = '0';
+
+    public bool $amount_select_10 = false;
+
+    public bool $amount_select_50 = false;
+
+    public bool $amount_select_100 = false;
 
     public string $frequency;
 
@@ -29,6 +36,8 @@ class DonacionBanner extends Component
     public string $MerchantSignature = '';
 
     public string $SignatureVersion = '';
+
+    public string $prefix = '';
 
     public int $step = 1;
 
@@ -49,20 +58,12 @@ class DonacionBanner extends Component
 
     public function render(): View
     {
-        //        $donacion = Donation::find(2);
-        //        $redsys = new RedsysAPI;
-        //        $formData = $redsys->getFormPagoRecurrente($donacion, false);
-        //        $this->MerchantParameters = $formData['Ds_MerchantParameters'];
-        //        $this->MerchantSignature = $formData['Ds_Signature'];
-        //        $this->SignatureVersion = $formData['Ds_SignatureVersion'];
-        //        dd($redsys);
-
-        //        dd($donacion->payments()->latest()->first()->info);
         return view('livewire.donacion-banner');
     }
 
     public function updatedAmount($value): void
     {
+        $this->amount = $value;
         $this->amount_select = '0';
 
     }
@@ -74,9 +75,33 @@ class DonacionBanner extends Component
             : $this->frequency ?? Donation::FREQUENCY['MENSUAL'];
     }
 
-    public function mount()
+    public function mount($prefix): void
     {
         $this->amount = 0;
+        $this->prefix = $prefix;
+    }
+
+    #[On('resetDonation')]
+    public function resetModal(): void
+    {
+        if ($this->prefix === 'modal') {
+            $this->reset([
+                'amount',
+                'amount_select',
+                'amount_select_10',
+                'amount_select_50',
+                'amount_select_100',
+                'frequency',
+                'needsCertificate',
+                'type',
+                'MerchantParameters',
+                'MerchantSignature',
+                'SignatureVersion',
+                'step',
+                'certificate',
+                'isValid',
+            ]);
+        }
     }
 
     public function updatedAmountSelect($value): void
@@ -84,14 +109,15 @@ class DonacionBanner extends Component
         $this->amount = $value;
     }
 
+    /**
+     * @throws Exception
+     */
     public function toStep(int $step): void
     {
 
-
         $this->validate();
 
-
-        if ($step == 3 && $this->needsCertificate == false) {
+        if ($step == 3 && ! $this->needsCertificate) {
             $this->submit();
         } else {
 
@@ -136,40 +162,46 @@ class DonacionBanner extends Component
         $this->MerchantSignature = $formData['Ds_Signature'];
         $this->SignatureVersion = $formData['Ds_SignatureVersion'];
 
-
         $this->dispatch('submit-redsys-form');
 
     }
 
     public function updatingAmount($value): void
     {
-        $this->js('
-                    document.querySelector("#amount_select-10").checked =false;
-                    document.querySelector("#amount_select-50").checked =false;
-                    document.querySelector("#amount_select-100").checked =false;
-                    ');
+        $this->amount_select_10 = false;
+        $this->amount_select_50 = false;
+        $this->amount_select_100 = false;
+        //        $this->js('
+        //                    document.querySelector("#amount_select-10").checked =false;
+        //                    document.querySelector("#amount_select-50").checked =false;
+        //                    document.querySelector("#amount_select-100").checked =false;
+        //                    ');
 
         switch ($value) {
-            case "10,00":
-            case "10":
-            case "10,0":
+            case '10,00':
+            case '10':
+            case '10,0':
                 $this->amount_select = '0';
-                $this->js('
-                    document.querySelector("#amount_select-10").checked =true;');
+                $this->amount_select_10 = true;
+                $this->amount_select_50 = false;
+                $this->amount_select_100 = false;
                 break;
-            case "50,00":
-            case "50":
-            case "50,0":
+            case '50,00':
+            case '50':
+            case '50,0':
                 $this->amount_select = '0';
-                $this->js('
-                    document.querySelector("#amount_select-50").checked =true;');
+                $this->amount_select_10 = false;
+                $this->amount_select_50 = true;
+                $this->amount_select_100 = false;
                 break;
-            case "100,00":
-            case "100":
-            case "100,0":
+            case '100,00':
+            case '100':
+            case '100,0':
                 $this->amount_select = '0';
-                $this->js('
-                    document.querySelector("#amount_select-100").checked =true;');
+
+                $this->amount_select_10 = false;
+                $this->amount_select_50 = false;
+                $this->amount_select_100 = true;
                 break;
         }
     }
@@ -187,10 +219,10 @@ class DonacionBanner extends Component
                         }
                     },
                 ],
-                'type' => 'required|in:' . Donation::UNICA . ',' . Donation::RECURRENTE,
+                'type' => 'required|in:'.Donation::UNICA.','.Donation::RECURRENTE,
             ],
             2 => [
-                'needsCertificate' => ''
+                'needsCertificate' => '',
             ],
             3 => [
                 'certificate.name' => 'required|string|max:255',

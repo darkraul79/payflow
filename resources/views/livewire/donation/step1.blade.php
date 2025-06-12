@@ -10,6 +10,7 @@
     <div class="my-6 flex w-full">
         <x-radiobutton-donacion
             name="type"
+            :prefix="$prefix"
             :default="$type"
             :options="[
                 [
@@ -27,6 +28,7 @@
         <div class="my-6 flex w-full" wire:model="frequency">
             <x-radiobutton-donacion
                 name="frequency"
+                :prefix="$prefix"
                 :default="$frequency"
                 :options="[
                     [
@@ -49,6 +51,7 @@
     <div class="my-6 flex w-full" wire:model="amount_select">
         <x-radiobutton-donacion
             name="amount_select"
+            :prefix="$prefix"
             :default="$amount_select"
             :options="[
                 [

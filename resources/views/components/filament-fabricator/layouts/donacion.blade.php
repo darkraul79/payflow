@@ -24,7 +24,8 @@
         </div>
         <div class="w-full md:w-2/6 flex justify-end items-start ">
             <div class="md:sticky md:max-w-[400px] top-0 right-0">
-                @livewire('donacion-banner')
+                <livewire:donacion-banner prefix="banner" wire:key="banner" />
+
             </div>
         </div>
 @endsection

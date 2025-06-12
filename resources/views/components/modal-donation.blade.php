@@ -8,9 +8,10 @@
             x-show="modalIsOpen"
             x-transition.opacity.duration.200ms
             x-trap.inert.noscroll="modalIsOpen"
-            x-on:keydown.esc.window="modalIsOpen = false"
-            x-on:click.self="modalIsOpen = false"
+            x-on:keydown.esc.window="(modalIsOpen = false), $dispatch('resetDonation')"
+            x-on:click.self="(modalIsOpen = false), $dispatch('resetDonation')"
             class="fixed inset-0 z-30 flex items-end justify-center overflow-auto bg-black/70 p-4 pb-8 sm:items-center lg:p-8"
+            {{-- x-on:wire:click.self="" --}}
             role="dialog"
             aria-modal="true"
             aria-labelledby="defaultModalTitle"
@@ -29,11 +30,12 @@
                 >
                     <button
                         class="my-4 w-fit cursor-pointer rounded-full border border-gray-300"
+                        x-on:click="$dispatch('resetDonation')"
                         @click="modalIsOpen = false"
                     >
                         <x-heroicon-c-x-mark class="h-8 w-8" />
                     </button>
-                    <livewire:donacion-banner />
+                    <livewire:donacion-banner prefix="modal" wire:key="modal" />
                 </div>
             </div>
         </div>

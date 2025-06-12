@@ -12,6 +12,7 @@ use App\Models\State;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+
 use function Pest\Livewire\livewire;
 
 test('puedo crear donación única por defecto en factory', function () {
@@ -164,7 +165,7 @@ test('NO puedo crear pago a donacion cancelada', function () {
 
     $donacion->cancel();
 
-    expect(fn() => $donacion->recurrentPay())->toThrow(
+    expect(fn () => $donacion->recurrentPay())->toThrow(
         HttpException::class,
         'La donación ya NO está activa y no se puede volver a pagar'
     )
@@ -199,7 +200,7 @@ test('puedo comprobar si tiene certificado', function () {
 
 test('puedo hacer donacion con certificado DonacionBanner', function () {
 
-    livewire(DonacionBanner::class)
+    livewire(DonacionBanner::class, ['prefix' => 'donacion'])
         ->set('amount', '10,35')
         ->set('type', Donation::UNICA)
         ->set('needsCertificate', true)
@@ -219,7 +220,7 @@ test('puedo hacer donacion con certificado DonacionBanner', function () {
 
 test('no permite donaciones menores a 1', function () {
 
-    livewire(DonacionBanner::class)
+    livewire(DonacionBanner::class, ['prefix' => 'donacion'])
         ->set('amount', '0,35')
         ->call('toStep', 2)
         ->assertHasErrors([
@@ -230,7 +231,7 @@ test('no permite donaciones menores a 1', function () {
 
 test('valido campos de certificado', function () {
 
-    livewire(DonacionBanner::class)
+    livewire(DonacionBanner::class, ['prefix' => 'donacion'])
         ->set('amount', '10')
         ->call('toStep', 3)
         ->call('submit')->assertHasErrors([
@@ -361,11 +362,8 @@ test('obtengo correctamente los pagos del mes', function () {
         return $job->donation->id === $donacion->id;
     });
 
-
-//    $d = $this->artisan('queue:work');
+    //    $d = $this->artisan('queue:work');
 
     Queue::assertPushed(ProcessDonationPaymentJob::class, 1);
 
 });
-
-
