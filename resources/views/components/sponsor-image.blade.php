@@ -4,6 +4,7 @@
     'size' => 'small',
     'url' => null,
     'image' => null,
+    'order' => null,
 ])
 <div class="rounded-2xl bg-azul-sky block border-azul-sky border sponsor-image {{ $size }} {{ $image? '':'p-2' }}">
     @if($url)
@@ -13,7 +14,7 @@
             @endif
 
             @if($image)
-                <img src="{{ $image }}" alt="{{$sponsor}}" class="w-full rounded-xl " />
+                <img src="{{ $image }}" alt="{{$sponsor}}" class="w-full rounded-xl order-{{$order}}" />
             @else
                 <img src="{{asset('images/icons/heart-hand.svg')}}" class="w-full" alt="" />
             @endif

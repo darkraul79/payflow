@@ -35,6 +35,7 @@
                             :url="$sponsor->url ?? null"
                             :sponsor="$sponsor->name ?? null"
                             :image="$sponsor->getFirstMedia('sponsors')->getUrl('icon') ?? null"
+                            :order="$sponsor->order"
                         />
                     @else
                         <x-sponsor-image :size="$group['size']" />

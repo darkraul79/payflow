@@ -19,7 +19,7 @@ class Sponsors extends PageBlock
 
     public static function mutateData(array $data): array
     {
-        $data['sponsors'] = Sponsor::all()->sortBy('order');
+        $data['sponsors'] = Sponsor::all()->sortBy('order')->values();
 
         return $data;
     }
