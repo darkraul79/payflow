@@ -12,7 +12,6 @@ use App\Models\State;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-
 use function Pest\Livewire\livewire;
 
 test('puedo crear donación única por defecto en factory', function () {
@@ -165,7 +164,7 @@ test('NO puedo crear pago a donacion cancelada', function () {
 
     $donacion->cancel();
 
-    expect(fn () => $donacion->recurrentPay())->toThrow(
+    expect(fn() => $donacion->recurrentPay())->toThrow(
         HttpException::class,
         'La donación ya NO está activa y no se puede volver a pagar'
     )
@@ -206,6 +205,7 @@ test('puedo hacer donacion con certificado DonacionBanner', function () {
         ->set('needsCertificate', true)
         ->set('certificate.name', 'Nombre')
         ->set('certificate.last_name', 'Apellido')
+        ->set('certificate.nif', '1234567489W')
         ->set('certificate.last_name2', 'Apellido')
         ->set('certificate.company', 'Empresa SL')
         ->set('certificate.address', 'Calle Falsa 123')
@@ -215,7 +215,8 @@ test('puedo hacer donacion con certificado DonacionBanner', function () {
         ->call('submit');
 
     expect(Donation::first()->certificate())->toBeInstanceOf(Address::class)
-        ->and(Donation::first()->addresses)->toHaveCount(1);
+        ->and(Donation::first()->addresses)->toHaveCount(1)
+        ->and(Donation::first()->certificate()->nif)->toBe('1234567489W');
 });
 
 test('no permite donaciones menores a 1', function () {

@@ -47,6 +47,7 @@ class DonacionBanner extends Component
         'last_name2' => '',
         'company' => '',
         'address' => '',
+        'nif' => '',
         'cp' => '',
         'city' => '',
         'province' => '',
@@ -117,7 +118,7 @@ class DonacionBanner extends Component
 
         $this->validate();
 
-        if ($step == 3 && ! $this->needsCertificate) {
+        if ($step == 3 && !$this->needsCertificate) {
             $this->submit();
         } else {
 
@@ -147,6 +148,7 @@ class DonacionBanner extends Component
                 'last_name' => $this->certificate['last_name'],
                 'last_name2' => $this->certificate['last_name2'],
                 'company' => $this->certificate['company'] ?? null,
+                'nif' => $this->certificate['nif'] ?? null,
                 'address' => $this->certificate['address'] ?? '',
                 'cp' => $this->certificate['cp'],
                 'city' => $this->certificate['city'] ?? '',
@@ -171,11 +173,6 @@ class DonacionBanner extends Component
         $this->amount_select_10 = false;
         $this->amount_select_50 = false;
         $this->amount_select_100 = false;
-        //        $this->js('
-        //                    document.querySelector("#amount_select-10").checked =false;
-        //                    document.querySelector("#amount_select-50").checked =false;
-        //                    document.querySelector("#amount_select-100").checked =false;
-        //                    ');
 
         switch ($value) {
             case '10,00':
@@ -219,7 +216,7 @@ class DonacionBanner extends Component
                         }
                     },
                 ],
-                'type' => 'required|in:'.Donation::UNICA.','.Donation::RECURRENTE,
+                'type' => 'required|in:' . Donation::UNICA . ',' . Donation::RECURRENTE,
             ],
             2 => [
                 'needsCertificate' => '',
