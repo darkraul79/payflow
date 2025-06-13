@@ -20,7 +20,7 @@
         </x-slot>
 
         <div class="flex flex-col">
-            <div class="ms-auto">
+            <div class="ms-auto flex flex-col">
                 @if ($address->company)
                     <span class="text-sm font-semibold">
                         {{ $address->company }}
@@ -28,8 +28,8 @@
                 @endif
 
                 @if ($address->nif)
-                    <span class="text-md ms-3 text-gray-400">
-                        - {{ $address->nif }}
+                    <span class="ms-3 mb-4 text-sm text-gray-600">
+                        {{ $address->nif }}
                     </span>
                 @endif
             </div>

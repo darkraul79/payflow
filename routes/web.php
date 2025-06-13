@@ -6,7 +6,7 @@ use App\Http\Controllers\RedsysController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
-use App\Mail\OrderNew;
+use App\Mail\OrderStateUpdate;
 use App\Models\Activity;
 use App\Models\News;
 use App\Models\Product;
@@ -17,8 +17,9 @@ Route::get('/', [FrontEndController::class, 'index'])->name('home');
 
 Route::get('/kk', [RedsysController::class, 'kk'])->name('kk');
 Route::get('/mailable', function () {
-    $order = App\Models\Order::find(69);
-    return new OrderNew($order);
+    $order = App\Models\Order::find(2);
+//    Mail::to('info@raulsebastian.es')->send(new OrderStateUpdate($order));
+    return new OrderStateUpdate($order);
 });
 
 Route::get('/tienda-solidaria/cesta', [CartController::class, 'index'])->name('cart');
