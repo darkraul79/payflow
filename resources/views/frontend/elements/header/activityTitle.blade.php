@@ -26,6 +26,8 @@
             </p>
             <button
                 class="btn bg-amarillo text-azul-mist! hover:bg-amarillo/70 flex cursor-pointer flex-row items-center gap-2 px-6 py-4 font-semibold"
+                x-data="{}"
+                @click="$dispatch('openmodaldonation')"
             >
                 <flux:icon.heart variant="solid" class="size-4" />
                 Haz una donación
