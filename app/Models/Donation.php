@@ -88,6 +88,7 @@ class Donation extends Model
         $this->update([
             'identifier' => $this->type == Donation::RECURRENTE ? $redSysResponse['Ds_Merchant_Identifier'] : null,
             'info' => $redSysResponse,
+            'next_payment' => $this->type === Donation::RECURRENTE ? $this->updateNextPaymentDate() : null,
         ]);
 
         $this->payments->where('number', $redSysResponse['Ds_Order'])->firstOrFail()->update(
@@ -117,6 +118,26 @@ class Donation extends Model
         }
 
         $this->refresh();
+    }
+
+    public function updateNextPaymentDate(): string
+    {
+        $createdDate = $this->created_at;
+        $date = match ($this->frequency) {
+            self::FREQUENCY['MENSUAL'] => Carbon::parse($createdDate)->addMonth()->day(5),
+            self::FREQUENCY['TRIMESTRAL'] => Carbon::parse($createdDate)
+                ->addMonths(3 - (Carbon::parse($createdDate)->month - 1) % 3)
+                ->startOfMonth()
+                ->addMonths(2)
+                ->day(5),
+            self::FREQUENCY['ANUAL'] => Carbon::parse($createdDate)->addYear()->day(5),
+            default => null,
+        };
+        $this->update([
+            'next_payment' => $date->format('Y-m-d'),
+        ]);
+
+        return $this->next_payment;
     }
 
     public function iconType(): string
@@ -223,6 +244,9 @@ class Donation extends Model
         $estado = [
             'name' => State::ERROR,
         ];
+        $this->update([
+            'next_payment' => $this->type === Donation::RECURRENTE ? $this->updateNextPaymentDate() : null,
+        ]);
 
         if (!$this->states()->where($estado)->exists()) {
 
@@ -235,26 +259,6 @@ class Donation extends Model
 
         $this->refresh();
 
-    }
-
-    public function updateNextPaymentDate(): string
-    {
-        $createdDate = $this->created_at;
-        $date = match ($this->frequency) {
-            self::FREQUENCY['MENSUAL'] => Carbon::parse($createdDate)->addMonth()->day(5),
-            self::FREQUENCY['TRIMESTRAL'] => Carbon::parse($createdDate)
-                ->addMonths(3 - (Carbon::parse($createdDate)->month - 1) % 3)
-                ->startOfMonth()
-                ->addMonths(2)
-                ->day(5),
-            self::FREQUENCY['ANUAL'] => Carbon::parse($createdDate)->addYear()->day(5),
-            default => null,
-        };
-        $this->update([
-            'next_payment' => $date->format('Y-m-d'),
-        ]);
-
-        return $this->next_payment;
     }
 
     public function cancel(): void

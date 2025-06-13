@@ -12,6 +12,7 @@ use App\Models\State;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+
 use function Pest\Livewire\livewire;
 
 test('puedo crear donación única por defecto en factory', function () {
@@ -164,7 +165,7 @@ test('NO puedo crear pago a donacion cancelada', function () {
 
     $donacion->cancel();
 
-    expect(fn() => $donacion->recurrentPay())->toThrow(
+    expect(fn () => $donacion->recurrentPay())->toThrow(
         HttpException::class,
         'La donación ya NO está activa y no se puede volver a pagar'
     )
@@ -367,4 +368,18 @@ test('obtengo correctamente los pagos del mes', function () {
 
     Queue::assertPushed(ProcessDonationPaymentJob::class, 1);
 
+});
+
+test('cuando realizo donación actualiza correctamente la fecha de proximo cobro', function () {
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('10,35'),
+        'type' => Donation::RECURRENTE,
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+    ]);
+    $donacion = $paymentProcess->modelo;
+    $this->get(route('donation.response', getResponseDonation($donacion, true)));
+
+    $donacion->refresh();
+
+    expect($donacion->next_payment)->toBe(now()->addMonth()->day(5)->format('Y-m-d'));
 });
