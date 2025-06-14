@@ -15,27 +15,14 @@ class DonationNewMail extends Mailable
 
     public Donation $donation;
 
+    public bool $payed = false;
+
     public function __construct(Donation $donation)
     {
+
         $this->donation = $donation;
+        $this->payed = $donation->payment->amount > 0;
     }
-
-    public function envelope(): Envelope
-    {
-        return new Envelope(
-            subject: $this->getSubject(),
-        );
-    }
-
-    public function getSubject(): string
-    {
-        return match ($this->donation->payment->amount > 0) {
-            true => '¡Gracias por unirte como socio/amigo! 🌊',
-            false => 'Problema con tu alta como socio/amigo',
-            default => 'Problema con tu alta como socio/amigo',
-        };
-    }
-
 
     public function content(): Content
     {
@@ -49,11 +36,32 @@ class DonationNewMail extends Mailable
 
     public function getView(): string
     {
-        return match ($this->donation->payment->amount > 0) {
+        $new = $this->payed ? 'new' : 'error';
+        $type = $this->donation->type === Donation::RECURRENTE ? 'recurrente' : 'unica';
 
-            true => 'emails.donation-new',
-            false => 'emails.donation-error',
-            default => 'emails.donation-error',
+        return 'emails.donation-'.$new.'-'.$type;
+
+    }
+
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            subject: $this->getSubject(),
+        );
+    }
+
+    public function getSubject(): string
+    {
+        if ($this->payed) {
+            return match ($this->donation->type) {
+                Donation::RECURRENTE => '¡Gracias por unirte como socio/amigo! 🌊',
+                default => '¡Gracias por tu donación solidaria! 💛',
+            };
+        }
+
+        return match ($this->donation->type) {
+            Donation::RECURRENTE => 'Problema con tu alta como socio/amigo',
+            default => 'Problema con tu donación',
         };
     }
 
