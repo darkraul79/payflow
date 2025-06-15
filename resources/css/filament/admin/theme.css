@@ -2,12 +2,6 @@
 @import 'tailwindcss';
 
 @layer base {
-    .fi-ta-toggle {
-        .translate-x-5 {
-            --tw-translate-x: 0.65rem !important;
-        }
-    }
-
     .timeline {
         @apply relative;
 
