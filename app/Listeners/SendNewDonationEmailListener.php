@@ -12,7 +12,7 @@ class SendNewDonationEmailListener
     public function handle(NewDonationEvent $event): void
     {
 
-        if ($event->donation->certificate()?->email) {
+        if ($event->donation->certificate() && $event->donation->certificate()->email) {
 
             Mail::to($event->donation->certificate()->email)
                 ->send(new DonationNewMail($event->donation));
