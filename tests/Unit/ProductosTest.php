@@ -117,3 +117,33 @@ test('si el producto no tiene stock puedo ver el badge agotado en listado de pro
     ])
         ->assertSeeText('Agotado');
 });
+
+test('latest_activities devuelve los últimos productos ordenados por fecha actualizacion', function () {
+
+    $ultimoProductos = Product::factory()->create(['updated_at' => '2023-10-01']);
+    $primerProducto = Product::factory()->create(['updated_at' => '2023-11-01']);
+
+    $productos = Product::latest_activities()->get();
+
+    expect($productos->count())->toBe(2)
+        ->and($productos->first()->id)->toBe($primerProducto->id)
+        ->and($productos->last()->id)->toBe($ultimoProductos->id);
+
+
+});
+
+
+test('next_activities devuelve los productos ordenados por fecha de actualizacion asc', function () {
+
+    $ultimoProductos = Product::factory()->create(['updated_at' => '2023-11-01']);
+    $primerProducto = Product::factory()->create(['updated_at' => '2023-10-01']);
+
+    $productos = Product::next_activities()->get();
+
+    expect($productos->count())->toBe(2)
+        ->and($productos->first()->id)->toBe($primerProducto->id)
+        ->and($productos->last()->id)->toBe($ultimoProductos->id);
+
+
+});
+

@@ -122,15 +122,15 @@ class Product extends Model implements HasMedia
     #[Scope]
     protected function next_activities(Builder $query): void
     {
-        $query->where('created_at', '>=', now())->published()
-            ->orderBy('created_at', 'desc');
+        $query->published()
+            ->orderBy('updated_at');
     }
 
     #[Scope]
     protected function latest_activities(Builder $query): void
     {
-        $query->where('created_at', '>=', now())->published()
-            ->orderBy('date', 'asc');
+        $query->published()
+            ->orderBy('updated_at', 'desc');
     }
 
     #[Scope]

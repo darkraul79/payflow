@@ -126,8 +126,8 @@ class Activity extends Model implements HasMedia
     #[Scope]
     protected function latest_activities(Builder $query): void
     {
-        $query->where('date', '>=', now())->published()
-            ->orderBy('date');
+        $query->published()
+            ->orderBy('date', 'desc');
     }
 
     #[Scope]

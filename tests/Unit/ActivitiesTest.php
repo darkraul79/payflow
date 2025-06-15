@@ -4,6 +4,7 @@
 
 /** @noinspection PhpUndefinedMethodInspection */
 
+use App\Models\Activity;
 use function Pest\Livewire\livewire;
 
 test('puedo crear una nueva actividad noticia, y proyecto', function ($model) {
@@ -69,3 +70,17 @@ test('urlPrefix es correcto', function ($model, $urlPrefix) {
         '/que-hacemos/proyectos/',
     ],
 ]);
+
+test('latest_activities devuelve las últimas actividades ordenadas por fecha del evento', function () {
+
+    $actividadUltima = Activity::factory()->create(['date' => '2023-10-01']);
+    $actividadPrimera = Activity::factory()->create(['date' => '2023-11-01']);
+
+    $actividades = Activity::latest_activities()->get();
+
+    expect($actividades->count())->toBe(2)
+        ->and($actividades->first()->id)->toBe($actividadPrimera->id)
+        ->and($actividades->last()->id)->toBe($actividadUltima->id);
+
+
+});
