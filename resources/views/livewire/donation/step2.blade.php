@@ -16,8 +16,8 @@
     <div class="my-6 w-full">
         <div class="mx-auto flex w-full max-w-[110px]">
             <x-radiobutton-boolean
-                id="certificate_yes"
                 name="needsCertificate"
+                :prefix="$prefix"
                 :value="true"
                 default="Si"
                 :options="[

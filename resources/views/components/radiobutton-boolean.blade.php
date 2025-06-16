@@ -3,6 +3,7 @@
     'options' => [],
     'name' => 'radio',
     'default' => -1,
+    'prefix' => '',
 ])
 
 <div
@@ -17,14 +18,14 @@
 
         <div class="{{ $classWidth }} block text-center">
             <label
-                for="{{ $id }}"
+                for="{{ $prefix . '-' . $id }}"
                 class="btn btn-primary-outline mx-auto flex h-8 w-8 cursor-pointer flex-nowrap items-center justify-center border-2! p-0! text-sm"
-                wire:model.live="{{ $name }}"
             >
                 <input
                     class="peer hidden"
                     type="radio"
-                    id="{{ $id }}"
+                    wire:model.live="{{ $name }}"
+                    id="{{ $prefix . '-' . $id }}"
                     name="{{ $name }}"
                     value="{{ $option['value'] }}"
                     {{ $default == $option['value'] ? 'checked' : '' }}
