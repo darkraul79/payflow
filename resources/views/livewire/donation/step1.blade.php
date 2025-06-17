@@ -4,7 +4,7 @@
 
 <div class="{{ $step === 1 ? 'block' : 'hidden' }}">
     <h5 class="text- px-6 text-center text-xl text-pretty">
-        !Dona a la fundación ELENA TERTRE!
+        !Dona a la FUNDACIÓN Elena Tertre!
     </h5>
 
     <div class="my-6 flex w-full">
