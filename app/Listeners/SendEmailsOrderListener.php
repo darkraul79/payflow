@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Mail;
 
 class SendEmailsOrderListener
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function handle(CreateOrderEvent $event): void
     {
@@ -20,7 +18,6 @@ class SendEmailsOrderListener
         foreach (User::all() as $user) { // Notifico a todos los usuarios que hay un nuevo pedido
             $user->notify(new OrderCreated($event->order));
         }
-
 
         // Envío email al email de la dirección de facturación con los detalles del pedido
         Mail::to($event->order->billing_address()->email)

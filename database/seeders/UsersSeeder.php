@@ -12,17 +12,17 @@ class UsersSeeder extends Seeder
         User::factory()->create([
             'name' => 'Raul Sebastian',
             'email' => 'info@raulsebastian.es',
-            'password' => bcrypt('ajax656'),
+            'password' => bcrypt('aa'),
         ]);
         User::factory()->create([
             'name' => 'David Tertre',
             'email' => 'dtertre@surf3.es',
-            'password' => bcrypt('Fundacion2019.'),
+            'password' => bcrypt('aa.'),
         ]);
         User::factory()->create([
             'name' => 'Elena',
             'email' => 'ayuda@fundacionelenatertre.es',
-            'password' => bcrypt('Elena2019.'),
+            'password' => bcrypt('aa'),
         ]);
 
     }
