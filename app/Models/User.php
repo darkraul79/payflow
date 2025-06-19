@@ -44,7 +44,7 @@ class User extends authenticatable implements filamentuser
     {
         return str::of($this->name)
             ->explode(' ')
-            ->map(fn (string $name) => str::of($name)->substr(0, 1))
+            ->map(fn(string $name) => str::of($name)->substr(0, 1))
             ->implode('');
     }
 
@@ -56,7 +56,7 @@ class User extends authenticatable implements filamentuser
 
     protected function isadmin(): bool
     {
-        return $this->email === 'info@raulsebastian.es' || $this->email === 'dtertre@surf3.es';
+        return $this->email === 'info@raulsebastian.es' || $this->email === 'dtertre@surf3.es' || $this->email === 'ayuda@fundacionelenatertre.es';
 
     }
 
