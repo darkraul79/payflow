@@ -22,3 +22,6 @@ yarn-error.log
 /.zed
 /.nvmrc
 /storage/debugbar/
+php_errorlog
+storage/media-library/
+
