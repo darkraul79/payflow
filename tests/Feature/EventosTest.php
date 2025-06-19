@@ -14,7 +14,7 @@ use App\Models\Order;
 use App\Models\State;
 use App\Models\User;
 use App\Notifications\OrderCreated;
-
+use Database\Seeders\UsersSeeder;
 use function Pest\Livewire\livewire;
 
 test('al crear pedido se llama al evento CreateOrder en factory', function () {
@@ -48,18 +48,16 @@ test('al crear pedido por metodo se llama al evento CreateOrder', function () {
 test('al crear pedido se manda un email a los administradores', function () {
 
     Notification::fake();
-    User::factory()->create([
-        'name' => 'Raul',
-        'email' => 'info@raulsebastian.es',
-        'password' => 'aa',
-    ]);
+
+    $this->seed(UsersSeeder::class);
+
     Notification::assertNothingSent();
 
     $pedido = creaPedido();
     $this->get(route('pedido.response', getResponseOrder($pedido, true)));
 
     Notification::assertSentTo(
-        [User::first()], OrderCreated::class
+        User::all(), OrderCreated::class
     );
 });
 
