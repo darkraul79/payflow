@@ -307,6 +307,7 @@ test('al crear donación recurrente envia email con datos del importe', function
 
         return $mail->hasTo('info@raulsebastian.es') &&
             $mail->assertSeeInOrderInText(['mensual', '10,35']) &&
+            $mail->assertSeeInHtml('mailto:ayuda@fundacionelenatertre.es') &&
             $mail->hasSubject('¡Gracias por unirte como socio/amigo! 🌊');
     });
 });

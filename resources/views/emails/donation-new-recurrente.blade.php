@@ -15,7 +15,7 @@ Tu compromiso es clave para seguir visibilizando el osteosarcoma y avanzar en la
 
 <br><br>
 
-Si en algún momento necesitas actualizar o cancelar tu donación, puedes escribirnos a ayuda@fundacionelenatertre.es
+Si en algún momento necesitas actualizar o cancelar tu donación, puedes escribirnos a [ayuda@fundacionelenatertre.es](mailto:ayuda@fundacionelenatertre.es)
 
 
 <br><br>
