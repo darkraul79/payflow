@@ -8,6 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class DonationNewMail extends Mailable
 {
@@ -30,6 +31,8 @@ class DonationNewMail extends Mailable
             markdown: $this->getView(),
             with: [
                 'name' => $this->donation->certificate()->name,
+                'frequency' => Str::lower($this->donation->frequency),
+                'amount' => convertPrice($this->donation->amount),
             ],
         );
     }
@@ -39,7 +42,7 @@ class DonationNewMail extends Mailable
         $new = $this->payed ? 'new' : 'error';
         $type = $this->donation->type === Donation::RECURRENTE ? 'recurrente' : 'unica';
 
-        return 'emails.donation-'.$new.'-'.$type;
+        return 'emails.donation-' . $new . '-' . $type;
 
     }
 

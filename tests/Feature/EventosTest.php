@@ -186,7 +186,7 @@ test('al crear donación recurrente envío email al donante', function ($state, 
         [
             'state' => true,
             'subject' => '¡Gracias por unirte como socio/amigo! 🌊',
-            'text' => 'Bienvenido/a a la Fundación Elena Tertre.',
+            'text' => '¡Gracias por apoyar el trabajo de la Fundación Elena Tertre!',
         ],
         [
             'state' => false,
@@ -274,3 +274,39 @@ test('al crear donación sin direccion no envío email', function ($state, $type
             'type' => Donation::UNICA,
         ],
     ]);
+
+
+test('al crear donación recurrente envia email con datos del importe', function () {
+
+    Mail::fake();
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('10,35'),
+        'type' => Donation::RECURRENTE,
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+    ]);
+    $donacion = $paymentProcess->modelo;
+    $donacion->addresses()->create([
+        'type' => Address::CERTIFICATE,
+        'name' => 'Nombre',
+        'last_name' => 'Apellido',
+        'last_name2' => 'Apellido2',
+        'company' => 'Empresa SL',
+        'address' => 'Calle Falsa 123',
+        'cp' => '28001',
+        'city' => 'Madrid',
+        'province' => 'Madrid',
+        'email' => 'info@raulsebastian.es',
+    ]);
+
+    $donacion->refresh();
+    Mail::assertNothingSent();
+
+    $this->get(route('donation.response', getResponseDonation($donacion, true)));
+
+    Mail::assertSent(DonationNewMail::class, function (DonationNewMail $mail) {
+
+        return $mail->hasTo('info@raulsebastian.es') &&
+            $mail->assertSeeInOrderInText(['mensual', '10,35']) &&
+            $mail->hasSubject('¡Gracias por unirte como socio/amigo! 🌊');
+    });
+});
