@@ -29,7 +29,7 @@ class ViewDonation extends ViewRecord
                 ->icon('heroicon-o-no-symbol')
                 ->color('danger')
                 ->visible(fn(Donation $record) => $record->type === Donation::RECURRENTE &&
-                    $record->state->name === State::ACTIVA),
+                    $record->state?->name === State::ACTIVA),
         ];
     }
 }
