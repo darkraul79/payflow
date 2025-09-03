@@ -44,6 +44,8 @@ class Donation extends Model
         'identifier',
         'frequency',
         'next_payment',
+        'updated_at',
+        'created_at',
     ];
 
     protected $with = [
@@ -122,15 +124,16 @@ class Donation extends Model
 
     public function updateNextPaymentDate(): string
     {
-        $createdDate = $this->created_at;
+        $this->touch();
+        $updated_at = $this->updated_at;
         $date = match ($this->frequency) {
-            self::FREQUENCY['MENSUAL'] => Carbon::parse($createdDate)->addMonth()->day(5),
-            self::FREQUENCY['TRIMESTRAL'] => Carbon::parse($createdDate)
-                ->addMonths(3 - (Carbon::parse($createdDate)->month - 1) % 3)
+            self::FREQUENCY['MENSUAL'] => Carbon::parse($updated_at)->addMonth()->day(5),
+            self::FREQUENCY['TRIMESTRAL'] => Carbon::parse($updated_at)
+                ->addMonths(3 - (Carbon::parse($updated_at)->month - 1) % 3)
                 ->startOfMonth()
-                ->addMonths(2)
+//                ->addMonths(2)
                 ->day(5),
-            self::FREQUENCY['ANUAL'] => Carbon::parse($createdDate)->addYear()->day(5),
+            self::FREQUENCY['ANUAL'] => Carbon::parse($updated_at)->addYear()->day(5),
             default => null,
         };
         $this->update([
@@ -305,6 +308,27 @@ class Donation extends Model
         return Carbon::parse($this->next_payment)->format('d-m-Y');
     }
 
+    protected function casts(): array
+    {
+        return [
+            'info' => AsArrayObject::class,
+            //            'next_payment' => 'date:Y-m-d',
+        ];
+    }
+
+    /**
+     * Devuelve las donaciones que tienen un cobro a realizar.
+     */
+    #[Scope]
+    protected function nextPaymentsDonations(Builder $query)
+    {
+        return $query->recurrents()
+            ->activas()
+            ->whereDate(
+                'next_payment', '<=', now()->format('Y-m-d'),
+            );
+    }
+
     /**
      * Delimita el listado de modelos a los modelos con estado ACTIVA.
      */
@@ -314,13 +338,5 @@ class Donation extends Model
 
         $query->where('type', self::RECURRENTE);
 
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'info' => AsArrayObject::class,
-            //            'next_payment' => 'date:Y-m-d',
-        ];
     }
 }

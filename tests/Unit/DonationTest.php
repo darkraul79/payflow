@@ -12,7 +12,6 @@ use App\Models\State;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-
 use function Pest\Livewire\livewire;
 
 test('puedo crear donación única por defecto en factory', function () {
@@ -165,7 +164,7 @@ test('NO puedo crear pago a donacion cancelada', function () {
 
     $donacion->cancel();
 
-    expect(fn () => $donacion->recurrentPay())->toThrow(
+    expect(fn() => $donacion->recurrentPay())->toThrow(
         HttpException::class,
         'La donación ya NO está activa y no se puede volver a pagar'
     )
@@ -256,9 +255,9 @@ test('puedo crear donación con fecha de próximo cobro en factory', function ()
 
 test('puedo actualizar la fecha de siguiente cobro según la frecuencia', function ($frecuencia, $date) {
 
+    $this->travelTo('2025-06-11');
     $donacion = Donation::factory()->recurrente()->create([
         'frequency' => $frecuencia,
-        'created_at' => '2025-06-11',
     ]);
 
     $donacion->updateNextPaymentDate();
@@ -267,7 +266,7 @@ test('puedo actualizar la fecha de siguiente cobro según la frecuencia', functi
 
 })->with([
     [Donation::FREQUENCY['MENSUAL'], '2025-07-05'],
-    [Donation::FREQUENCY['TRIMESTRAL'], '2025-09-05'],
+    [Donation::FREQUENCY['TRIMESTRAL'], '2025-07-05'],
     [Donation::FREQUENCY['ANUAL'], '2026-06-05'],
 ]);
 
@@ -316,15 +315,15 @@ test('cada vez que abro ventana de donación se resetea el componente', function
 
 test('actualizo correctamente la fecha de próximo cobro', function ($tipo) {
 
+    $this->travelTo('2025-06-11');
     $donacion = Donation::factory()->recurrente()->create([
         'frequency' => $tipo,
-        'created_at' => '2025-06-11',
     ]);
     $donacion->updateNextPaymentDate();
 
     $fechas = [
         Donation::FREQUENCY['MENSUAL'] => '2025-07-05',
-        Donation::FREQUENCY['TRIMESTRAL'] => '2025-09-05',
+        Donation::FREQUENCY['TRIMESTRAL'] => '2025-07-05',
         Donation::FREQUENCY['ANUAL'] => '2026-06-05',
     ];
 
@@ -337,18 +336,19 @@ test('actualizo correctamente la fecha de próximo cobro', function ($tipo) {
         Donation::FREQUENCY['ANUAL'],
     ]);
 
-test('obtengo correctamente los pagos del mes', function () {
+
+test('obtengo los jobs correctamente los pagos del mes', function () {
     Queue::fake();
+
+    $this->travelTo('2025-06-11');
 
     $donacion = Donation::factory()->recurrente()->create([
         'frequency' => Donation::FREQUENCY['MENSUAL'],
-        'created_at' => '2025-06-11',
     ]);
     $donacion->updateNextPaymentDate();
 
     $donacionCancelada = Donation::factory()->recurrente()->create([
         'frequency' => Donation::FREQUENCY['MENSUAL'],
-        'created_at' => '2025-06-11',
     ]);
     $donacionCancelada->updateNextPaymentDate();
     $donacionCancelada->states()->create([
@@ -369,6 +369,43 @@ test('obtengo correctamente los pagos del mes', function () {
     Queue::assertPushed(ProcessDonationPaymentJob::class, 1);
 
 });
+test('obtengo correctamente las donaciones con pagos', function ($tipo) {
+    $donacion = Donation::factory()->recurrente()->create([
+        'frequency' => $tipo,
+    ]);
+    $donacion->updateNextPaymentDate();
+
+    $donacionCancelada = Donation::factory()->recurrente()->create([
+        'frequency' => $tipo,
+    ]);
+    $donacionCancelada->updateNextPaymentDate();
+    $donacionCancelada->states()->create([
+        'name' => State::CANCELADO,
+    ]);
+
+    $fecha = match ($tipo) {
+        Donation::FREQUENCY['MENSUAL'] => Carbon::now()->addMonth()->day(5),
+        Donation::FREQUENCY['TRIMESTRAL'] => Carbon::now()
+            ->addMonths(3 - (Carbon::now()->month - 1) % 3)
+            ->startOfMonth()
+            ->addMonths(2)
+            ->day(5),
+        Donation::FREQUENCY['ANUAL'] => Carbon::now()->addYear()->day(5),
+        default => null,
+    };
+
+
+    $this->travelTo($fecha);
+
+    $donacionesPendientesCobro = Donation::nextPaymentsDonations();
+    expect($donacionesPendientesCobro->count())->toBe(1)
+        ->and($donacionesPendientesCobro->first()->id)->not()->toBe($donacionCancelada->id);
+})
+    ->with([
+        Donation::FREQUENCY['MENSUAL'],
+        Donation::FREQUENCY['TRIMESTRAL'],
+        Donation::FREQUENCY['ANUAL'],
+    ]);
 
 test('cuando realizo donación actualiza correctamente la fecha de proximo cobro', function () {
     $paymentProcess = new PaymentProcess(Donation::class, [
@@ -382,4 +419,68 @@ test('cuando realizo donación actualiza correctamente la fecha de proximo cobro
     $donacion->refresh();
 
     expect($donacion->next_payment)->toBe(now()->addMonth()->day(5)->format('Y-m-d'));
+});
+
+test('compruebo que donacion recurrente anual no se repiten los cobros', function () {
+    $donacion = Donation::factory()->recurrente()->create([
+        'frequency' => Donation::FREQUENCY['ANUAL'],
+    ]);
+    $donacion->updateNextPaymentDate();
+
+    for ($i = 1; $i < 12; $i++) {
+        $this->travelTo(now()->addMonth()->day(5));
+        $donacionesPendientesCobro = Donation::nextPaymentsDonations();
+        expect($donacionesPendientesCobro->count())->toBe(0);
+
+    }
+
+    $this->travelTo(now()->addYear()->day(5));
+
+    $donacionesPendientesCobro = Donation::nextPaymentsDonations();
+    expect($donacionesPendientesCobro->count())->toBe(1);
+});
+
+test('compruebo que donacion recurrente mensual no se repiten los cobros', function () {
+
+    $this->travelTo('2025-07-05');
+
+    $donacion = Donation::factory()->recurrente()->create([
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+    ]);
+    $donacion->updateNextPaymentDate();
+
+    for ($i = 1; $i < (31 - 5); $i++) {
+        $this->travelTo(now()->addDay());
+        $donacionesPendientesCobro = Donation::nextPaymentsDonations();
+        expect($donacionesPendientesCobro->count())->toBe(0);
+
+    }
+
+    $this->travelTo(now()->addMonth()->day(5));
+
+    $donacionesPendientesCobro = Donation::nextPaymentsDonations();
+    expect($donacionesPendientesCobro->count())->toBe(1);
+});
+
+test('compruebo que donacion recurrente trimestral no se repiten los cobros', function () {
+
+    $this->travelTo('2025-01-01');
+
+    $donacion = Donation::factory()->recurrente()->create([
+        'frequency' => Donation::FREQUENCY['TRIMESTRAL'],
+    ]);
+    $donacion->updateNextPaymentDate();
+
+
+    for ($i = 1; $i < 80; $i++) {
+        $this->travelTo(now()->addDay());
+        $donacionesPendientesCobro = Donation::nextPaymentsDonations();
+        expect($donacionesPendientesCobro->count())->toBe(0);
+
+    }
+
+    $this->travelTo('2025-04-05');
+
+    $donacionesPendientesCobro = Donation::nextPaymentsDonations();
+    expect($donacionesPendientesCobro->count())->toBe(1);
 });
