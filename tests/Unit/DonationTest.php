@@ -9,7 +9,10 @@ use App\Models\Address;
 use App\Models\Donation;
 use App\Models\Page;
 use App\Models\State;
+use App\Models\User;
+use App\Notifications\DonationCreatedNotification;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use function Pest\Livewire\livewire;
@@ -483,4 +486,32 @@ test('compruebo que donacion recurrente trimestral no se repiten los cobros', fu
 
     $donacionesPendientesCobro = Donation::nextPaymentsDonations();
     expect($donacionesPendientesCobro->count())->toBe(1);
+});
+
+
+test('al procesar donacion envío email a todos los usuarios', function () {
+    Notification::fake();
+
+    User::factory()->count(3)->create();
+
+    $users = User::all();
+
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('10,35'),
+        'type' => Donation::RECURRENTE,
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+    ]);
+    $donacion = $paymentProcess->modelo;
+
+    $this->get(route('donation.response', getResponseDonation($donacion, true)))
+        ->assertRedirect(route('donacion.finalizada', [
+            'donacion' => $donacion->number,
+        ]));
+
+    Notification::assertSentTo(
+        $users, DonationCreatedNotification::class
+    );
+    Notification::assertCount($users->count());
+
+
 });

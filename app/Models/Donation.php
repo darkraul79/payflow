@@ -308,6 +308,11 @@ class Donation extends Model
         return Carbon::parse($this->next_payment)->format('d-m-Y');
     }
 
+    public function isRecurrente(): bool
+    {
+        return $this->type == self::RECURRENTE;
+    }
+
     protected function casts(): array
     {
         return [

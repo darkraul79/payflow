@@ -4,9 +4,11 @@ use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\State;
+use App\Models\User;
+use App\Notifications\OrderCreated;
 use App\Services\Cart;
+use Illuminate\Support\Facades\Notification;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
-
 
 test('puedo crear Pedido por defecto en factory', function () {
 
@@ -187,4 +189,21 @@ test('al crear pedido sólo creo un estado pendiente de pago', function () {
 
     expect($pedido->state->name)->toBe(State::PAGADO)
         ->and($pedido->states)->toHaveCount(2);
+});
+
+
+test('al procesar pedido envío email a todos los usuarios', function () {
+    Notification::fake();
+
+    User::factory()->count(3)->create();
+
+    $users = User::all();
+
+    $pedido = creaPedido();
+    $this->get(route('pedido.response', getResponseOrder($pedido, true)));
+
+    Notification::assertSentTo(
+        $users, OrderCreated::class
+    );
+
 });
