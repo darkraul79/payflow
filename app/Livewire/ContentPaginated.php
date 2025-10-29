@@ -75,16 +75,17 @@ class ContentPaginated extends Component
         }
 
         // Aplicar ordenamiento genérico sobre la query resultante
-        $sortBy = explode(',', $this->sortBy);
+        $sortBy = explode('-', $this->sortBy);
         $orderField = $sortBy[0];
         $direction = $sortBy[1] ?? 'desc';
-        if (in_array($this->sortBy, ['price,asc', 'price,desc']) && method_exists($modelClass, 'scopeOrderByEffectivePrice')) {
+        if (in_array($this->sortBy, ['price-asc', 'price-desc']) && method_exists($modelClass, 'scopeOrderByEffectivePrice')) {
             $query->orderByEffectivePrice($direction);
         } else {
             $allowed = ['name', 'title', 'created_at', 'updated_at'];
             $column = in_array($orderField, $allowed) ? $orderField : 'created_at';
             $query->orderBy($column, $direction ?? 'desc');
         }
+
 
         return $query->paginate($this->perPage);
     }

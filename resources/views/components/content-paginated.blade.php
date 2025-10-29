@@ -10,10 +10,10 @@
                 class="rounded border-gray-300 text-xs"
                 id="sortBy"
             >
-                <option value="created_at,desc">Novedades</option>
-                <option value="price,asc">Precio: Menor a mayor</option>
-                <option value="price,desc">Precio: Mayor a menor</option>
-                <option value="name,asc">Nombre</option>
+                <option value="created_at-desc">Novedades</option>
+                <option value="price-asc">Precio: Menor a mayor</option>
+                <option value="price-desc">Precio: Mayor a menor</option>
+                <option value="name-asc">Nombre</option>
             </select>
         </div>
     @endif
