@@ -179,3 +179,21 @@ if (!function_exists('generatePaymentNumber')) {
         return $model->number . $suffix; // Incrementar en 1
     }
 }
+
+
+if (!function_exists('getTitlePageSEO')) {
+    /**
+     * Returns the SEO title for a page
+     */
+    function getTitlePageSEO($content): string
+    {
+        if (isset($content->title) && !empty($content->title)) {
+            $titulo_seo = $content->title . " - " . config('app.name');
+        } else {
+            $titulo_seo = config('app.name');
+        }
+
+        return $titulo_seo;
+    }
+
+}
