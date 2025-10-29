@@ -8,6 +8,7 @@
             <select
                 wire:model.live="sortBy"
                 class="rounded border-gray-300 text-xs"
+                id="sortBy"
             >
                 <option value="created_at,desc">Novedades</option>
                 <option value="price,asc">Precio: Menor a mayor</option>
