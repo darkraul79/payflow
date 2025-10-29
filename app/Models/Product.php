@@ -151,18 +151,10 @@ class Product extends Model implements HasMedia
     }
 
     #[Scope]
-    protected function all_activities(Builder $query, string $sort = '', string $sortDirection = ''): void
+    protected function all_activities(Builder $query): void
     {
-        if ($sort == 'price') {
-            $query->orderByEffectivePrice($sortDirection ?? 'desc');
-        } elseif ($sort) {
-            $query->published()
-                ->orderBy('created_at', $sortDirection ?? 'desc');
-        } else {
-            $query->published()
-                ->orderBy('created_at', 'desc');
 
-        }
+        $query->published();
 
     }
 
