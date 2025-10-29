@@ -64,7 +64,7 @@ class Product extends Model implements HasMedia
             ->nonQueued();
     }
 
-    public function getFormatedPriceWithDiscount($inverse = false): string
+    public function getFormatedPriceWithDiscount(): string
     {
         $precio_original = $this->getFormatedPrice();
 
@@ -80,11 +80,6 @@ class Product extends Model implements HasMedia
         return convertPrice($this->price);
     }
 
-    public function scopePublished(Builder $query): Builder
-    {
-        return $query->where('published', true);
-    }
-
     public function getPrice()
     {
         if ($this->offer_price) {
@@ -96,6 +91,20 @@ class Product extends Model implements HasMedia
     public function discount_porcentaje()
     {
         return $this->offer_price ? round((($this->price - $this->offer_price) / $this->price) * 100) : 0;
+    }
+
+    #[Scope]
+    protected function scopePublished(Builder $query): void
+    {
+        $query->where('published', true);
+    }
+
+    #[Scope]
+    protected function scopeOrderByEffectivePrice(Builder $query, string $direction = 'asc'): void
+    {
+        // Usa COALESCE para tomar offer_price si no es NULL, si no toma price.
+        // Asegúrate de que ambos campos sean numéricos en la BD.
+        $query->orderByRaw("COALESCE(offer_price, price) $direction");
     }
 
     protected function blockquotes(): Attribute
@@ -142,10 +151,19 @@ class Product extends Model implements HasMedia
     }
 
     #[Scope]
-    protected function all_activities(Builder $query): void
+    protected function all_activities(Builder $query, string $sort = '', string $sortDirection = ''): void
     {
-        $query->published()
-            ->orderBy('created_at', 'desc');
+        if ($sort == 'price') {
+            $query->orderByEffectivePrice($sortDirection ?? 'desc');
+        } elseif ($sort) {
+            $query->published()
+                ->orderBy('created_at', $sortDirection ?? 'desc');
+        } else {
+            $query->published()
+                ->orderBy('created_at', 'desc');
+
+        }
+
     }
 
 
