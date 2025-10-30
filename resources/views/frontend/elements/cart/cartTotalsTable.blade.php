@@ -5,9 +5,21 @@
             <span>Subtotal</span>
             <strong>{{ convertPrice($subtotal) }}</strong>
         </li>
-        <li>
-            <span>Envío</span>
-            <strong>{{ convertPrice($envio, count($items)) }}</strong>
+        <li class="flex flex-col items-start gap-2">
+            <div class="flex w-full items-center justify-between">
+                <span>Envío</span>
+                <div class="text-xs text-red-500">
+                    @error('shipping_method')
+                        {{ $message }}
+                    @enderror
+                </div>
+            </div>
+            <x-radiobutton-shipping-method
+                name="shipping_method"
+                wire:model.live="shippingMethod"
+                :default="$shipping_method"
+                :options="$shipping_methods"
+            />
         </li>
         <li>
             <span class="total">Total</span>

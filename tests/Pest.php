@@ -18,10 +18,10 @@ use App\Livewire\PageCartComponent;
 use App\Models\Donation;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use Carbon\Carbon;
-
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
 
@@ -80,7 +80,7 @@ function asUser(): User
 function creaPedido(?Product $producto = null): Order
 {
 
-    if (! $producto) {
+    if (!$producto) {
         $producto = Product::factory()->create([
             'name' => 'Producto de prueba',
             'price' => 10,
@@ -93,7 +93,11 @@ function creaPedido(?Product $producto = null): Order
         'quantity' => 1,
     ])->call('addToCart');
 
-    livewire(PageCartComponent::class)->call('submit');
+    $metodoEnvio = ShippingMethod::factory()->create();
+
+    livewire(PageCartComponent::class)
+        ->set('shipping_method', $metodoEnvio->id)
+        ->call('submit');
 
     livewire(FinishOrderComponent::class)
         ->assertOk()
@@ -116,6 +120,25 @@ function creaPedido(?Product $producto = null): Order
     session()->flush();
 
     return Order::latest()->first();
+}
+
+function addProductToCart(?Product $producto = null): void
+{
+
+    if (!$producto) {
+        $producto = Product::factory()->create([
+            'name' => 'Producto de prueba',
+            'price' => 10,
+            'stock' => 2,
+        ]);
+    }
+
+    livewire(CardProduct::class, [
+        'product' => $producto,
+        'quantity' => 1,
+    ])->call('addToCart');
+
+
 }
 
 function getMerchanParamasOrderOk($amount, $order_number): string
@@ -233,7 +256,7 @@ function getMerchanParamsOrder(Order $order, $ok = false): string
         'Ds_Date' => Carbon::now()->format('d%20m%20Y'),
         'Ds_Hour' => Carbon::now()->format('H:i'),
         'Ds_SecurePayment' => '1',
-        'Ds_Amount' => convertNumberToRedSys($order->amount).'',
+        'Ds_Amount' => convertNumberToRedSys($order->amount) . '',
         'Ds_Currency' => '978',
         'Ds_Order' => $order->number,
         'Ds_MerchantCode' => '357328590',

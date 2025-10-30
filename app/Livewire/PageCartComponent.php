@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Models\ShippingMethod;
 use App\Services\Cart;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -24,12 +25,16 @@ class PageCartComponent extends Component
     public bool $disabled = true;
 
     public float $taxes = 0;
+    public Collection $shipping_methods;
+
+    public $shipping_method = null;
 
     public function mount(): void
     {
         $this->refreshCart();
-        $this->envio = convertPriceNumber(setting('store.price_send', "3.5"));
         $this->updateTotals();
+
+        $this->shipping_methods = ShippingMethod::forAmount($this->subtotal)->get();
 
     }
 
@@ -38,12 +43,9 @@ class PageCartComponent extends Component
 
         $this->items = Cart::getItems();
         $this->itemsProducts = Product::whereIn('id', array_keys($this->items))->with('media')->get();
-        Cart::setTotals(
-            subtotal: $this->subtotal,
-            taxes: $this->taxes,
-            total: $this->total,
-            shipping_cost: $this->envio
-        );
+        $this->shipping_method = Cart::getShippingMethod();
+        $this->envio = Cart::getShippingMethodCost();
+        $this->updateTotals();
     }
 
     public function updateTotals(): void
@@ -64,7 +66,8 @@ class PageCartComponent extends Component
 
     public function isValid(): void
     {
-        if ($this->subtotal > 0) {
+
+        if ($this->subtotal > 0 && $this->shipping_method) {
             $this->disabled = false;
         } else {
             $this->disabled = true;
@@ -97,6 +100,7 @@ class PageCartComponent extends Component
 
     public function submit(): void
     {
+        $this->validate();
         if ($this->disabled) {
             $this->dispatch('showAlert', type: 'error', title: 'Carrito vacío', message: 'No hay productos en el carrito');
 
@@ -130,5 +134,29 @@ class PageCartComponent extends Component
 
         $this->dispatch('updatedCart');
 
+    }
+
+    public function updatedShippingMethod($value): void
+    {
+        $metodo = ShippingMethod::find($value);
+        $this->envio = $metodo ? $metodo->price : 0;
+        $this->shipping_method = $value;
+        Cart::setShippingMethod($metodo);
+        $this->updateTotals();
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'shipping_method' => 'required|exists:shipping_methods,id',
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'shipping_method.required' => 'Debes seleccionar un método de envío.',
+            'shipping_method.exists' => 'Debes seleccionar un método de envío correcto.',
+        ];
     }
 }

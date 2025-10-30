@@ -18,8 +18,6 @@ class SettingsSeeder extends Seeder
         setting(['rss.instagram' => 'https://www.instagram.com']);
         setting(['rss.youtube' => 'https://www.youtube.com']);
 
-        setting(['store.price_send' => 2.5]);
-
 
     }
 }

@@ -30,7 +30,6 @@ test('puedo crear Pedido con muchos pagos en factory', function () {
     expect($pedido->states)->toHaveCount(4);
 });
 
-
 test('puedo asociar dirección de certificado a Pedido en factory', function () {
     $pedido = Order::factory()->withCertificado()->create();
     $pedido->refresh();
@@ -66,7 +65,7 @@ test('puedo crear factory con diferentes estados', function (string $estado) {
     'enviado',
     'finalizado',
     'error',
-    'cancelado'
+    'cancelado',
 ]);
 
 test('el estado por defecto es pendiente de envío', function () {
@@ -93,7 +92,6 @@ test('puedo crear direcciones desde modelo', function () {
         'type' => Address::SHIPPING,
     ])->except('created_at', 'updated_at'));
 
-
     expect($order->addresses)->toHaveCount(2)
         ->and($order->addresses->last()->type)->toBe(Address::SHIPPING);
 });
@@ -102,10 +100,12 @@ test('puedo crear pedido desde componente de livewire', function () {
 
     $order = creaPedido();
 
+    $total = Order::first()->shipping_cost + Product::first()->price;
+
     expect($order)->toBeInstanceOf(Order::class)
         ->and($order->items)->toHaveCount(1)
         ->and($order->items->first()->product->name)->toBe('Producto de prueba')
-        ->and($order->amount)->toBe(13.50);
+        ->and(round($order->amount))->toBe(round($total));
 
 });
 
@@ -120,7 +120,6 @@ test('vacio cesta después de crear pedido', function () {
         ->assertSee('No hay productos en el carrito');
 
 });
-
 
 test('puedo obtener las imagenes de los productos del pedido', function () {
     Storage::fake('storage');
@@ -148,7 +147,7 @@ test('cuando realizo pedido resto del stock de producto', function () {
 
     $dataOk = [
         'Ds_Order' => $pedido->number,
-        'Ds_Amount' => convertNumberToRedSys($pedido->amount)
+        'Ds_Amount' => convertNumberToRedSys($pedido->amount),
     ];
 
     $pedido->payed($dataOk);
@@ -156,25 +155,21 @@ test('cuando realizo pedido resto del stock de producto', function () {
     expect($producto->stock)->toBe(4);
 });
 
-
 test('puedo obtener listado de items para emails', function () {
-    $productos = Product::factory()
+    Product::factory()
         ->imagen(public_path('storage/productos/botella-azul.webp'))
         ->count(2)
         ->create();
-
 
     $order = Order::factory()->hasItems(2)->create();
 
     expect($order->itemsArray())->toBeArray()
         ->and($order->itemsArray())->toHaveCount(2)
-        ->and($order->itemsArray()[0])->toHaveKeys(["name", "price", "quantity", "subtotal", "image"]);
-
+        ->and($order->itemsArray()[0])->toHaveKeys(['name', 'price', 'quantity', 'subtotal', 'image']);
 
 });
 
-
-test('al crear pedido sólo creo un estado pendiente de pago', function () {
+test('al crear pedido solo creo un estado pendiente de pago', function () {
 
     $producto = Product::factory()->create([
         'name' => 'Producto de prueba',
@@ -191,8 +186,8 @@ test('al crear pedido sólo creo un estado pendiente de pago', function () {
         ->and($pedido->states)->toHaveCount(2);
 });
 
-
 test('al procesar pedido envío email a todos los usuarios', function () {
+
     Notification::fake();
 
     User::factory()->count(3)->create();

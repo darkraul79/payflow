@@ -112,7 +112,7 @@ class FinishOrderComponent extends Component
             ];
         }
 
-        if (!Cart::canCheckout()) {
+        if (! Cart::canCheckout()) {
             $this->redirectRoute('cart');
         }
 
@@ -165,8 +165,8 @@ class FinishOrderComponent extends Component
     {
         $order = Order::create([
             'number' => generateOrderNumber(),
-            'shipping' => $this->shipping['name'],
-            'shipping_cost' => $this->cart['totals']['shipping_cost'],
+            'shipping' => $this->cart['shipping_method']['name'],
+            'shipping_cost' => $this->cart['shipping_method']['price'],
             'subtotal' => $this->cart['totals']['subtotal'],
             'taxes' => $this->cart['totals']['taxes'],
             'amount' => $this->cart['totals']['total'],
@@ -175,7 +175,6 @@ class FinishOrderComponent extends Component
 
         $this->createAddresses($order);
         $this->addItemsToOrder($order);
-
 
         return $order;
     }

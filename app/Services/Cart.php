@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Product;
+use App\Models\ShippingMethod;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -172,7 +173,8 @@ class Cart
             empty(self::$cart['items']) ||
             empty(self::$cart['totals']['subtotal']) ||
             empty(self::$cart['totals']['taxes']) ||
-            empty(self::$cart['totals']['total'])
+            empty(self::$cart['totals']['total']) ||
+            empty(self::$cart['shipping_method'])
         ) {
             return false;
         }
@@ -208,6 +210,42 @@ class Cart
         self::$cart['totals']['taxes'] = 0;
         self::$cart['totals']['total'] = 0;
         self::$cart['totals']['shipping_cost'] = 0;
+    }
+
+
+    public static function setShippingMethod(ShippingMethod $method): void
+    {
+        self::init();
+
+        self::$cart['shipping_method'] = [
+            'id' => $method->id,
+            'price' => $method->price,
+            'name' => $method->name,
+        ];
+
+        self::save();
+    }
+
+    public static function getShippingMethod()
+    {
+        self::init();
+
+        if (isset(self::$cart['shipping_method']['id'])) {
+            return self::$cart['shipping_method']['id'];
+        }
+
+        return false;
+    }
+
+    public static function getShippingMethodCost()
+    {
+        self::init();
+
+        if (isset(self::$cart['shipping_method']['price'])) {
+            return self::$cart['shipping_method']['price'];
+        }
+
+        return false;
     }
 
 

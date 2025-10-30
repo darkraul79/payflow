@@ -38,9 +38,14 @@
             <strong>{{ convertPrice($cart['totals']['subtotal']) }}</strong>
         </li>
         <li>
-            <span>Envío</span>
+            <div>
+                Envío
+                <span class="text-azul-gray text-xs">
+                    {{ $cart['shipping_method']['name'] }}
+                </span>
+            </div>
             <strong>
-                {{ convertPrice($cart['totals']['shipping_cost']) }}
+                {{ convertPrice($cart['shipping_method']['price']) }}
             </strong>
         </li>
         <li>

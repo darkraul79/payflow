@@ -70,15 +70,6 @@ class Settings extends BaseSettings
                                 ->hintIcon('bi-youtube'),
                         ]),
 
-                    Tabs\Tab::make('Tienda')
-                        ->columns(4)
-                        ->schema([
-                            TextInput::make('store.price_send')
-                                ->label('Gasto de envío')
-                                ->suffix("€")
-                                ->formatStateUsing(fn($state) => convertPriceNumber($state))
-
-                        ]),
                 ]),
         ];
     }

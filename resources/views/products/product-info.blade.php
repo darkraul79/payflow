@@ -12,7 +12,7 @@
         class="text-azul-mist mx-1"
         :visible="$page->offer_price"
     />
-    {!! $page->getFormatedPriceWithDiscount(inverse: true) !!}
+    {!! $page->getFormatedPriceWithDiscount() !!}
 </div>
 <hr class="border- mb-6 w-full border-gray-200" />
 
