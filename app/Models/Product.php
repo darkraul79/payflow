@@ -24,9 +24,8 @@ class Product extends Model implements HasMedia
         [
             'url' => '/tienda-solidaria',
             'title' => 'Tienda solidaria',
-        ]
+        ],
     ];
-
 
     protected $fillable = [
         'name',
@@ -36,8 +35,9 @@ class Product extends Model implements HasMedia
         'description',
         'offer_price',
         'published',
-        'donacion'
+        'donacion',
     ];
+
     protected $with = [
         'tags',
     ];
@@ -64,12 +64,12 @@ class Product extends Model implements HasMedia
             ->nonQueued();
     }
 
-    public function getFormatedPriceWithDiscount($inverse = false): string
+    public function getFormatedPriceWithDiscount(): string
     {
         $precio_original = $this->getFormatedPrice();
 
         if ($this->offer_price) {
-            return convertPrice($this->offer_price) . ' <span class="text-xs font-light text-gray-400 line-through mx-1">' . $precio_original . '</span>';
+            return convertPrice($this->offer_price).' <span class="text-xs font-light text-gray-400 line-through mx-1">'.$precio_original.'</span>';
         }
 
         return $precio_original;
@@ -85,10 +85,11 @@ class Product extends Model implements HasMedia
         if ($this->offer_price) {
             return $this->offer_price;
         }
+
         return $this->price;
     }
 
-    public function discount_porcentaje()
+    public function discount_porcentaje(): int
     {
         return $this->offer_price ? round((($this->price - $this->offer_price) / $this->price) * 100) : 0;
     }
@@ -110,14 +111,14 @@ class Product extends Model implements HasMedia
     protected function blockquotes(): Attribute
     {
         return Attribute::make(
-            get: fn() => collect([]),
+            get: fn () => collect(),
         );
     }
 
     protected function title(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->name,
+            get: fn () => $this->name,
         );
     }
 
@@ -157,6 +158,4 @@ class Product extends Model implements HasMedia
         $query->published();
 
     }
-
-
 }
