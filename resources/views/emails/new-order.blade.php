@@ -19,7 +19,7 @@ En breve recibirás una actualización con más detalles.
     |               |               |
     |  -----------: | ------------: |
     |          *Subtotal*       | *{!! $subtotal !!}* |
-    |          *Envio*         | *{!! $shipping_cost !!}* |
+    |          *{!! $shipping !!}*         | *{!! $shipping_cost !!}* |
     |          *Total*         | **{!! $total !!}**    |
 </x-mail::table>
 

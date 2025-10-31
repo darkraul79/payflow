@@ -43,7 +43,6 @@ class Order extends Model
         'addresses',
     ];
 
-
     public function fechaHumanos(): string
     {
 
@@ -85,7 +84,7 @@ class Order extends Model
     }
 
     /**
-     *  Devuelve los estados disponibles de un pedido, sin contar los ya asignados
+     *  Devuelve los estados disponibles de un pedido, sin contar los ya asignados.
      */
     public function available_states(): array
     {
@@ -102,7 +101,7 @@ class Order extends Model
             'name' => State::ERROR,
         ];
 
-        if (!$this->states()->where($estado)->exists()) {
+        if (! $this->states()->where($estado)->exists()) {
 
             $estado['info'] = $redSysResponse;
             $estado['info']['Error'] = $mensaje ?? 'Error al procesar el pedido';
@@ -126,7 +125,7 @@ class Order extends Model
             ]);
 
         // Si no existe el estado PAGADO, lo creo
-        if (!$this->states()->where('name', State::PAGADO)->exists()) {
+        if (! $this->states()->where('name', State::PAGADO)->exists()) {
             // resto la cantidad al stock de los productos
             $this->subtractStocks();
             $this->states()->create([
@@ -161,13 +160,13 @@ class Order extends Model
 
     }
 
-    public function billing_address(): Address|null
+    public function billing_address(): ?Address
     {
         // Devuelve la dirección de facturación del pedido
         return $this->addresses()->where('type', Address::BILLING)->latest()->first();
     }
 
-    public function shipping_address(): Address|null
+    public function shipping_address(): ?Address
     {
         // Devuelve la dirección de facturación del pedido
         return $this->addresses()->where('type', Address::SHIPPING)->get()->first() ?? null;
@@ -220,13 +219,18 @@ class Order extends Model
         return Str::title($this->address->name);
     }
 
+    public function getShippinCostFormated(): string
+    {
+        return $this->shipping_cost > 0 ? convertPrice($this->shipping_cost) : 'Gratis';
+    }
+
     /**
      * Devuelve el total del pedido formateado para Redsys.
      */
     protected function totalRedsys(): Attribute
     {
         return Attribute::make(
-            get: fn() => Str::replace('.', '', number_format($this->attributes['amount'], 2)),
+            get: fn () => Str::replace('.', '', number_format($this->attributes['amount'], 2)),
         );
     }
 }

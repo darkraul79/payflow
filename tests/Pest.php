@@ -58,7 +58,7 @@ function asUser(): User
 
 }
 
-function creaPedido(?Product $producto = null): Order
+function creaPedido(?Product $producto = null, ?ShippingMethod $shippingMethod = null): Order
 {
 
     if (! $producto) {
@@ -74,7 +74,7 @@ function creaPedido(?Product $producto = null): Order
         'quantity' => 1,
     ])->call('addToCart');
 
-    $metodoEnvio = ShippingMethod::factory()->create();
+    $metodoEnvio = $shippingMethod ?? ShippingMethod::factory()->create();
 
     livewire(PageCartComponent::class)
         ->set('shipping_method', $metodoEnvio->id)

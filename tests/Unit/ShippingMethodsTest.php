@@ -2,10 +2,12 @@
 
 use App\Livewire\FinishOrderComponent;
 use App\Livewire\PageCartComponent;
+use App\Mail\OrderNew;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use Carbon\Carbon;
+
 use function Pest\Livewire\livewire;
 
 test('Factory: puedo crear método de envío', function () {
@@ -39,8 +41,10 @@ test('Scope: active devuelve solo los activos', function () {
 });
 
 test('Scope: available devuelve solo los que cumplen con las fechas desde y hasta', function () {
-    $metodoVisible = ShippingMethod::factory()->hasDates(Carbon::now()->format('d-m-Y'), Carbon::now()->addDays(5)->format('d-m-Y'))->create();
-    $metodoOculto = ShippingMethod::factory()->hasDates(Carbon::now()->subDays(5)->format('d-m-Y'), Carbon::now()->subDay()->format('d-m-Y'))->create();
+    $metodoVisible = ShippingMethod::factory()->hasDates(Carbon::now()->format('d-m-Y'),
+        Carbon::now()->addDays(5)->format('d-m-Y'))->create();
+    $metodoOculto = ShippingMethod::factory()->hasDates(Carbon::now()->subDays(5)->format('d-m-Y'),
+        Carbon::now()->subDay()->format('d-m-Y'))->create();
     $metodoVisible2 = ShippingMethod::factory()->hasDates(Carbon::now(), Carbon::now()->addDay())->create();
     $metodoOculto2 = ShippingMethod::factory()->hasDates(Carbon::now()->subDays(2), Carbon::now()->subDay())->create();
 
@@ -53,10 +57,12 @@ test('Scope: available devuelve solo los que cumplen con las fechas desde y hast
 
 test('Scope: forAmount devuelve solo los que el precio de compra es mayor o igual a Greater', function () {
     $metodoFijo = ShippingMethod::factory()->create();
-    $metodoFecha = ShippingMethod::factory()->hasDates(Carbon::now()->subDays(5)->format('d-m-Y'), Carbon::now()->format('d-m-Y'))->create();
+    $metodoFecha = ShippingMethod::factory()->hasDates(Carbon::now()->subDays(5)->format('d-m-Y'),
+        Carbon::now()->format('d-m-Y'))->create();
     $metodoPrecio = ShippingMethod::factory()->hasGreater(100.0)->create();
     $metodoPrecioOculto = ShippingMethod::factory()->hasGreater(150.0)->create();
-    $metodoFechaPrecioOculto = ShippingMethod::factory()->hasDates(Carbon::now()->subDays(5)->format('d-m-Y'), Carbon::now()->subDay()->format('d-m-Y'))->hasGreater(90)->create();
+    $metodoFechaPrecioOculto = ShippingMethod::factory()->hasDates(Carbon::now()->subDays(5)->format('d-m-Y'),
+        Carbon::now()->subDay()->format('d-m-Y'))->hasGreater(90)->create();
 
     $metodosDisponibles = ShippingMethod::forAmount(100.1)->get();
     expect($metodosDisponibles->count())->toBe(3)
@@ -114,7 +120,6 @@ test('Al finalizar pedido veo el método de envío y su importe', function () {
         ->assertSessionHas('cart.shipping_method.price', 5.2)
         ->assertSessionHas('cart.totals.shipping_cost', 5.2);
 
-
 });
 
 test('Al terminar pedido se guardan los datos de envío correctamente', function () {
@@ -161,4 +166,41 @@ test('Si no selecciono método de envío no puedo ir a finalizar pedido', functi
     livewire(FinishOrderComponent::class)
         ->assertRedirect()
         ->assertRedirectToRoute('cart');
+});
+
+test('si el método es gratuito veo la palabra gratuito en el proceso de compra', function () {
+    $metodo = ShippingMethod::factory()->create([
+        'name' => 'Sin coste',
+        'price' => 0.00,
+    ]);
+
+    addProductToCart();
+
+    livewire(PageCartComponent::class)
+        ->set('shipping_method', $metodo->id)
+        ->call('submit');
+
+    livewire(FinishOrderComponent::class)
+        ->assertSeeHtmlInOrder([
+            'Envío',
+            $metodo->name,
+            'Gratis',
+        ]);
+
+});
+
+test('al crear pedido se manda un email con la palabra Gratis en el email si el precio de envío es 0 ', function () {
+
+    $pedido = Order::factory()->create([
+        'shipping' => 'Recogida en tienda',
+        'shipping_cost' => 0.00,
+    ]);
+
+    $mailable = new OrderNew($pedido);
+
+    $mailable->assertSeeInOrderInHtml([
+        'Recogida en tienda',
+        'Gratis',
+    ]);
+
 });

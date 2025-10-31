@@ -45,7 +45,7 @@
                 </span>
             </div>
             <strong>
-                {{ convertPrice($cart['shipping_method']['price']) }}
+                {{ $cart['shipping_method']['price'] > 0 ? convertPrice($cart['shipping_method']['price']): 'Gratis' }}
             </strong>
         </li>
         <li>

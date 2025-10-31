@@ -23,7 +23,6 @@ class OrderNew extends Mailable
     {
         $this->order = $order;
 
-
     }
 
     /**
@@ -51,7 +50,7 @@ class OrderNew extends Mailable
                 'subtotal' => convertPrice($this->order->subtotal),
                 'shipping' => $this->order->shipping,
                 'tax' => $this->order->taxes,
-                'shipping_cost' => convertPrice($this->order->shipping_cost),
+                'shipping_cost' => $this->order->getShippinCostFormated(),
             ],
         );
 
