@@ -22,31 +22,16 @@ use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
 
-uses(TestCase::class, RefreshDatabase::class)
+pest()->extend(Tests\TestCase::class)
+    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature', 'Unit');
 
 arch()->preset()->laravel()
     ->ignoring(AdminPanelProvider::class);
-
-/*
-|--------------------------------------------------------------------------
-| Expectations
-|--------------------------------------------------------------------------
-|
-| When you're writing tests, you often need to check that values meet certain conditions. The
-| "expect()" function gives you access to a set of "expectations" methods that you can use
-| to assert different things. Of course, you may extend the Expectation API at any time.
-|
-*/
-
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
-});
 
 /*
 |--------------------------------------------------------------------------
@@ -58,11 +43,6 @@ expect()->extend('toBeOne', function () {
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
-
-function something()
-{
-    // ..
-}
 
 function asUser(): User
 {
@@ -81,7 +61,7 @@ function asUser(): User
 function creaPedido(?Product $producto = null): Order
 {
 
-    if (!$producto) {
+    if (! $producto) {
         $producto = Product::factory()->create([
             'name' => 'Producto de prueba',
             'price' => 10,
@@ -126,7 +106,7 @@ function creaPedido(?Product $producto = null): Order
 function addProductToCart(?Product $producto = null): void
 {
 
-    if (!$producto) {
+    if (! $producto) {
         $producto = Product::factory()->create([
             'name' => 'Producto de prueba',
             'price' => 10,
@@ -256,7 +236,7 @@ function getMerchanParamsOrder(Order $order, $ok = false): string
         'Ds_Date' => Carbon::now()->format('d%20m%20Y'),
         'Ds_Hour' => Carbon::now()->format('H:i'),
         'Ds_SecurePayment' => '1',
-        'Ds_Amount' => convertNumberToRedSys($order->amount) . '',
+        'Ds_Amount' => convertNumberToRedSys($order->amount).'',
         'Ds_Currency' => '978',
         'Ds_Order' => $order->number,
         'Ds_MerchantCode' => '357328590',

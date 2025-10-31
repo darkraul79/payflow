@@ -3,6 +3,7 @@
 use App\Filament\Resources\PageResource\Pages\CreatePage;
 use App\Filament\Resources\PageResource\Pages\EditPage;
 use App\Models\Page;
+use Illuminate\Support\Facades\Storage;
 use function Pest\Livewire\livewire;
 
 test('puedo crear páginas', function () {
