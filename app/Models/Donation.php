@@ -26,11 +26,11 @@ class Donation extends Model
 {
     use HasAddresses, HasFactory, HasPayments, HasStates, SoftDeletes;
 
-    public const UNICA = 'Simple';
+    public const string UNICA = 'Simple';
 
-    public const RECURRENTE = 'Recurrente';
+    public const string RECURRENTE = 'Recurrente';
 
-    public const FREQUENCY = [
+    public const array FREQUENCY = [
         'MENSUAL' => 'Mensual',
         'TRIMESTRAL' => 'Trimestral',
         'ANUAL' => 'Anual',
@@ -153,7 +153,7 @@ class Donation extends Model
     }
 
     /**
-     * Devuelve el icono asociado al estado de pedido
+     * Devuelve el icono asociado al estado de pedido.
      */
     public function colorType(): string
     {
@@ -164,7 +164,7 @@ class Donation extends Model
     }
 
     /**
-     * Devuelve el icono asociado al estado de pedido
+     * Devuelve el icono asociado al estado de pedido.
      */
     public function colorFrequency(): string
     {
@@ -282,7 +282,7 @@ class Donation extends Model
     }
 
     /**
-     *  Devuelve los estados disponibles de un pedido, sin contar los ya asignados
+     *  Devuelve los estados disponibles de un pedido, sin contar los ya asignados.
      */
     public function available_states(): array
     {
