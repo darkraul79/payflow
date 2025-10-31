@@ -193,7 +193,7 @@ test('puedo crear pago a KO donacion recurrente', function () {
         ->and($pagoRecurrente->amount)->toBe(10.35)
         ->and($pagoRecurrente->info->Ds_Response)->toBe('0000');
 
-})->skipIf(config('app.env', 'GITHUB_ACTIONS'), 'Se omite en GitHub Actions');
+})->skip(env('APP_ENV') == 'GITHUB_ACTIONS', 'Se omite en GitHub Actions');
 
 test('puedo comprobar si tiene certificado', function () {
     $donacion = Donation::factory()->create();
@@ -296,7 +296,7 @@ test('puedo procesar job ProcessDonationPaymentJob', function () {
         ->and($donacion->payments->last()->created_at->format('Y-m-d'))->toBe($tomorrow)
         ->and($donacion->state->name)->toBe(State::ACTIVA);
 
-})->skipIf(config('app.env', 'GITHUB_ACTIONS'), 'Se omite en GitHub Actions');
+})->skip(env('APP_ENV') == 'GITHUB_ACTIONS', 'Se omite en GitHub Actions');
 
 test('cada vez que abro ventana de donación se resetea el componente', function () {
     $home = Page::factory()->create([

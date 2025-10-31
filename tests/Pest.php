@@ -22,11 +22,12 @@ use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+uses(TestCase::class, RefreshDatabase::class)
     ->in('Feature', 'Unit');
 
 arch()->preset()->laravel()
@@ -137,7 +138,6 @@ function addProductToCart(?Product $producto = null): void
         'product' => $producto,
         'quantity' => 1,
     ])->call('addToCart');
-
 
 }
 
