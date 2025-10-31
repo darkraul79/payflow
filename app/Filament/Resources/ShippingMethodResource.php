@@ -78,7 +78,7 @@ class ShippingMethodResource extends Resource
                             ->compact()
                             ->description('Mostrar en fechas desde / hasta, si no se rellenan, se mostrará siempre')
                             ->collapsible()
-                            ->collapsed(fn(Model $record) => $record->from === null && $record->until === null)
+                            ->collapsed(fn (?Model $record) => $record?->from === null && $record?->until === null)
                             ->schema([
                                 DatePicker::make('from')
                                     ->label('Desde'),
@@ -94,7 +94,7 @@ class ShippingMethodResource extends Resource
                             ->description('Mostrar cuando el importe de la compra sea mayor o igual al valor, si no se rellena, se mostrará siempre')
                             ->columns(1)
                             ->collapsible()
-                            ->collapsed(fn(Model $record) => $record->greater === null)
+                            ->collapsed(fn (?Model $record) => $record?->greater === null)
                             ->schema([
                                 TextInput::make('greater')
                                     ->label('Importe mínimo')
@@ -126,11 +126,11 @@ class ShippingMethodResource extends Resource
                 TextColumn::make('price')
                     ->alignCenter()
                     ->label('Precio')
-                    ->badge(fn(string $state): string => $state == 0)
-                    ->color(fn(string $state): string => $state == 0 ? 'success' : 'gray')
+                    ->badge(fn (string $state): string => $state == 0)
+                    ->color(fn (string $state): string => $state == 0 ? 'success' : 'gray')
                     ->html()
                     ->sortable()
-                    ->formatStateUsing(fn(Model $record): string => $record->getFormatedPrice()),
+                    ->formatStateUsing(fn ($record): string => $record?->getFormatedPrice()),
 
                 ToggleColumn::make('active')
                     ->alignCenter()
@@ -139,12 +139,12 @@ class ShippingMethodResource extends Resource
 
                 TextColumn::make('from')
                     ->label('Por fechas')
-                    ->color(fn($record) => $record->isVisibleToday() ? 'success' : 'danger')
+                    ->color(fn ($record) => $record->isVisibleToday() ? 'success' : 'danger')
                     ->alignCenter()
                     ->badge()
                     ->html()
                     ->size(TextColumn\TextColumnSize::ExtraSmall)
-                    ->tooltip(fn($record): string => $record->isVisibleToday() ? $record->from?->format('d/m/Y') . ' - ' . $record->until?->format('d/m/Y') : false)
+                    ->tooltip(fn ($record): string => $record->isVisibleToday() ? $record->from?->format('d/m/Y').' - '.$record->until?->format('d/m/Y') : false)
                     ->formatStateUsing(function (Model $record): string {
                         return $record->isVisibleToday() ? 'activo' : 'oculto';
                     }),
@@ -153,7 +153,7 @@ class ShippingMethodResource extends Resource
                     ->prefix('>')
                     ->color('danger')
                     ->alignCenter()
-                    ->formatStateUsing(fn(float $state): string => convertPrice($state)),
+                    ->formatStateUsing(fn (float $state): string => convertPrice($state)),
             ])
             ->filters([
                 TrashedFilter::make(),

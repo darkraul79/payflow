@@ -15,6 +15,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class DonationResource extends Resource
@@ -66,8 +67,8 @@ class DonationResource extends Resource
                     ->label('Nº'),
                 TextColumn::make('state.name')
                     ->alignCenter()
-                    ->icon(fn($record) => $record->state->icono())
-                    ->color(fn($record) => $record->state->colorEstado())
+                    ->icon(fn(?Model $record) => $record?->state->icono())
+                    ->color(fn(?Model $record) => $record?->state->colorEstado())
                     ->label('Estado')
                     ->badge()
                     ->searchable(),
@@ -82,9 +83,9 @@ class DonationResource extends Resource
                     ->label('Certificado')
                     ->alignCenter()
                     ->size(TextColumn\TextColumnSize::ExtraSmall)
-                    ->icon(fn(Donation $record) => $record->certificate() ? 'heroicon-m-check-badge' : '')
-                    ->iconColor(fn(Donation $record) => $record->certificate() ? 'lime' : 'gray')
-                    ->formatStateUsing(fn(Donation $record): string => $record->certificate() ? 'Si' : ''),
+                    ->icon(fn(?Donation $record) => $record?->certificate() ? 'heroicon-m-check-badge' : '')
+                    ->iconColor(fn(?Donation $record) => $record?->certificate() ? 'lime' : 'gray')
+                    ->formatStateUsing(fn(?Donation $record): string => $record?->certificate() ? 'Si' : ''),
                 TextColumn::make('payments_count')
                     ->label('Pagos')
                     ->counts('payments')
@@ -102,8 +103,8 @@ class DonationResource extends Resource
                 TextColumn::make('type')
                     ->alignCenter()
                     ->sortable()
-                    ->icon(fn($record) => $record->iconType())
-                    ->color(fn($record) => $record->colorType())
+                    ->icon(fn(?Model $record) => $record?->iconType())
+                    ->color(fn(?Model $record) => $record?->colorType())
                     ->label('Tipo')
                     ->badge()
                     ->searchable(),
@@ -119,11 +120,11 @@ class DonationResource extends Resource
                 Action::make('cancelar')
                     ->label('Cancelar')
                     ->requiresConfirmation()
-                    ->action(fn(Donation $record) => $record->cancel())
+                    ->action(fn(?Donation $record) => $record?->cancel())
                     ->icon('heroicon-o-no-symbol')
                     ->color('danger')
-                    ->visible(fn(Donation $record) => $record->type === Donation::RECURRENTE &&
-                        $record->state?->name === State::ACTIVA),
+                    ->visible(fn(?Donation $record) => $record?->type === Donation::RECURRENTE &&
+                        $record?->state?->name === State::ACTIVA),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
