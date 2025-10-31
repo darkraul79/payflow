@@ -24,4 +24,6 @@ yarn-error.log
 /storage/debugbar/
 php_errorlog
 storage/media-library/
+.DS_Store
+*/.DS_Store
 
