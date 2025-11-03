@@ -11,7 +11,14 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -67,8 +74,8 @@ class DonationResource extends Resource
                     ->label('Nº'),
                 TextColumn::make('state.name')
                     ->alignCenter()
-                    ->icon(fn(?Model $record) => $record?->state->icono())
-                    ->color(fn(?Model $record) => $record?->state->colorEstado())
+                    ->icon(fn (?Model $record) => $record?->state->icono())
+                    ->color(fn (?Model $record) => $record?->state->colorEstado())
                     ->label('Estado')
                     ->badge()
                     ->searchable(),
@@ -83,14 +90,21 @@ class DonationResource extends Resource
                     ->label('Certificado')
                     ->alignCenter()
                     ->size(TextColumn\TextColumnSize::ExtraSmall)
-                    ->icon(fn(?Donation $record) => $record?->certificate() ? 'heroicon-m-check-badge' : '')
-                    ->iconColor(fn(?Donation $record) => $record?->certificate() ? 'lime' : 'gray')
-                    ->formatStateUsing(fn(?Donation $record): string => $record?->certificate() ? 'Si' : ''),
+                    ->icon(fn (?Donation $record) => $record?->certificate() ? 'heroicon-m-check-badge' : '')
+                    ->iconColor(fn (?Donation $record) => $record?->certificate() ? 'lime' : 'gray')
+                    ->formatStateUsing(fn (?Donation $record): string => $record?->certificate() ? 'Si' : ''),
                 TextColumn::make('payments_count')
                     ->label('Pagos')
-                    ->counts('payments')
                     ->sortable()
-                    ->alignCenter(),
+                    ->html()
+                    ->alignCenter()
+                    ->color('gray')
+                    ->size(TextColumn\TextColumnSize::ExtraSmall)
+                    ->formatStateUsing(function ($state, ?Donation $record) {
+                        $sum = $record?->payments_sum_amount ?? 0;
+
+                        return sprintf('%s (%d)', convertPrice($sum), $state);
+                    }),
 
                 TextColumn::make('updated_at')
                     ->label('Fecha')
@@ -103,33 +117,65 @@ class DonationResource extends Resource
                 TextColumn::make('type')
                     ->alignCenter()
                     ->sortable()
-                    ->icon(fn(?Model $record) => $record?->iconType())
-                    ->color(fn(?Model $record) => $record?->colorType())
+                    ->icon(fn (?Model $record) => $record?->iconType())
+                    ->color(fn (?Model $record) => $record?->colorType())
                     ->label('Tipo')
                     ->badge()
                     ->searchable(),
 
             ])
+            ->recordClasses(fn (Model $record
+            ) => $record->payments_sum_amount == 0 ? ' table-td-error' : '')
             ->defaultSort('updated_at', 'desc')
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('state')
+                    ->label('Estado')
+                    ->options(function () {
+                        $op = Donation::make()->available_states();
+                        unset($op['ACEPTADO']);
+
+                        return array_combine($op, $op);
+                    })
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (! isset($data['value']) || $data['value'] == '') {
+                            return $query;
+                        }
+
+                        return $query->whereHas('state', function (Builder $query) use ($data) {
+                            $query->where('name', $data['value']);
+                        });
+                    }),
             ])
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->with('addresses')->withCount('payments')->withSum('payments', 'amount');
+            })
             ->actions([
 
                 //                ViewAction::make(),
                 Action::make('cancelar')
                     ->label('Cancelar')
                     ->requiresConfirmation()
-                    ->action(fn(?Donation $record) => $record?->cancel())
+                    ->action(fn (?Donation $record) => $record?->cancel())
                     ->icon('heroicon-o-no-symbol')
                     ->color('danger')
-                    ->visible(fn(?Donation $record) => $record?->type === Donation::RECURRENTE &&
+                    ->visible(fn (?Donation $record) => $record?->type === Donation::RECURRENTE &&
                         $record?->state?->name === State::ACTIVA),
+                DeleteAction::make()
+                    ->visible(fn (?Donation $record
+                    ) => $record->state?->name === State::ERROR || $record->state == null),
+                ForceDeleteAction::make(),
+                RestoreAction::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])->checkIfRecordIsSelectableUsing(
+                fn (Model $record): bool => $record->state?->name === State::ERROR || $record->state == null,
+            );
     }
 
     public static function getPages(): array

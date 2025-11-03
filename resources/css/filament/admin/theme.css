@@ -154,4 +154,12 @@
             }
         }
     }
+
+    .table-td-error {
+        @apply bg-error/10 ;
+
+        .fi-ta-text-item-label:not(.text-gray-500) {
+            @apply line-through ;
+        }
+    }
 }

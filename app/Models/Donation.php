@@ -21,6 +21,8 @@ use Illuminate\Support\Str;
 
 /**
  * @method addresses()
+ *
+ * @property mixed $payments_sum_amount
  */
 class Donation extends Model
 {
@@ -55,7 +57,7 @@ class Donation extends Model
     public function totalRedsys(): Attribute
     {
         return Attribute::make(
-            get: fn() => Str::replace('.', '', number_format($this->attributes['amount'], 2)),
+            get: fn () => Str::replace('.', '', number_format($this->attributes['amount'], 2)),
         );
     }
 
@@ -102,8 +104,8 @@ class Donation extends Model
 
         // Si no existe el estado ACEPTADO ni CANCELADO, creo estado ACTIVA
         if ($this->type === Donation::RECURRENTE) {
-            if (!$this->states()->where('name', State::CANCELADO)->exists() &&
-                !$this->states()->where('name', State::ACTIVA)->exists()) {
+            if (! $this->states()->where('name', State::CANCELADO)->exists() &&
+                ! $this->states()->where('name', State::ACTIVA)->exists()) {
 
                 $this->states()->create([
                     'name' => State::ACTIVA,
@@ -111,7 +113,7 @@ class Donation extends Model
 
             }
         } else {
-            if (!$this->states()->where('name', State::PAGADO)->exists()) {
+            if (! $this->states()->where('name', State::PAGADO)->exists()) {
                 $this->states()->create([
                     'name' => State::PAGADO,
                 ]);
@@ -251,7 +253,7 @@ class Donation extends Model
             'next_payment' => $this->type === Donation::RECURRENTE ? $this->updateNextPaymentDate() : null,
         ]);
 
-        if (!$this->states()->where($estado)->exists()) {
+        if (! $this->states()->where($estado)->exists()) {
 
             $estado['info'] = $redSysResponse;
             $estado['info']['Error'] = $mensaje ?? 'Error al procesar el pedido';
