@@ -86,7 +86,7 @@ class DonationResource extends Resource
                     ->formatStateUsing(function ($state) {
                         return convertPrice($state);
                     }),
-                TextColumn::make('created_at')
+                TextColumn::make('updated_at')
                     ->label('Certificado')
                     ->alignCenter()
                     ->size(TextColumn\TextColumnSize::ExtraSmall)
@@ -106,7 +106,7 @@ class DonationResource extends Resource
                         return sprintf('%s (%d)', convertPrice($sum), $state);
                     }),
 
-                TextColumn::make('updated_at')
+                TextColumn::make('created_at')
                     ->label('Fecha')
                     ->sortable()
                     ->color('gray')
@@ -126,7 +126,7 @@ class DonationResource extends Resource
             ])
             ->recordClasses(fn (Model $record
             ) => $record->payments_sum_amount == 0 ? ' table-td-error' : '')
-            ->defaultSort('updated_at', 'desc')
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 TrashedFilter::make(),
                 SelectFilter::make('state')
