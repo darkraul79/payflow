@@ -131,6 +131,7 @@ class DonationResource extends Resource
                 TrashedFilter::make(),
                 SelectFilter::make('state')
                     ->label('Estado')
+                    ->multiple()
                     ->options(function () {
                         $op = Donation::make()->available_states();
                         unset($op['ACEPTADO']);
@@ -138,12 +139,13 @@ class DonationResource extends Resource
                         return array_combine($op, $op);
                     })
                     ->query(function (Builder $query, array $data): Builder {
-                        if (! isset($data['value']) || $data['value'] == '') {
+
+                        if (empty($data['values'])) {
                             return $query;
                         }
 
                         return $query->whereHas('state', function (Builder $query) use ($data) {
-                            $query->where('name', $data['value']);
+                            $query->whereIn('name', $data['values']);
                         });
                     }),
             ])
