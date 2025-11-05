@@ -7,9 +7,9 @@ use App\Models\Donation;
 use App\Models\Order;
 use App\Models\Payment;
 
-test('ssdadf sdfsd sdf sdf ', function ($clase) {
+test('Puedo crear paymentProcess', function ($clase) {
 
-    $modelo = 'App\\Models\\' . $clase;
+    $modelo = 'App\\Models\\'.$clase;
     /** @noinspection PhpUndefinedMethodInspection */
     $process = new PaymentProcess($modelo, $modelo::factory()->make()->attributesToArray());
 
@@ -21,10 +21,9 @@ test('ssdadf sdfsd sdf sdf ', function ($clase) {
 ]);
 
 test('crea un pago al construir PaymentProcess', function ($clase) {
-    $modelo = 'App\\Models\\' . $clase;
+    $modelo = 'App\\Models\\'.$clase;
     /** @noinspection PhpUndefinedMethodInspection */
     $process = new PaymentProcess($modelo, $modelo::factory()->make()->attributesToArray());
-
 
     expect($process->modelo->payment)->toBeInstanceOf(Payment::class)
         ->and($process->modelo->payment->payable_type)->toBe($modelo)
@@ -34,7 +33,6 @@ test('crea un pago al construir PaymentProcess', function ($clase) {
     'Donation',
     'Order',
 ]);
-
 
 test('getFormRedSysData devuelve campos de RedSys correctos', function () {
     $process = new PaymentProcess(Donation::class, Donation::factory()->make()->attributesToArray());
@@ -97,7 +95,8 @@ test('peticion de importe coincide con la donacion/pedido', function ($clase, $r
 
 test('compurebo devuelve formulario Redsys para donación recurrente ', function () {
 
-    $paymentProcess = new PaymentProcess(Donation::class, Donation::factory()->recurrente()->make()->attributesToArray());
+    $paymentProcess = new PaymentProcess(Donation::class,
+        Donation::factory()->recurrente()->make()->attributesToArray());
     $formData = $paymentProcess->getFormRedSysData();
 
     expect($formData['Raw'])->toBeArray()

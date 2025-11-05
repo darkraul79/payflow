@@ -8,6 +8,7 @@ use App\Livewire\DonacionBanner;
 use App\Models\Address;
 use App\Models\Donation;
 use App\Models\Page;
+use App\Models\Payment;
 use App\Models\State;
 use App\Models\User;
 use App\Notifications\DonationCreatedNotification;
@@ -15,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+
 use function Pest\Livewire\livewire;
 
 test('puedo crear donación única por defecto en factory', function () {
@@ -167,7 +169,7 @@ test('NO puedo crear pago a donacion cancelada', function () {
 
     $donacion->cancel();
 
-    expect(fn() => $donacion->recurrentPay())->toThrow(
+    expect(fn () => $donacion->recurrentPay())->toThrow(
         HttpException::class,
         'La donación ya NO está activa y no se puede volver a pagar'
     )
@@ -509,4 +511,45 @@ test('al procesar donacion envío email a todos los usuarios', function () {
     );
     Notification::assertCount($users->count());
 
+});
+
+it('Donation::payed simple crea estado PAGADO una sola vez', function () {
+    $donacion = Donation::factory()->create(['type' => Donation::UNICA]);
+    $pago = Payment::factory()->create([
+        'payable_type' => Donation::class,
+        'payable_id' => $donacion->id,
+        'number' => $donacion->number,
+    ]);
+    $decode = [
+        'Ds_Order' => $donacion->payment->number,
+        'Ds_Amount' => '100', // 1,00 €
+    ];
+    $donacion->payed($decode);
+    $donacion->payed($decode);
+
+    $donacion->refresh();
+    expect($donacion->states()->where('name', State::PAGADO)->count())->toBe(1);
+});
+
+it('Donation::payed recurrente setea identifier/next_payment y crea ACTIVA una vez', function () {
+    $donacion = Donation::factory()->recurrente()->create();
+    $pago = Payment::factory()->create([
+        'payable_type' => Donation::class,
+        'payable_id' => $donacion->id,
+        'number' => $donacion->number,
+        'amount' => $donacion->amount,
+    ]);
+
+    $decode = [
+        'Ds_Order' => $donacion->payment->number,
+        'Ds_Amount' => '250', // 2,50 €
+        'Ds_Merchant_Identifier' => 'abc123',
+    ];
+    $donacion->payed($decode);
+    $donacion->payed($decode);
+
+    $donacion->refresh();
+    expect($donacion->identifier)->toBe('abc123')
+        ->and($donacion->next_payment)->not()->toBeNull()
+        ->and($donacion->states()->where('name', State::ACTIVA)->count())->toBe(1);
 });

@@ -40,7 +40,6 @@ class DonationFactory extends Factory
     {
         return $this->afterMaking(function (Donation $donacion) {
 
-
             Payment::factory()->make([
                 'number' => generatePaymentNumber($donacion),
                 'payable_id' => $donacion->id,
@@ -54,7 +53,6 @@ class DonationFactory extends Factory
             ]);
         })->afterCreating(function (Donation $donacion) {
 
-
             $donacion->states()->create([
                 'name' => State::ACTIVA,
                 'message' => 'Pago aceptado',
@@ -63,12 +61,13 @@ class DonationFactory extends Factory
         });
     }
 
-    public function recurrente(): Factory
+    public function recurrente($frequency = Donation::FREQUENCY['MENSUAL']): Factory
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function (array $attributes) use ($frequency) {
             return [
                 'type' => DONATION::RECURRENTE,
                 'identifier' => $this->faker->uuid(),
+                'frequency' => $frequency,
             ];
         });
     }
