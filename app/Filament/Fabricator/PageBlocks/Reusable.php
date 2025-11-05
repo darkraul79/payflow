@@ -2,6 +2,9 @@
 
 namespace App\Filament\Fabricator\PageBlocks;
 
+use App\Models\Order;
+use App\Models\State;
+use App\Services\InvoiceService;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
@@ -15,9 +18,14 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Set;
+use Filament\Notifications\Notification;
+use Filament\Support\Enums\ActionSize;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -56,7 +64,7 @@ class Reusable
                 ->label('Texto'),
         ];
         $fields = array_filter($fields, function ($field) use ($exceptions) {
-            return !in_array($field->getName(), $exceptions);
+            return ! in_array($field->getName(), $exceptions);
         });
 
         return Group::make($fields);
@@ -67,20 +75,20 @@ class Reusable
     {
         return Group::make([
             Placeholder::make('created_at')
-                ->visible(fn($record) => $record)
+                ->visible(fn ($record) => $record)
                 ->label('Fecha creación')
                 ->extraAttributes(['class' => 'text-gray-400 text-end'])
                 ->inlineLabel()
                 ->columnSpanFull()
-                ->content(fn($record): string => $record?->created_at?->diffForHumans() ?? '-'),
+                ->content(fn ($record): string => $record?->created_at?->diffForHumans() ?? '-'),
 
             Placeholder::make('updated_at')
                 ->label('Fecha modificación')
-                ->visible(fn($record) => $record)
+                ->visible(fn ($record) => $record)
                 ->extraAttributes(['class' => 'text-gray-400 text-end'])
                 ->inlineLabel()
                 ->columnSpanFull()
-                ->content(fn($record): string => $record?->updated_at?->diffForHumans() ?? '-'),
+                ->content(fn ($record): string => $record?->updated_at?->diffForHumans() ?? '-'),
         ]);
     }
 
@@ -93,7 +101,7 @@ class Reusable
                 TextInput::make('title')
                     ->label('Titulo')
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))
+                    ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state)))
                     ->columnSpanFull()
                     ->required(),
                 self::SlugField($type),
@@ -141,7 +149,7 @@ class Reusable
     {
 
         return TextInput::make('slug')
-            ->prefix(fn($record): string => (new $type)->getUrlPrefix(true))
+            ->prefix(fn ($record): string => (new $type)->getUrlPrefix(true))
             ->label('Slug')
             ->unique(ignoreRecord: true)
             ->helperText('URL amigable')
@@ -173,7 +181,7 @@ class Reusable
 
         return ToggleButtons::make('donacion')
             ->grouped()
-            ->label(fn(): string => '¿Panel de donación?')
+            ->label(fn (): string => '¿Panel de donación?')
             ->boolean()->inline()
             ->default(false)
             ->columnSpan(1);
@@ -233,7 +241,7 @@ class Reusable
                 return $state ? 'Si' : 'No';
             })
             ->alignment('center')
-            ->color(fn($state): string => (!$state) ? 'danger' : 'success')
+            ->color(fn ($state): string => (! $state) ? 'danger' : 'success')
             ->badge();
     }
 
@@ -254,7 +262,10 @@ class Reusable
         return match ($type) {
             'App\Models\Activity' => TextColumn::make('date')
                 ->label('Fecha del evento')
-                ->formatStateUsing(fn($state, $record): string => Carbon::parse($state)->diffForHumans() . " <small class='text-gray-400'>(" . Carbon::parse($state)->format('d/m/Y') . ')</small>'
+                ->formatStateUsing(fn (
+                    $state,
+                    $record
+                ): string => Carbon::parse($state)->diffForHumans()." <small class='text-gray-400'>(".Carbon::parse($state)->format('d/m/Y').')</small>'
                 )
                 ->alignment('right')
                 ->html()
@@ -295,5 +306,99 @@ class Reusable
                 ->sortable()->onColor('secondary')
                 ->offColor('gray'),
         };
+    }
+
+    public static function facturaColumn()
+    {
+        return TextColumn::make('latest_invoice')
+            ->label('Factura')
+            ->size(TextColumn\TextColumnSize::ExtraSmall)
+            ->tooltip(fn (Model $record) => 'Factura '.$record->invoices()->first()?->number)
+            ->getStateUsing(function (Model $record) {
+                return $record->invoices()->first()?->number;
+            })
+            ->url(function (Model $record) {
+                $inv = $record->invoices()->first();
+
+                return $inv ? route('invoices.show', $inv) : null;
+            })
+            ->openUrlInNewTab()
+            ->icon('heroicon-o-document-text')
+            ->alignCenter();
+    }
+
+    public static function facturaActions($type = 'App\Models\Order')
+    {
+
+        return ActionGroup::make([
+            Action::make('invoice')
+                ->label(fn (Model $record
+                ) => $record->invoices()->exists() ? 'Regenerar factura' : 'Generar factura')
+                ->color(fn (Model $record
+                ) => $record->invoices()->exists() ? 'warning' : 'primary')
+                ->icon(fn (Model $record
+                ) => $record->invoices()->exists() ? 'heroicon-s-arrow-path' : 'heroicon-o-document-currency-euro')
+                ->visible(function (Model $record
+                ) {
+                    switch ($record->getMorphClass()) {
+                        case 'App\Models\Order':
+                            return $record->billing_address() && in_array($record->state?->name, [
+                                State::PAGADO,
+                                State::ENVIADO,
+                                State::FINALIZADO,
+                            ]);
+                        default:
+                            return false;
+                    }
+
+                })
+                ->form([
+                    Toggle::make('send_email')->label('Enviar por email')->default(true),
+                ])
+                ->action(function (Order $record, array $data) {
+
+                    $service = app(InvoiceService::class);
+                    $send = (bool) ($data['send_email'] ?? false);
+
+                    try {
+                        switch ($record->getMorphClass()) {
+                            case 'App\\Models\\Order':
+                                $result = $service->generateForOrder($record, sendEmail: $send, force: true);
+                                break;
+                            case 'App\\Models\\Donation':
+                                // If no email on certificate, force send=false
+                                if ($send && ! ($record->certificate()?->email)) {
+                                    $send = false;
+                                    Notification::make()
+                                        ->warning()
+                                        ->title('Sin email en el certificado')
+                                        ->body('Se generó la factura, pero no se envió por falta de email del donante.')
+                                        ->send();
+                                }
+                                $result = $service->generateForDonation($record, sendEmail: $send, force: true);
+                                break;
+                            default:
+                                throw new \RuntimeException('Tipo no soportado para facturación.');
+                        }
+
+                        Notification::make()
+                            ->success()
+                            ->title($record->invoices()->exists() ? 'Factura regenerada' : 'Factura generada')
+                            ->body('Número '.$result['invoice']->number)
+                            ->send();
+                    } catch (\Throwable $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title('No se pudo generar la factura')
+                            ->body('Revisa permisos de escritura en storage/app/public e intenta de nuevo. Detalle: '.$e->getMessage())
+                            ->send();
+                    }
+
+                }),
+
+        ])
+            ->label('More actions')
+            ->icon('heroicon-m-ellipsis-vertical')
+            ->size(ActionSize::ExtraSmall);
     }
 }

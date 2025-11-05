@@ -4,18 +4,24 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\OrderResource\Pages;
+use App\Filament\Resources\OrderResource\RelationManagers\InvoicesRelationManager;
 use App\Filament\Resources\OrderResource\RelationManagers\ItemsRelationManager;
 use App\Models\Order;
 use App\Models\State;
+use App\Services\InvoiceService;
 use Exception;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
@@ -23,6 +29,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class OrderResource extends Resource
 {
@@ -40,7 +47,6 @@ class OrderResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'number';
 
-
     /** @noinspection PhpPossiblePolymorphicInvocationInspection */
     /**
      * @throws Exception
@@ -52,8 +58,8 @@ class OrderResource extends Resource
                 TextColumn::make('number')
                     ->label('Nº'),
                 TextColumn::make('state.name')
-                    ->icon(fn($record) => $record->state->icono())
-                    ->color(fn($record) => $record->state->colorEstado())
+                    ->icon(fn ($record) => $record->state->icono())
+                    ->color(fn ($record) => $record->state->colorEstado())
                     ->label('Estado')
                     ->badge()
                     ->searchable(),
@@ -69,6 +75,7 @@ class OrderResource extends Resource
                 TextColumn::make('payment_method')->label('Método de pago')
                     ->alignCenter()
                     ->icon('heroicon-o-credit-card'),
+                Reusable::facturaColumn(),
                 TextColumn::make('updated_at')
                     ->label('Última modificación')
                     ->sortable()
@@ -95,17 +102,17 @@ class OrderResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when($data['estado'] == 1,
-                                fn(Builder $query, $date): Builder => $query->finalizados())
+                                fn (Builder $query, $date): Builder => $query->finalizados())
                             ->when($data['estado'] == 2,
-                                fn(Builder $query, $date): Builder => $query->pendientePago())
+                                fn (Builder $query, $date): Builder => $query->pendientePago())
                             ->when($data['estado'] == 3,
-                                fn(Builder $query, $date): Builder => $query->pagados())
+                                fn (Builder $query, $date): Builder => $query->pagados())
                             ->when($data['estado'] == 4,
-                                fn(Builder $query, $date): Builder => $query->enviados())
+                                fn (Builder $query, $date): Builder => $query->enviados())
                             ->when($data['estado'] == 5,
-                                fn(Builder $query, $date): Builder => $query->cancelados())
+                                fn (Builder $query, $date): Builder => $query->cancelados())
                             ->when($data['estado'] == 6,
-                                fn(Builder $query, $date): Builder => $query->conErrores());
+                                fn (Builder $query, $date): Builder => $query->conErrores());
                     }),
             ])
             ->actions([
@@ -113,11 +120,33 @@ class OrderResource extends Resource
                     ->tooltip('Actualizar estado')
                     ->label('Estado')
                     ->icon('heroicon-o-arrow-path')
-                    ->url(fn($record): string => self::getUrl('update', ['record' => $record->getKey()])),
+                    ->url(fn ($record): string => self::getUrl('update', ['record' => $record->getKey()])),
+                Reusable::facturaActions('App\Models\Order'),
+
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    BulkAction::make('invoice_bulk')
+                        ->label('Generar facturas')
+                        ->icon('heroicon-o-document-text')
+                        ->form([
+                            Toggle::make('send_email')->label('Enviar por email')->default(true),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $service = app(InvoiceService::class);
+                            $count = 0;
+                            foreach ($records as $order) {
+                                $service->generateForOrder($order, sendEmail: (bool) ($data['send_email'] ?? false),
+                                    force: true);
+                                $count++;
+                            }
+                            Notification::make()
+                                ->success()
+                                ->title('Facturas generadas')
+                                ->body($count.' factura(s) creadas')
+                                ->send();
+                        }),
                 ]),
             ]);
     }
@@ -126,44 +155,47 @@ class OrderResource extends Resource
     {
         return $form
             ->schema(
-                [Tabs::make('Tabs')
-                    ->tabs([
-                        Tabs\Tab::make('Pedido')
-                            ->schema([
-                                TextInput::make('number')
-                                    ->required(),
+                [
+                    Tabs::make('Tabs')
+                        ->tabs([
+                            Tabs\Tab::make('Pedido')
+                                ->schema([
+                                    TextInput::make('number')
+                                        ->required(),
 
-                                TextInput::make('shipping')
-                                    ->required(),
+                                    TextInput::make('shipping')
+                                        ->required(),
 
-                                TextInput::make('shipping_cost')
-                                    ->required()
-                                    ->numeric(),
+                                    TextInput::make('shipping_cost')
+                                        ->required()
+                                        ->numeric(),
 
-                                TextInput::make('subtotal')
-                                    ->required()
-                                    ->numeric(),
+                                    TextInput::make('subtotal')
+                                        ->required()
+                                        ->numeric(),
 
-                                TextInput::make('taxes')
-                                    ->required()
-                                    ->numeric(),
+                                    TextInput::make('taxes')
+                                        ->required()
+                                        ->numeric(),
 
-                                TextInput::make('payment_method')
-                                    ->required(),
+                                    TextInput::make('payment_method')
+                                        ->required(),
 
-                                Placeholder::make('created_at')
-                                    ->label('Created Date')
-                                    ->content(fn(?Order $record): string => $record?->created_at?->diffForHumans() ?? '-'),
+                                    Placeholder::make('created_at')
+                                        ->label('Created Date')
+                                        ->content(fn (?Order $record
+                                        ): string => $record?->created_at?->diffForHumans() ?? '-'),
 
-                                Placeholder::make('updated_at')
-                                    ->label('Last Modified Date')
-                                    ->content(fn(?Order $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
-                            ]),
-                        Tabs\Tab::make('Tab 2')
-                            ->schema([
-                            ]),
+                                    Placeholder::make('updated_at')
+                                        ->label('Last Modified Date')
+                                        ->content(fn (?Order $record
+                                        ): string => $record?->updated_at?->diffForHumans() ?? '-'),
+                                ]),
+                            Tabs\Tab::make('Tab 2')
+                                ->schema([
+                                ]),
 
-                    ]),
+                        ]),
 
                 ]);
     }
@@ -187,11 +219,11 @@ class OrderResource extends Resource
         return false;
     }
 
-
     public static function getRelations(): array
     {
         return [
             ItemsRelationManager::class,
+            InvoicesRelationManager::class,
         ];
     }
 
@@ -204,7 +236,6 @@ class OrderResource extends Resource
     {
         return 'danger';
     }
-
 
     public static function getGlobalSearchEloquentQuery(): Builder
     {

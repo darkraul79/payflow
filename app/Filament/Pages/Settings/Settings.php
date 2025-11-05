@@ -3,8 +3,11 @@
 namespace App\Filament\Pages\Settings;
 
 use Closure;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
 use Outerweb\FilamentSettings\Filament\Pages\Settings as BaseSettings;
 
 class Settings extends BaseSettings
@@ -69,10 +72,53 @@ class Settings extends BaseSettings
                                 ->label('Youtube')
                                 ->hintIcon('bi-youtube'),
                         ]),
-
+                    Tabs\Tab::make('Facturación')
+                        ->columns(12)
+                        ->schema([
+                            Section::make('Datos fiscales de la entidad')
+                                ->columns(12)
+                                ->schema([
+                                    TextInput::make('billing.company')->label('Razón social')->columnSpan(6)->required(),
+                                    TextInput::make('billing.nif')->label('NIF/CIF')->columnSpan(3)->required(),
+                                    TextInput::make('billing.email')->label('Email')->columnSpan(3)->required(),
+                                    TextInput::make('billing.phone')->label('Teléfono')->columnSpan(3),
+                                    TextInput::make('billing.address')->label('Dirección')->columnSpan(6)->required(),
+                                    TextInput::make('billing.postal_code')->label('CP')->columnSpan(2)->required(),
+                                    TextInput::make('billing.city')->label('Ciudad')->columnSpan(4)->required(),
+                                    TextInput::make('billing.country')->label('País')->columnSpan(3)->required(),
+                                ]),
+                            Section::make('IVA por defecto')
+                                ->columns(6)
+                                ->schema([
+                                    Grid::make(6)->schema([
+                                        TextInput::make('billing.vat.orders_default')
+                                            ->label('Pedidos IVA % (por defecto)')
+                                            ->numeric()
+                                            ->default(21)
+                                            ->columnSpan(3)
+                                            ->helperText('Porcentaje, p.ej. 21 para 21%'),
+                                        TextInput::make('billing.vat.donations_default')
+                                            ->label('Donaciones IVA % (por defecto)')
+                                            ->numeric()
+                                            ->default(0)
+                                            ->columnSpan(3)
+                                            ->helperText('Porcentaje, p.ej. 0 para exento'),
+                                    ]),
+                                ]),
+                            Section::make('Branding')
+                                ->columns(6)
+                                ->schema([
+                                    FileUpload::make('billing.logo_path')
+                                        ->label('Logo para PDF')
+                                        ->disk('public')
+                                        ->directory('branding')
+                                        ->image()
+                                        ->imageEditor()
+                                        ->preserveFilenames()
+                                        ->helperText('Opcional. Si no se configura, se intentará usar public/images/logo-fundacion-horizontal.svg o .png'),
+                                ]),
+                        ]),
                 ]),
         ];
     }
-
-
 }

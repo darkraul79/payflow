@@ -2,14 +2,22 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\DonationResource\Pages;
+use App\Filament\Resources\DonationResource\RelationManagers\InvoicesRelationManager;
 use App\Filament\Resources\DonationResource\RelationManagers\PaymentsRelationManager;
 use App\Models\Donation;
 use App\Models\State;
+use App\Services\InvoiceService;
 use Exception;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\ActionSize;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -24,6 +32,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 
 class DonationResource extends Resource
 {
@@ -40,24 +49,6 @@ class DonationResource extends Resource
     protected static ?int $navigationSort = 6;
 
     protected static ?string $navigationGroup = 'Donaciones';
-
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                /* TextInput::make('amount')
-                     ->required()
-                     ->numeric(),
-
-                 Placeholder::make('created_at')
-                     ->label('Created Date')
-                     ->content(fn(?Donation $record): string => $record?->created_at?->diffForHumans() ?? '-'),
-
-                 Placeholder::make('updated_at')
-                     ->label('Last Modified Date')
-                     ->content(fn(?Donation $record): string => $record?->updated_at?->diffForHumans() ?? '-'),*/
-            ]);
-    }
 
     /**
      * @throws Exception
@@ -86,6 +77,8 @@ class DonationResource extends Resource
                     ->formatStateUsing(function ($state) {
                         return convertPrice($state);
                     }),
+
+                Reusable::facturaColumn(),
                 TextColumn::make('updated_at')
                     ->label('Certificado')
                     ->alignCenter()
@@ -153,6 +146,12 @@ class DonationResource extends Resource
                 $query->with('addresses')->withCount('payments')->withSum('payments', 'amount');
             })
             ->actions([
+                /*Action::make('view_invoice')
+                    ->label('Ver factura')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->visible(fn (Donation $record) => $record->invoices()->exists())
+                    ->url(fn (Donation $record) => route('invoices.show', $record->invoices()->first()))
+                    ->openUrlInNewTab(),*/
 
                 //                ViewAction::make(),
                 Action::make('cancelar')
@@ -168,16 +167,103 @@ class DonationResource extends Resource
                     ) => $record->state?->name === State::ERROR || $record->state == null),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),
+                ActionGroup::make([
+                    Action::make('invoice')
+                        ->color(fn (Donation $record
+                        ) => $record->invoices()->exists() ? 'warning' : 'primary')
+                        ->label(fn (Donation $record
+                        ) => $record->invoices()->exists() ? 'Regenerar factura' : 'Generar factura')
+                        ->icon(fn (Donation $record
+                        ) => $record->invoices()->exists() ? 'heroicon-s-arrow-path' : 'heroicon-o-document-currency-euro')
+                        ->visible(fn (Donation $record) => (bool) $record->certificate())
+                        ->form([
+                            Toggle::make('send_email')->label('Enviar por email')->default(true),
+                        ])
+                        ->action(function (Donation $record, array $data) {
+                            $send = (bool) ($data['send_email'] ?? false);
+                            try {
+                                // If no email on certificate, force send=false
+                                if ($send && ! ($record->certificate()?->email)) {
+                                    $send = false;
+                                    Notification::make()
+                                        ->warning()
+                                        ->title('Sin email en el certificado')
+                                        ->body('Se generó la factura, pero no se envió por falta de email del donante.')
+                                        ->send();
+                                }
+                                $service = app(InvoiceService::class);
+                                $result = $service->generateForDonation($record, sendEmail: $send, force: true);
+                                Notification::make()
+                                    ->success()
+                                    ->title($record->invoices()->exists() ? 'Factura regenerada' : 'Factura generada')
+                                    ->body('Número '.$result['invoice']->number)
+                                    ->send();
+                            } catch (\Throwable $e) {
+                                Notification::make()
+                                    ->danger()
+                                    ->title('No se pudo generar la factura')
+                                    ->body('Revisa permisos de escritura en storage/app/public e intenta de nuevo. Detalle: '.$e->getMessage())
+                                    ->send();
+                            }
+                        }),
+                ])
+                    ->label('More actions')
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size(ActionSize::ExtraSmall),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
+                    BulkAction::make('invoice_bulk')
+                        ->label('Generar facturas')
+                        ->icon('heroicon-o-document-text')
+                        ->form([
+                            Toggle::make('send_email')->label('Enviar por email')->default(true),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $service = app(InvoiceService::class);
+                            $count = 0;
+                            $warned = 0;
+                            foreach ($records as $donation) {
+                                $send = (bool) ($data['send_email'] ?? false);
+                                if ($send && ! ($donation->certificate()?->email)) {
+                                    $send = false;
+                                    $warned++;
+                                }
+                                $service->generateForDonation($donation, sendEmail: $send, force: true);
+                                $count++;
+                            }
+                            $note = $warned > 0 ? " ($warned sin email, no enviados)" : '';
+                            Notification::make()
+                                ->success()
+                                ->title('Facturas generadas')
+                                ->body($count.' factura(s) creadas'.$note)
+                                ->send();
+                        }),
                 ]),
             ])->checkIfRecordIsSelectableUsing(
                 fn (Model $record): bool => $record->state?->name === State::ERROR || $record->state == null,
             );
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                /* TextInput::make('amount')
+                     ->required()
+                     ->numeric(),
+
+                 Placeholder::make('created_at')
+                     ->label('Created Date')
+                     ->content(fn(?Donation $record): string => $record?->created_at?->diffForHumans() ?? '-'),
+
+                 Placeholder::make('updated_at')
+                     ->label('Last Modified Date')
+                     ->content(fn(?Donation $record): string => $record?->updated_at?->diffForHumans() ?? '-'),*/
+            ]);
     }
 
     public static function getPages(): array
@@ -210,6 +296,7 @@ class DonationResource extends Resource
     {
         return [
             PaymentsRelationManager::class,
+            InvoicesRelationManager::class,
         ];
     }
 }

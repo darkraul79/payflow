@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Invoice;
+
 use App\Models\Traits\HasAddresses;
 use App\Models\Traits\HasPayments;
 use App\Models\Traits\HasStates;
@@ -11,9 +13,13 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property mixed $items
@@ -24,9 +30,9 @@ use Illuminate\Support\Str;
  * @property mixed $totalRedsys
  */
 #[ObservedBy([OrderObserver::class])]
-class Order extends Model
+class Order extends Model implements HasMedia
 {
-    use HasAddresses, HasFactory, HasPayments, HasStates;
+    use HasAddresses, HasFactory, HasPayments, HasStates, InteractsWithMedia;
 
     protected $fillable = [
         'number',
@@ -232,5 +238,22 @@ class Order extends Model
         return Attribute::make(
             get: fn () => Str::replace('.', '', number_format($this->attributes['amount'], 2)),
         );
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('invoices');
+    }
+
+    public function vatRate(): float
+    {
+        // Read default from settings, fallback to 21%
+        $default = (float) (setting('billing.vat.orders_default', 21) ?? 21);
+        return round($default / 100, 4);
+    }
+
+    public function invoices(): MorphMany
+    {
+        return $this->morphMany(Invoice::class, 'invoiceable')->latest('created_at');
     }
 }

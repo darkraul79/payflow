@@ -4,6 +4,8 @@
 
 namespace App\Models;
 
+use App\Models\Invoice;
+
 use App\Helpers\RedsysAPI;
 use App\Models\Traits\HasAddresses;
 use App\Models\Traits\HasPayments;
@@ -14,19 +16,22 @@ use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * @method addresses()
  *
  * @property mixed $payments_sum_amount
  */
-class Donation extends Model
+class Donation extends Model implements HasMedia
 {
-    use HasAddresses, HasFactory, HasPayments, HasStates, SoftDeletes;
+    use HasAddresses, HasFactory, HasPayments, HasStates, SoftDeletes, InteractsWithMedia;
 
     public const string UNICA = 'Simple';
 
@@ -84,6 +89,22 @@ class Donation extends Model
             ]),
             'static' => true,
         ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('invoices');
+    }
+
+    public function vatRate(): float
+    {
+        $default = (float) (setting('billing.vat.donations_default', 0) ?? 0);
+        return round($default / 100, 4);
+    }
+
+    public function invoices(): MorphMany
+    {
+        return $this->morphMany(Invoice::class, 'invoiceable')->latest('created_at');
     }
 
     public function payed(array $redSysResponse): void

@@ -7,7 +7,7 @@ use App\Models\Order;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * NOTA SOBRE LA LICENCIA DE USO DEL SOFTWARE
+ * NOTA SOBRE LA LICENCIA DE USO DEL SOFTWARE.
  *
  * El uso de este software está sujeto a las Condiciones de uso de software que
  * se incluyen en el paquete en el documento "Aviso Legal.pdf". También puede
@@ -29,14 +29,14 @@ use Illuminate\Database\Eloquent\Model;
  */
 class RedsysAPI
 {
-    const TIMEOUT = 10;
+    const int TIMEOUT = 10;
 
-    const READ_TIMEOUT = 120;
+    const int READ_TIMEOUT = 120;
 
-    const SSLVERSION_TLSv1_2 = 6;
+    const int SSLVERSION_TLSv1_2 = 6;
 
-    /****** Array de DatosEntrada ******/
-    public array $vars_pay = [];
+    // Array de DatosEntrada
+    public ?array $vars_pay = [];
 
     // ////////////////////////////////////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ class RedsysAPI
     // ////////////////////////////////////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////////////////////////
 
-    /******  Get parameter ******/
+    // Get parameter
     public function getParameter($key)
     {
         return $this->vars_pay[$key];
@@ -65,11 +65,11 @@ class RedsysAPI
         return base64_decode(strtr($input, '-_', '+/'));
     }
 
-    /******  Convertir String en Array ******/
+    // Convertir String en Array
 
     public function stringToArray($datosDecod): void
     {
-        $this->vars_pay = json_decode((string)$datosDecod, true); // (PHP 5 >= 5.2.0)
+        $this->vars_pay = json_decode((string) $datosDecod, true); // (PHP 5 >= 5.2.0)
     }
 
     // ////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ class RedsysAPI
         $this->setParameter('DS_MERCHANT_TERMINAL', config('redsys.terminal'));
     }
 
-    /******  Set parameter ******/
+    // Set parameter
     public function setParameter($key, $value): void
     {
         $this->vars_pay[$key] = $value;
@@ -122,7 +122,7 @@ class RedsysAPI
 
     public function setNotificationUrl(Model $model): void
     {
-        if (!app()->isLocal() && !app()->environment('testing')) { // Si no estoy en local, añado la URL de notificacion de redSys
+        if (! app()->isLocal() && ! app()->environment('testing')) { // Si no estoy en local, añado la URL de notificacion de redSys
             $this->setParameter('DS_MERCHANT_MERCHANTURL',
                 $model instanceof Order ? route('pedido.response') : route('donation.response')
             );
@@ -144,7 +144,7 @@ class RedsysAPI
         return $this->encodeBase64($json);
     }
 
-    /******  Convertir Array en Objeto JSON ******/
+    // Convertir Array en Objeto JSON
     public function arrayToJson(): false|string
     {
         // (PHP 5 >= 5.2.0)
@@ -153,7 +153,7 @@ class RedsysAPI
 
     public function encodeBase64($data): string
     {
-        return base64_encode((string)$data);
+        return base64_encode((string) $data);
     }
 
     public function createMerchantSignature($key): string
@@ -173,21 +173,21 @@ class RedsysAPI
 
     public function decodeBase64($data): false|string
     {
-        return base64_decode((string)$data);
+        return base64_decode((string) $data);
     }
 
-    /******  3DES Function  ******/
+    // 3DES Function
     public function encrypt_3DES($message, $key): string
     {
         // Se cifra
-        $l = ceil(strlen((string)$message) / 8) * 8;
+        $l = ceil(strlen((string) $message) / 8) * 8;
 
-        return substr(openssl_encrypt($message . str_repeat("\0", $l - strlen((string)$message)), 'des-ede3-cbc', $key,
+        return substr(openssl_encrypt($message.str_repeat("\0", $l - strlen((string) $message)), 'des-ede3-cbc', $key,
             OPENSSL_RAW_DATA, "\0\0\0\0\0\0\0\0"), 0, $l);
 
     }
 
-    /****** Obtener Número de pedido ******/
+    // Obtener Número de pedido
     public function getOrder()
     {
         if (empty($this->vars_pay['DS_MERCHANT_ORDER'])) {
@@ -199,11 +199,11 @@ class RedsysAPI
         return $numPedido;
     }
 
-    /******  MAC Function ******/
+    // MAC Function
     public function mac256($ent, $key): string
     {
         // (PHP 5 >= 5.1.2)
-        return hash_hmac('sha256', (string)$ent, (string)$key, true);
+        return hash_hmac('sha256', (string) $ent, (string) $key, true);
     }
 
     public function getFormPagoAutomatico(Donation $donation, $number): array
@@ -277,7 +277,7 @@ class RedsysAPI
         return $this->base64_url_encode($res);
     }
 
-    /****** Obtener Número de pedido ******/
+    // Obtener Número de pedido
     public function getOrderNotif()
     {
         if (empty($this->vars_pay['Ds_Order'])) {
@@ -289,10 +289,10 @@ class RedsysAPI
         return $numPedido;
     }
 
-    /******  Base64 Functions  ******/
+    // Base64 Functions
     public function base64_url_encode($input): string
     {
-        return strtr(base64_encode((string)$input), '+/', '-_');
+        return strtr(base64_encode((string) $input), '+/', '-_');
     }
 
     public function send()
@@ -322,7 +322,7 @@ class RedsysAPI
         if ($tmp !== false && $httpCode == 200) {
             $result = $tmp;
         } else {
-            $strError = 'Request failure ' . (($httpCode != 200) ? "[HttpCode: '" . $httpCode . "']" : '') . ((curl_error($rest)) ? " [Error: '" . curl_error($rest) . "']" : '');
+            $strError = 'Request failure '.(($httpCode != 200) ? "[HttpCode: '".$httpCode."']" : '').((curl_error($rest)) ? " [Error: '".curl_error($rest)."']" : '');
             exit($strError);
         }
 
@@ -333,14 +333,12 @@ class RedsysAPI
 
     public static function getRedsysUrl($payDirect = false): string
     {
-        if (!$payDirect) {
+        if (! $payDirect) {
             return config('redsys.enviroment') == 'test' ? 'https://sis-t.redsys.es:25443/sis/realizarPago' : 'https://sis.redsys.es/sis/realizarPago';
         }
 
         return config('redsys.enviroment') == 'test' ? 'https://sis-t.redsys.es:25443/sis/rest/trataPeticionREST' : 'https://sis.redsys.es/sis/rest/trataPeticionREST';
     }
 
-    public function setParamsRedsys(array $formData)
-    {
-    }
+    public function setParamsRedsys(array $formData) {}
 }
