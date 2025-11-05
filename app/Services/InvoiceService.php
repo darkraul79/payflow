@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Mpdf\Mpdf;
 use Mpdf\MpdfException;
+use RuntimeException;
 use Throwable;
 
 class InvoiceService
@@ -111,7 +112,7 @@ class InvoiceService
         array $meta = [],
         bool $force = false
     ): array {
-        // Enforce single invoice per invoiceable: reuse and update if it exists
+        // Enforce a single invoice per invoiceable: reuse and update if it exists
         $existing = $invoiceable->invoices()->first();
 
         if ($existing) {
@@ -123,7 +124,7 @@ class InvoiceService
                 'total' => $total,
             ]);
             $invoice = $existing;
-            $series = $invoice->series; // ensure path matches existing series
+            $series = $invoice->series; // ensure a path matches existing series
         } else {
             $invoice = DB::transaction(function () use (
                 $invoiceable,
@@ -180,26 +181,26 @@ class InvoiceService
 
         // Debug: verify presence before attaching
         $disk = Storage::disk('public');
-        if (config('app.debug') || env('INVOICE_DEBUG', false)) {
+        if (config('app.debug') || config('INVOICE_DEBUG', false)) {
             \Log::info('[invoice-pdf] Pre-attach exists check', [
                 'invoice_id' => $invoice->id,
                 'number' => $invoice->number,
                 'relative' => $relativePath,
                 'exists_disk' => $disk->exists($relativePath),
-                'exists_abs' => file_exists(storage_path('app/public/' . $relativePath)),
+                'exists_abs' => file_exists(storage_path('app/public/'.$relativePath)),
             ]);
         }
 
         $this->attachMedia($invoiceable, $relativePath, $force, $pdfContent);
 
         // Debug: verify presence after attaching
-        if (config('app.debug') || env('INVOICE_DEBUG', false)) {
+        if (config('app.debug') || config('INVOICE_DEBUG', false)) {
             \Log::info('[invoice-pdf] Post-attach exists check', [
                 'invoice_id' => $invoice->id,
                 'number' => $invoice->number,
                 'relative' => $relativePath,
                 'exists_disk' => $disk->exists($relativePath),
-                'exists_abs' => file_exists(storage_path('app/public/' . $relativePath)),
+                'exists_abs' => file_exists(storage_path('app/public/'.$relativePath)),
             ]);
         }
 
@@ -309,10 +310,10 @@ class InvoiceService
         $root = rtrim((string) config('filesystems.disks.public.root'), '/');
         $relativePath = sprintf('invoices/%s/%d/%s.pdf', $series, $invoice->year, $invoice->number);
         $directory = dirname($relativePath);
-        $absoluteDir = storage_path('app/public/' . $directory);
-        $absolutePath = storage_path('app/public/' . $relativePath);
+        $absoluteDir = storage_path('app/public/'.$directory);
+        $absolutePath = storage_path('app/public/'.$relativePath);
 
-        $debug = (bool) (config('app.debug') || env('INVOICE_DEBUG', false));
+        $debug = config('app.debug') || config('INVOICE_DEBUG', false);
 
         // Ensure directories exist
         try {
@@ -320,7 +321,7 @@ class InvoiceService
                 @mkdir($absoluteDir, 0775, true);
             }
         } catch (Throwable $e) {
-            Log::error('[invoice-pdf] Failed to create directory', [
+            Log::error('[invoice-pdf] Failed to create a directory', [
                 'invoice_id' => $invoice->id,
                 'number' => $invoice->number,
                 'dir' => $absoluteDir,
@@ -328,7 +329,7 @@ class InvoiceService
             ]);
         }
 
-        // If forcing, remove any previous file first to guarantee overwrite
+        // If forcing, remove any previous file first to guarantee overwriting
         if ($force) {
             try {
                 if (file_exists($absolutePath)) {
@@ -338,7 +339,7 @@ class InvoiceService
                     $disk->delete($relativePath);
                 }
             } catch (Throwable $e) {
-                Log::warning('[invoice-pdf] Failed to delete previous invoice file on force', [
+                Log::warning('[invoice-pdf] Failed to delete a previous invoice file on force', [
                     'invoice_id' => $invoice->id,
                     'number' => $invoice->number,
                     'relative' => $relativePath,
@@ -349,10 +350,8 @@ class InvoiceService
         }
 
         // Preferred strategy: write to absolute filesystem when using local disk
-        $wroteAbsolute = false;
         try {
             $bytes = @file_put_contents($absolutePath, $pdfContent);
-            $wroteAbsolute = $bytes !== false;
             if ($debug) {
                 Log::info('[invoice-pdf] Absolute write result', [
                     'invoice_id' => $invoice->id,
@@ -374,22 +373,28 @@ class InvoiceService
             ]);
         }
 
-        // If disk is not local or disk->exists won't see the absolute write (custom drivers), ensure the disk also has it
-        $savedOnDisk = false;
+        // Always ensure the disk has the file as the source of truth
         try {
-            // If driver is not local, or disk cannot see the absolute file, put via disk API as well
-            if ($driver !== 'local' || ! $disk->exists($relativePath)) {
-                $savedOnDisk = $disk->put($relativePath, $pdfContent) === true;
-                if ($debug) {
-                    Log::info('[invoice-pdf] Disk put result', [
-                        'invoice_id' => $invoice->id,
-                        'number' => $invoice->number,
-                        'saved' => $savedOnDisk,
-                        'exists_after' => $disk->exists($relativePath),
-                        'driver' => $driver,
-                        'relative' => $relativePath,
-                    ]);
-                }
+            $savedOnDisk = $disk->put($relativePath, $pdfContent) === true;
+            if ($debug) {
+                Log::info('[invoice-pdf] Disk put result', [
+                    'invoice_id' => $invoice->id,
+                    'number' => $invoice->number,
+                    'saved' => $savedOnDisk,
+                    'exists_after' => $disk->exists($relativePath),
+                    'driver' => $driver,
+                    'relative' => $relativePath,
+                ]);
+            }
+
+            if ($savedOnDisk === false) {
+                Log::error('[invoice-pdf] Disk put returned false, aborting invoice generation', [
+                    'invoice_id' => $invoice->id,
+                    'number' => $invoice->number,
+                    'relative' => $relativePath,
+                    'driver' => $driver,
+                ]);
+                throw new RuntimeException('No se pudo guardar la factura en el almacenamiento configurado.');
             }
         } catch (Throwable $e) {
             Log::error('[invoice-pdf] Disk write failed', [
@@ -398,11 +403,12 @@ class InvoiceService
                 'relative' => $relativePath,
                 'error' => $e->getMessage(),
             ]);
+            throw $e;
         }
 
         // Final verification, retry once if missing, and fail-fast if still missing
         if (! file_exists($absolutePath) && ! $disk->exists($relativePath)) {
-            Log::warning('[invoice-pdf] PDF not found after first write attempt, retrying once', [
+            Log::warning('[invoice-pdf] PDF not found after the first writing attempt, retrying once', [
                 'invoice_id' => $invoice->id,
                 'number' => $invoice->number,
                 'relative' => $relativePath,
@@ -434,7 +440,7 @@ class InvoiceService
         }
 
         if (! file_exists($absolutePath) && ! $disk->exists($relativePath)) {
-            Log::error('[invoice-pdf] PDF not found after write attempts, aborting', [
+            Log::error('[invoice-pdf] PDF not found after writing attempts, aborting', [
                 'invoice_id' => $invoice->id,
                 'number' => $invoice->number,
                 'relative' => $relativePath,
@@ -442,20 +448,24 @@ class InvoiceService
                 'driver' => $driver,
                 'root' => $root,
             ]);
-            throw new \RuntimeException('No se pudo generar el archivo PDF de la factura.');
+            throw new RuntimeException('No se pudo generar el archivo PDF de la factura.');
         }
 
         return $relativePath;
     }
 
     /** @noinspection PhpUndefinedMethodInspection */
-    protected function attachMedia(Model $model, string $relativePath, bool $force = false, ?string $pdfContent = null): void
-    {
+    protected function attachMedia(
+        Model $model,
+        string $relativePath,
+        bool $force = false,
+        ?string $pdfContent = null
+    ): void {
         try {
             $disk = Storage::disk('public');
 
             // Ensure the source file exists on the public disk before attaching
-            $absPath = storage_path('app/public/' . ltrim($relativePath, '/'));
+            $absPath = storage_path('app/public/'.ltrim($relativePath, '/'));
             $exists = $disk->exists($relativePath) || file_exists($absPath);
             if (! $exists) {
                 Log::warning('[invoice-pdf] Invoice media source file missing on disk when attaching', [
@@ -463,7 +473,9 @@ class InvoiceService
                     'model_id' => $model->getKey(),
                     'relativePath' => $relativePath,
                     'abs' => $absPath,
+                    'force' => $force,
                 ]);
+
                 return;
             }
 
@@ -496,16 +508,16 @@ class InvoiceService
                         }
                     }
                 } catch (Throwable $e) {
-                    Log::warning('[invoice-pdf] Failed to trim old invoice media: ' . $e->getMessage());
+                    Log::warning('[invoice-pdf] Failed to trim old invoice media: '.$e->getMessage());
                 }
             } else {
-                // Fallback: copy from disk without moving the original (older versions may still move); as a backup, don't clear collection first
+                // Fallback: copy from disk without moving the original (older versions may still move); as a backup, don't clear a collection first
                 $model->addMediaFromDisk($relativePath, 'public')
                     ->usingFileName(basename($relativePath))
                     ->toMediaCollection('invoices');
             }
         } catch (Throwable $e) {
-            Log::warning('Failed to attach invoice media: ' . $e->getMessage());
+            Log::warning('Failed to attach invoice media: '.$e->getMessage());
         }
     }
 

@@ -9,7 +9,6 @@ use App\Services\InvoiceService;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Mockery;
 use Outerweb\Settings\Models\Setting;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
@@ -55,7 +54,7 @@ it('generates invoice for order and stores PDF', function () {
 });
 
 it('regenerates invoice for order keeping the same number and single record', function () {
-    $order = Order::factory()->withDireccion()->hasItems(1)->create(['shipping_cost' => 5]);
+    $order = Order::factory()->withDireccion()->hasItems()->create(['shipping_cost' => 5]);
 
     $first = $this->service->generateForOrder($order);
     $invId = $first['invoice']->id;
@@ -74,7 +73,7 @@ it('regenerates invoice for order keeping the same number and single record', fu
 });
 
 it('secured route streams invoice PDF when authenticated', function () {
-    $order = Order::factory()->withDireccion()->hasItems(1)->create();
+    $order = Order::factory()->withDireccion()->hasItems()->create();
     $result = $this->service->generateForOrder($order);
 
     $response = get(route('invoices.show', $result['invoice']));
@@ -84,7 +83,7 @@ it('secured route streams invoice PDF when authenticated', function () {
 });
 
 it('secured route blocks unauthenticated users (redirect or exception)', function () {
-    $order = Order::factory()->withDireccion()->hasItems(1)->create();
+    $order = Order::factory()->withDireccion()->hasItems()->create();
     $result = $this->service->generateForOrder($order);
 
     // Log out current user
@@ -93,14 +92,14 @@ it('secured route blocks unauthenticated users (redirect or exception)', functio
     try {
         $response = get(route('invoices.show', $result['invoice']));
         expect($response->getStatusCode())->toBeIn([302, 500]);
-    } catch (RouteNotFoundException $e) {
+    } catch (RouteNotFoundException) {
         // Some apps don't define a named 'login' route in tests; redirect throws
         expect(true)->toBeTrue();
     }
 });
 
-it('regenerates and streams when invoice file is missing', function () {
-    $order = Order::factory()->withDireccion()->hasItems(1)->create();
+it('regenerates and streams when the invoice file is missing', function () {
+    $order = Order::factory()->withDireccion()->hasItems()->create();
     $result = $this->service->generateForOrder($order);
 
     // Remove file from fake storage
@@ -146,7 +145,7 @@ it('renders inline SVG logo in invoice HTML when provided', function () {
 });
 
 it('renders raster logo using data URI when provided', function () {
-    $order = Order::factory()->withDireccion()->hasItems(1)->create();
+    $order = Order::factory()->withDireccion()->hasItems()->create();
     $invoice = new Invoice(['number' => 'TEST-INV-2']);
     $invoice->created_at = now();
 
@@ -186,14 +185,14 @@ it('generates invoice for donation and stores PDF', function () {
 });
 
 it('sends email when requested for order', function () {
-    $order = Order::factory()->withDireccion()->hasItems(1)->create();
+    $order = Order::factory()->withDireccion()->hasItems()->create();
 
     $this->service->generateForOrder($order, sendEmail: true);
 
     Mail::assertSent(InvoiceMailable::class);
 });
 
-it('sends email when requested for donation that has certificate email', function () {
+it('sends email when requested for the donation that has certificate email', function () {
     $donation = Donation::factory()->withCertificado()->create();
 
     $this->service->generateForDonation($donation, sendEmail: true);
@@ -229,14 +228,14 @@ it('sends invoice email for order', function () {
 });
 
 // New test: force refresh via route parameter
-it('forces refresh via route parameter and returns refreshed header', function () {
-    $order = Order::factory()->withDireccion()->hasItems(1)->create();
+it('forces refresh via route parameter and returns the refreshed header', function () {
+    $order = Order::factory()->withDireccion()->hasItems()->create();
     $service = app(InvoiceService::class);
 
-    $result = $service->generateForOrder($order, sendEmail: false, force: true);
+    $result = $service->generateForOrder($order, force: true);
     Storage::disk('public')->assertExists($result['path']);
 
-    // Remove file so refresh must rewrite it
+    // Remove the file so refresh must rewrite it
     Storage::disk('public')->delete($result['path']);
 
     actingAs(User::factory()->create());
@@ -253,7 +252,7 @@ it('forces refresh via route parameter and returns refreshed header', function (
 it('throws when storage write fails and does not send email', function () {
     Mail::fake();
 
-    $order = Order::factory()->withDireccion()->hasItems(1)->create();
+    $order = Order::factory()->withDireccion()->hasItems()->create();
 
     // Mock the public disk to force put() failure
     $disk = Mockery::mock(FilesystemAdapter::class);
