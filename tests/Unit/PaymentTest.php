@@ -71,7 +71,7 @@ test('puedo obtener el modelo a traves del pago', function ($modelo) {
 test('la funcinon generación de número de Pago funciona correctamente', function ($modelo) {
     $modelClass = "App\\Models\\$modelo";
     $model = $modelClass::factory()->create([
-        'number' => call_user_func_array('generate' . $modelo . 'Number', []),
+        'number' => call_user_func_array('generate'.$modelo.'Number', []),
     ]);
 
     if ($modelo === 'Donation') {
@@ -86,7 +86,7 @@ test('la funcinon generación de número de Pago funciona correctamente', functi
     $model->refresh();
 
     if ($modelo === 'Donation') {
-        expect($model->payment->number)->toBe($model->number . '_2');
+        expect($model->payment->number)->toBe($model->number.'_2');
     } else {
         expect($model->payment->number)->toBe($model->number);
     }
@@ -98,10 +98,10 @@ test('la funcinon generación de número de Pago funciona correctamente', functi
 
 test('puedo hacer pagos a una donacion recurrente', function () {
 
-    $donacion = Donation::factory()->create([
+    $donacion = Donation::factory()->activa()->create([
         'type' => Donation::RECURRENTE,
         'frequency' => Donation::FREQUENCY['MENSUAL'],
-        'info' => json_decode('{"Ds_Date":"03%2F06%2F2025","Ds_Hour":"11%3A48","Ds_SecurePayment":"1","Ds_Amount":"1000","Ds_Currency":"978","Ds_Order":"MIDSSYVH","Ds_MerchantCode":"357328590","Ds_Terminal":"001","Ds_Response":"0000","Ds_TransactionType":"0","Ds_MerchantData":"","Ds_AuthorisationCode":"035580","Ds_ExpiryDate":"4912","Ds_Merchant_Identifier":"625d3d2506fefefb9e79990f192fc3de74c08317","Ds_ConsumerLanguage":"1","Ds_Card_Country":"724","Ds_Card_Brand":"1","Ds_Merchant_Cof_Txnid":"2506031148250","Ds_ProcessedPayMethod":"78","Ds_Control_1748944105561":"1748944105561"}')
+        'info' => json_decode('{"Ds_Date":"03%2F06%2F2025","Ds_Hour":"11%3A48","Ds_SecurePayment":"1","Ds_Amount":"1000","Ds_Currency":"978","Ds_Order":"MIDSSYVH","Ds_MerchantCode":"357328590","Ds_Terminal":"001","Ds_Response":"0000","Ds_TransactionType":"0","Ds_MerchantData":"","Ds_AuthorisationCode":"035580","Ds_ExpiryDate":"4912","Ds_Merchant_Identifier":"625d3d2506fefefb9e79990f192fc3de74c08317","Ds_ConsumerLanguage":"1","Ds_Card_Country":"724","Ds_Card_Brand":"1","Ds_Merchant_Cof_Txnid":"2506031148250","Ds_ProcessedPayMethod":"78","Ds_Control_1748944105561":"1748944105561"}'),
     ]);
 
     Payment::factory()->for($donacion, 'payable')->create([

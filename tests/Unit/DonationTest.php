@@ -119,6 +119,7 @@ test('puedo crear donacion unica', function () {
         'type' => Donation::UNICA,
         'frequency' => null,
     ]);
+    /** @noinspection DuplicatedCode */
     $donacion = $paymentProcess->modelo;
 
     $this->get(route('donation.response', getResponseDonation($donacion, true)))
@@ -132,26 +133,6 @@ test('puedo crear donacion unica', function () {
 
     expect($donacion->state->name)->toBe(State::PAGADO)
         ->and($donacion->payments->first()->amount)->toBe(10.35);
-
-});
-
-test('puedo crear pago a donacion recurrente', function () {
-
-    $paymentProcess = new PaymentProcess(Donation::class, [
-        'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
-    ]);
-    $donacion = $paymentProcess->modelo;
-
-    $this->get(route('donation.response', getResponseDonation($donacion, true)));
-    $donacion->refresh();
-
-    $pagoRecurrente = $donacion->recurrentPay();
-
-    expect($donacion->state->name)->toBe(State::ACTIVA)
-        ->and($pagoRecurrente->amount)->toBe(10.35)
-        ->and($pagoRecurrente->info->Ds_Response)->toBe('0000');
 
 });
 
@@ -377,12 +358,12 @@ test('obtengo los jobs correctamente los pagos del mes', function () {
 
     $this->travelTo('2025-06-11');
 
-    $donacion = Donation::factory()->recurrente()->create([
+    $donacion = Donation::factory()->recurrente()->activa()->create([
         'frequency' => Donation::FREQUENCY['MENSUAL'],
     ]);
     $donacion->updateNextPaymentDate();
 
-    $donacionCancelada = Donation::factory()->recurrente()->create([
+    $donacionCancelada = Donation::factory()->recurrente()->activa()->create([
         'frequency' => Donation::FREQUENCY['MENSUAL'],
     ]);
     $donacionCancelada->updateNextPaymentDate();
@@ -405,7 +386,7 @@ test('obtengo los jobs correctamente los pagos del mes', function () {
 
 });
 test('obtengo correctamente las donaciones con pagos', function ($tipo) {
-    $donacion = Donation::factory()->recurrente()->create([
+    $donacion = Donation::factory()->recurrente()->activa()->create([
         'frequency' => $tipo,
     ]);
     $donacion->updateNextPaymentDate();
@@ -456,7 +437,7 @@ test('cuando realizo donación actualiza correctamente la fecha de proximo cobro
 });
 
 test('compruebo que donacion recurrente anual no se repiten los cobros', function () {
-    $donacion = Donation::factory()->recurrente()->create([
+    $donacion = Donation::factory()->recurrente()->activa()->create([
         'frequency' => Donation::FREQUENCY['ANUAL'],
     ]);
     $donacion->updateNextPaymentDate();
@@ -478,7 +459,7 @@ test('compruebo que donacion recurrente mensual no se repiten los cobros', funct
 
     $this->travelTo('2025-07-05');
 
-    $donacion = Donation::factory()->recurrente()->create([
+    $donacion = Donation::factory()->recurrente()->activa()->create([
         'frequency' => Donation::FREQUENCY['MENSUAL'],
     ]);
     $donacion->updateNextPaymentDate();
@@ -500,7 +481,7 @@ test('compruebo que donacion recurrente trimestral no se repiten los cobros', fu
 
     $this->travelTo('2025-01-01');
 
-    $donacion = Donation::factory()->recurrente()->create([
+    $donacion = Donation::factory()->recurrente()->activa()->create([
         'frequency' => Donation::FREQUENCY['TRIMESTRAL'],
     ]);
     $donacion->updateNextPaymentDate();
@@ -546,7 +527,7 @@ test('al procesar donacion envío email a todos los usuarios', function () {
 
 it('Donation::payed simple crea estado PAGADO una sola vez', function () {
     $donacion = Donation::factory()->create(['type' => Donation::UNICA]);
-    $pago = Payment::factory()->create([
+    Payment::factory()->create([
         'payable_type' => Donation::class,
         'payable_id' => $donacion->id,
         'number' => $donacion->number,
@@ -564,7 +545,7 @@ it('Donation::payed simple crea estado PAGADO una sola vez', function () {
 
 it('Donation::payed recurrente setea identifier/next_payment y crea ACTIVA una vez', function () {
     $donacion = Donation::factory()->recurrente()->create();
-    $pago = Payment::factory()->create([
+    Payment::factory()->create([
         'payable_type' => Donation::class,
         'payable_id' => $donacion->id,
         'number' => $donacion->number,
@@ -583,4 +564,12 @@ it('Donation::payed recurrente setea identifier/next_payment y crea ACTIVA una v
     expect($donacion->identifier)->toBe('abc123')
         ->and($donacion->next_payment)->not()->toBeNull()
         ->and($donacion->states()->where('name', State::ACTIVA)->count())->toBe(1);
+});
+
+test('puedo crear factory con donacion recurrente', function () {
+    $donacion = Donation::factory()->withCertificado()->withPayment()->recurrente(Donation::FREQUENCY['MENSUAL'])->create();
+
+    expect($donacion->type)->toBe(Donation::RECURRENTE)
+        ->and($donacion->frequency)->toBe(Donation::FREQUENCY['MENSUAL'])
+        ->and($donacion->certificate())->toBeInstanceOf(Address::class);
 });

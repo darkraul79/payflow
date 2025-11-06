@@ -5,9 +5,12 @@ namespace Database\Factories;
 use App\Events\CreateOrderEvent;
 use App\Models\Address;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\ShippingMethod;
 use App\Models\State;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 class OrderFactory extends Factory
 {
@@ -15,11 +18,16 @@ class OrderFactory extends Factory
 
     public function definition(): array
     {
+        $shippingMethod = ShippingMethod::inRandomOrder()->first();
+
+        if (! $shippingMethod) {
+            $shippingMethod = ShippingMethod::factory()->create();
+        }
 
         return [
             'number' => generateOrderNumber(),
-            'shipping' => 'Precio fijo',
-            'shipping_cost' => 3.5,
+            'shipping' => $shippingMethod->name,
+            'shipping_cost' => $shippingMethod->price,
             'subtotal' => $this->faker->randomFloat(2, 1, 100),
             'amount' => $this->faker->randomFloat(2, 1, 100),
             'taxes' => $this->faker->randomFloat(),
@@ -31,10 +39,9 @@ class OrderFactory extends Factory
 
     public function configure(): static
     {
-        return $this->afterMaking(function (Order $pedido) {
-        })->afterCreating(function (Order $pedido) {
+        return $this->afterMaking(function (Order $pedido) {})->afterCreating(function (Order $pedido) {
 
-            if (!$pedido->address?->exists()) {
+            if (! $pedido->address?->exists()) {
                 $address = Address::factory()->create([
                     'type' => Address::BILLING,
                 ]);
@@ -92,7 +99,7 @@ class OrderFactory extends Factory
 
     public function withDirecionEnvio($params = null): Factory
     {
-        return $this->afterCreating(function (Order $pedido) {
+        return $this->afterCreating(function (Order $pedido) use ($params) {
             $address = Address::factory()->create([
                 'type' => ADDRESS::SHIPPING,
                 ...$params ?? [],
@@ -114,7 +121,7 @@ class OrderFactory extends Factory
     public function withDireccion($params = null): Factory
     {
 
-        return $this->afterCreating(function (Order $pedido) {
+        return $this->afterCreating(function (Order $pedido) use ($params) {
             $address = Address::factory()->create([
                 'type' => ADDRESS::BILLING,
                 ...$params ?? [],
@@ -135,5 +142,64 @@ class OrderFactory extends Factory
                 'type' => Address::SHIPPING,
                 ...$shippingAddress ?? [],
             ]), 'addresses');
+    }
+
+    public function withItems(Collection|Product|int $items): Factory
+    {
+        if (is_int($items)) {
+            $total = Product::all()->count();
+            if ($total < $items) {
+                Product::factory()->count($items - $total)->create();
+
+                return $this->afterCreating(function (Order $pedido) {
+                    foreach (Product::all() as $product) {
+                        $pedido->items()->create([
+                            'product_id' => $product->id,
+                            'quantity' => 1,
+                            'subtotal' => $product->price,
+                            'data' => $product->toArray(),
+                        ]);
+                    }
+                });
+            }
+
+        }
+
+        if (is_a($items, Product::class)) {
+            return $this->afterCreating(function (Order $pedido) use ($items) {
+
+                $pedido->items()->create([
+                    'product_id' => $items->id,
+                    'quantity' => 1,
+                    'subtotal' => $items->price,
+                    'data' => $items->toArray(),
+                ]);
+            });
+        }
+
+        // Compruebo que es una coleccion de productos
+        if (is_a($items, \Illuminate\Database\Eloquent\Collection::class)) {
+            return $this->afterCreating(function (Order $pedido) use ($items) {
+                foreach ($items as $product) {
+                    $pedido->items()->create([
+                        'product_id' => $product->id,
+                        'quantity' => 1,
+                        'subtotal' => $product->price,
+                        'data' => $product->toArray(),
+                    ]);
+                }
+            });
+        }
+
+        return $this->afterCreating(function (Order $pedido) {
+            $product = Product::inRandomOrder()->first();
+            $pedido->items()->create([
+                'product_id' => $product->id,
+                'quantity' => 1,
+                'subtotal' => $product->price,
+                'data' => $product->toArray(),
+            ]);
+        });
+
     }
 }

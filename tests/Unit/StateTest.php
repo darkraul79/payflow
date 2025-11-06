@@ -3,7 +3,6 @@
 /** @noinspection PhpUndefinedMethodInspection */
 
 use App\Models\State;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 
 test('puedo crear estados en diferentes modelos', function ($modelo) {
 
@@ -20,17 +19,18 @@ test('puedo crear estados en diferentes modelos', function ($modelo) {
 
 test('el metodo state devuelve el último estado del modelo', function ($modelo) {
     $modelClass = "App\\Models\\$modelo";
-    $model = $modelClass::factory()->hasStates(new Sequence(
-        ['name' => State::PENDIENTE],
-        ['name' => State::ACEPTADO],
-    ))->create();
-
+    if ($modelClass === 'App\\Models\\Donation') {
+        $model = $modelClass::factory()->activa()->create();
+    } else {
+        $model = $modelClass::factory()->create();
+    }
     $this->travel(1)->days();
     $model->states()->create([
         'name' => State::FINALIZADO,
     ]);
+
     expect($model->state->name)->toBe(State::FINALIZADO)
-        ->and($model->states)->toHaveCount(3);
+        ->and($model->states)->toHaveCount(2);
 
 })->with([
     'Order',

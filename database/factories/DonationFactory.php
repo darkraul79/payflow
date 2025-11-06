@@ -19,7 +19,7 @@ class DonationFactory extends Factory
     public function definition(): array
     {
         return [
-            'amount' => fake()->randomFloat(2, 1, 1000), // Random amount between 1 and 1000
+            'amount' => fake()->randomFloat(2, 1, 5.50), // Random amount between 1 and 5.50
             'number' => generateDonationNumber(),
             'frequency' => null, // Default frequency
             'info' => [
@@ -29,6 +29,7 @@ class DonationFactory extends Factory
             ],
 
             'type' => Donation::UNICA,
+            'payment_method' => 'tarjeta',
             'next_payment' => null, // Default next charge
             'identifier' => null,
             'created_at' => Carbon::now(),
@@ -51,24 +52,28 @@ class DonationFactory extends Factory
                 'stateable_id_id' => $donacion->id,
                 'stateable_type_type' => Donation::class,
             ]);
-        })->afterCreating(function (Donation $donacion) {
-
-            $donacion->states()->create([
-                'name' => State::ACTIVA,
-                'message' => 'Pago aceptado',
-            ]);
-
         });
     }
 
     public function recurrente($frequency = Donation::FREQUENCY['MENSUAL']): Factory
     {
-        return $this->state(function (array $attributes) use ($frequency) {
+        return $this->state(function () use ($frequency) {
             return [
                 'type' => DONATION::RECURRENTE,
                 'identifier' => $this->faker->uuid(),
                 'frequency' => $frequency,
+                'amount' => 4.50,
             ];
+        });
+    }
+
+    public function activa(): Factory
+    {
+        return $this->afterCreating(function (Donation $donacion) {
+            $donacion->states()->create([
+                'name' => State::ACTIVA,
+                'message' => 'Pago aceptado',
+            ]);
         });
     }
 
@@ -89,13 +94,30 @@ class DonationFactory extends Factory
                 'number' => generatePaymentNumber($donacion),
                 'payable_id' => $donacion->id,
                 'payable_type' => Donation::class,
+                'amount' => $donacion->amount,
             ]);
+            if ($donacion->type == Donation::RECURRENTE) {
+
+                $donacion->updateNextPaymentDate();
+
+                $donacion->states()->create([
+                    'name' => State::ACTIVA,
+                    'message' => 'Pago aceptado',
+                ]);
+
+            } else {
+                $donacion->states()->create([
+                    'name' => State::PAGADO,
+                    'message' => 'Pago aceptado',
+                ]);
+            }
+
         });
     }
 
     public function withNextPayment(string $fecha): Factory
     {
-        return $this->state(function (array $attributes) use ($fecha) {
+        return $this->state(function () use ($fecha) {
             return [
                 'next_payment' => Carbon::parse($fecha)->format('Y-m-d'),
             ];

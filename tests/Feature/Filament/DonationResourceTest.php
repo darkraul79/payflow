@@ -8,14 +8,14 @@ use function Pest\Laravel\get;
 use function Pest\Livewire\livewire;
 
 it('redirige a login si el invitado visita el índice de DonationResource', function () {
-    get(DonationResource::getUrl('index'))
+    get(DonationResource::getUrl())
         ->assertRedirect('/admin/login');
 });
 
 it('un usuario con acceso al panel puede ver el índice de DonationResource', function () {
     asUser();
 
-    get(DonationResource::getUrl('index'))
+    get(DonationResource::getUrl())
         ->assertOk();
 });
 
@@ -49,7 +49,7 @@ it('La acción cancelar es visible solo para donación recurrente activa', funct
     asUser();
 
     $unica = Donation::factory()->create(['type' => Donation::UNICA]);
-    $recurrenteActiva = Donation::factory()->recurrente()->create();
+    $recurrenteActiva = Donation::factory()->recurrente()->activa()->create();
 
     // En la tabla, la acción "cancelar" debería ser visible para la recurrente activa
     livewire(Listdonations::class)

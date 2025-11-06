@@ -9,11 +9,11 @@ class Address extends Model
 {
     use HasFactory;
 
-    public const BILLING = 'Facturación';
+    public const string BILLING = 'Facturación';
 
-    public const SHIPPING = 'Envío';
+    public const string SHIPPING = 'Envío';
 
-    public const CERTIFICATE = 'Certificado';
+    public const string CERTIFICATE = 'Certificado';
 
     protected $fillable = [
         'type',
@@ -34,5 +34,10 @@ class Address extends Model
     public function getFullNameAttribute(): string
     {
         return $this->name.' '.$this->last_name.' '.$this->last_name2;
+    }
+
+    public function getFullAddress(): string
+    {
+        return $this->address.'.'.' '.$this->cp.' '.$this->city.' ('.$this->province.')';
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Fabricator\PageBlocks;
 
-use App\Models\Order;
 use App\Models\State;
 use App\Services\InvoiceService;
 use Filament\Forms\Components\DateTimePicker;
@@ -28,6 +27,8 @@ use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use RuntimeException;
+use Throwable;
 
 class Reusable
 {
@@ -327,7 +328,7 @@ class Reusable
             ->alignCenter();
     }
 
-    public static function facturaActions($type = 'App\Models\Order')
+    public static function facturaActions()
     {
 
         return ActionGroup::make([
@@ -340,22 +341,23 @@ class Reusable
                 ) => $record->invoices()->exists() ? 'heroicon-s-arrow-path' : 'heroicon-o-document-currency-euro')
                 ->visible(function (Model $record
                 ) {
-                    switch ($record->getMorphClass()) {
-                        case 'App\Models\Order':
-                            return $record->billing_address() && in_array($record->state?->name, [
-                                State::PAGADO,
-                                State::ENVIADO,
-                                State::FINALIZADO,
-                            ]);
-                        default:
-                            return false;
-                    }
+                    return match ($record->getMorphClass()) {
+                        'App\Models\Order' => $record->billing_address() && in_array($record->state?->name, [
+                            State::PAGADO,
+                            State::ENVIADO,
+                            State::FINALIZADO,
+                        ]),
+                        'App\Models\Donation' => (bool) $record->certificate(),
+                        default => false,
+                    };
 
                 })
                 ->form([
-                    Toggle::make('send_email')->label('Enviar por email')->default(true),
+                    self::toggleSendEmail(),
                 ])
-                ->action(function (Order $record, array $data) {
+                ->modalSubmitActionLabel(fn (Model $record
+                ) => $record->invoices()->exists() ? 'Regenerar' : 'Generar')
+                ->action(function (Model $record, array $data) {
 
                     $service = app(InvoiceService::class);
                     $send = (bool) ($data['send_email'] ?? false);
@@ -378,7 +380,7 @@ class Reusable
                                 $result = $service->generateForDonation($record, sendEmail: $send, force: true);
                                 break;
                             default:
-                                throw new \RuntimeException('Tipo no soportado para facturación.');
+                                throw new RuntimeException('Tipo no soportado para facturación.');
                         }
 
                         Notification::make()
@@ -386,7 +388,7 @@ class Reusable
                             ->title($record->invoices()->exists() ? 'Factura regenerada' : 'Factura generada')
                             ->body('Número '.$result['invoice']->number)
                             ->send();
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         Notification::make()
                             ->danger()
                             ->title('No se pudo generar la factura')
@@ -400,5 +402,15 @@ class Reusable
             ->label('More actions')
             ->icon('heroicon-m-ellipsis-vertical')
             ->size(ActionSize::ExtraSmall);
+
+    }
+
+    public static function toggleSendEmail(): Toggle
+    {
+        return Toggle::make('send_email')
+            ->label('Enviar por email')
+            ->helperText('¿Deseas enviar la factura por email?')
+            ->default(false);
+
     }
 }

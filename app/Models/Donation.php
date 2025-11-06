@@ -4,8 +4,6 @@
 
 namespace App\Models;
 
-use App\Models\Invoice;
-
 use App\Helpers\RedsysAPI;
 use App\Models\Traits\HasAddresses;
 use App\Models\Traits\HasPayments;
@@ -31,7 +29,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  */
 class Donation extends Model implements HasMedia
 {
-    use HasAddresses, HasFactory, HasPayments, HasStates, SoftDeletes, InteractsWithMedia;
+    use HasAddresses, HasFactory, HasPayments, HasStates, InteractsWithMedia, SoftDeletes;
 
     public const string UNICA = 'Simple';
 
@@ -53,6 +51,7 @@ class Donation extends Model implements HasMedia
         'next_payment',
         'updated_at',
         'created_at',
+        'payment_method',
     ];
 
     protected $with = [
@@ -99,12 +98,13 @@ class Donation extends Model implements HasMedia
     public function vatRate(): float
     {
         $default = (float) (setting('billing.vat.donations_default', 0) ?? 0);
+
         return round($default / 100, 4);
     }
 
     public function invoices(): MorphMany
     {
-        return $this->morphMany(Invoice::class, 'invoiceable')->latest('created_at');
+        return $this->morphMany(Invoice::class, 'invoiceable')->latest();
     }
 
     public function payed(array $redSysResponse): void

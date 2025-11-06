@@ -3,9 +3,7 @@
 namespace App\Services;
 
 use App\Mail\InvoiceMailable;
-use App\Models\Donation;
 use App\Models\Invoice;
-use App\Models\Order;
 use App\Models\User;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +26,7 @@ class InvoiceService
      * @throws Throwable
      */
     public function generateForOrder(
-        Order $order,
+        Model $order,
         string $series = 'FP',
         bool $sendEmail = false,
         bool $force = false
@@ -37,6 +35,7 @@ class InvoiceService
 
         $lines = $this->orderLines($order);
         $shippingCost = (float) $order->shipping_cost;
+        $shippingMethod = $order->shipping;
         $vatRate = $order->vatRate();
 
         $subtotal = $this->calculateSubtotal($lines, $shippingCost);
@@ -45,6 +44,7 @@ class InvoiceService
 
         $meta = [
             'shipping_cost' => $shippingCost,
+            'shipping_method' => $shippingMethod,
             'payment_method' => $order->payment_method,
         ];
 
@@ -70,7 +70,7 @@ class InvoiceService
     /**
      * @return array<int, array{name: string, quantity: int, unit_price: float, line_total: float}>
      */
-    protected function orderLines(Order $order): array
+    protected function orderLines(Model $order): array
     {
         return $order->items->map(function ($item) {
             $unitPrice = (float) ($item->product?->getPrice() ?? 0);
@@ -228,13 +228,14 @@ class InvoiceService
             }
         }
         if ($logoAbsPath === '') {
-            $fallbackSvg = public_path('images/logo-fundacion-horizontal.svg');
             $fallbackPng = public_path('images/logo-fundacion-horizontal.png');
-            if (file_exists($fallbackSvg)) {
-                $logoAbsPath = $fallbackSvg;
-            } elseif (file_exists($fallbackPng)) {
-                $logoAbsPath = $fallbackPng;
-            }
+            /* $fallbackSvg = public_path('images/logo-fundacion-horizontal.svg');
+             if (file_exists($fallbackSvg)) {
+                 $logoAbsPath = $fallbackSvg;
+             } elseif (file_exists($fallbackPng)) {
+                 $logoAbsPath = $fallbackPng;
+             }*/
+            $logoAbsPath = $fallbackPng;
         }
 
         // If SVG, read content for inline embedding (mPDF works best with inline SVG)
@@ -521,7 +522,7 @@ class InvoiceService
         }
     }
 
-    protected function sendInvoiceEmailForOrder(Order $order, Invoice $invoice): void
+    protected function sendInvoiceEmailForOrder(Model $order, Invoice $invoice): void
     {
         $recipients = collect();
 
@@ -582,7 +583,7 @@ class InvoiceService
      * @throws MpdfException|Throwable
      */
     public function generateForDonation(
-        Donation $donation,
+        Model $donation,
         string $series = 'FD',
         bool $sendEmail = false,
         bool $force = false
@@ -623,7 +624,7 @@ class InvoiceService
     /**
      * @return array<int, array{name: string, quantity: int, unit_price: float, line_total: float}>
      */
-    protected function donationLines(Donation $donation): array
+    protected function donationLines(Model $donation): array
     {
         $amount = (float) $donation->amount;
 
@@ -637,7 +638,7 @@ class InvoiceService
         ];
     }
 
-    protected function sendInvoiceEmailForDonation(Donation $donation, Invoice $invoice): void
+    protected function sendInvoiceEmailForDonation(Model $donation, Invoice $invoice): void
     {
         $certificate = $donation->certificate();
 

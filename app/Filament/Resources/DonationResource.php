@@ -14,9 +14,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\ActionSize;
 use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -78,6 +76,10 @@ class DonationResource extends Resource
                         return convertPrice($state);
                     }),
 
+                TextColumn::make('payment_method')
+                    ->alignCenter()
+                    ->extraAttributes(['class' => 'capitalize'])
+                    ->label('Forma de pago'),
                 Reusable::facturaColumn(),
                 TextColumn::make('updated_at')
                     ->label('Certificado')
@@ -167,49 +169,7 @@ class DonationResource extends Resource
                     ) => $record->state?->name === State::ERROR || $record->state == null),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),
-                ActionGroup::make([
-                    Action::make('invoice')
-                        ->color(fn (Donation $record
-                        ) => $record->invoices()->exists() ? 'warning' : 'primary')
-                        ->label(fn (Donation $record
-                        ) => $record->invoices()->exists() ? 'Regenerar factura' : 'Generar factura')
-                        ->icon(fn (Donation $record
-                        ) => $record->invoices()->exists() ? 'heroicon-s-arrow-path' : 'heroicon-o-document-currency-euro')
-                        ->visible(fn (Donation $record) => (bool) $record->certificate())
-                        ->form([
-                            Toggle::make('send_email')->label('Enviar por email')->default(true),
-                        ])
-                        ->action(function (Donation $record, array $data) {
-                            $send = (bool) ($data['send_email'] ?? false);
-                            try {
-                                // If no email on certificate, force send=false
-                                if ($send && ! ($record->certificate()?->email)) {
-                                    $send = false;
-                                    Notification::make()
-                                        ->warning()
-                                        ->title('Sin email en el certificado')
-                                        ->body('Se generó la factura, pero no se envió por falta de email del donante.')
-                                        ->send();
-                                }
-                                $service = app(InvoiceService::class);
-                                $result = $service->generateForDonation($record, sendEmail: $send, force: true);
-                                Notification::make()
-                                    ->success()
-                                    ->title($record->invoices()->exists() ? 'Factura regenerada' : 'Factura generada')
-                                    ->body('Número '.$result['invoice']->number)
-                                    ->send();
-                            } catch (\Throwable $e) {
-                                Notification::make()
-                                    ->danger()
-                                    ->title('No se pudo generar la factura')
-                                    ->body('Revisa permisos de escritura en storage/app/public e intenta de nuevo. Detalle: '.$e->getMessage())
-                                    ->send();
-                            }
-                        }),
-                ])
-                    ->label('More actions')
-                    ->icon('heroicon-m-ellipsis-vertical')
-                    ->size(ActionSize::ExtraSmall),
+                Reusable::facturaActions(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

@@ -167,7 +167,7 @@ test('puedo obtener listado de items para emails', function () {
         ->and($order->itemsArray())->toHaveCount(2)
         ->and($order->itemsArray()[0])->toHaveKeys(['name', 'price', 'quantity', 'subtotal', 'image']);
 
-})->skip(env('APP_ENV') == 'GITHUB_ACTIONS', 'Se omite en GitHub Actions');
+})->skip(isCi(), 'Se omite en GitHub Actions');
 
 test('al crear pedido solo creo un estado pendiente de pago', function () {
 
@@ -201,4 +201,36 @@ test('al procesar pedido envío email a todos los usuarios', function () {
         $users, OrderCreated::class
     );
 
+});
+
+test('puedo crear factory de pedido con items', function () {
+
+    $order = Order::factory()->withItems(1)->create();
+
+    expect($order->Items)->toHaveCount(1);
+});
+
+test('puedo crear factory de pedido con producto seleccionado', function () {
+
+    $producto = Product::factory()->create([
+        'name' => 'Producto de prueba',
+    ]);
+    $order = Order::factory()->withItems($producto)->create();
+
+    expect($order->Items)->toHaveCount(1);
+});
+
+test('puedo crear factory de pedido con colección de productos seleccionado', function () {
+
+    Product::factory()->create([
+        'name' => 'Producto de prueba',
+    ]);
+    Product::factory()->create([
+        'name' => 'Producto de prueba2',
+    ]);
+
+    $productos = Product::all();
+    $order = Order::factory()->withItems($productos)->create();
+
+    expect($order->Items)->toHaveCount(2);
 });

@@ -7,8 +7,15 @@
     <title>Factura {{ $invoice->number }}</title>
     <style>
         body {
-            font-family: DejaVu Sans, sans-serif;
+            font-family: Arial, DejaVu Sans, sans-serif;
             font-size: 12px;
+            color: #111;
+        }
+
+        h1 {
+            font-size: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
             color: #111;
         }
 
@@ -20,13 +27,9 @@
         }
 
         .logo {
-            height: 48px;
+            max-height: 120px;
         }
 
-        .title {
-            font-size: 18px;
-            font-weight: bold;
-        }
 
         .grid {
             display: grid;
@@ -34,11 +37,6 @@
             gap: 12px;
         }
 
-        .box {
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 6px;
-        }
 
         table {
             width: 100%;
@@ -47,13 +45,13 @@
         }
 
         th, td {
-            border: 1px solid #e5e5e5;
+            border: 1px solid #083c61;
             padding: 8px;
             text-align: left;
         }
 
         th {
-            background: #f8f8f8;
+            background: #aed1da;
         }
 
         .right {
@@ -61,112 +59,132 @@
         }
 
         .totals {
-            margin-top: 12px;
-            width: 60%;
+            margin-top: 30px;
+            width: 50%;
             margin-left: auto;
         }
 
-        .muted {
-            color: #666;
-            font-size: 11px;
-        }
 
         .footer {
             margin-top: 28px;
-            border-top: 1px solid #eee;
             padding-top: 8px;
-            font-size: 10px;
-            color: #666;
+            text-align: right;
+        }
+
+        .total {
+            font-weight: bolder;
+            text-transform: uppercase;
+            background: #88acb5;
         }
     </style>
 </head>
 <body>
 <div class="header">
-    <div>
-        @php
-            $logoPath = $settings['logo_abs_path'] ?? '';
-            $logoSvg = $settings['logo_svg_content'] ?? '';
-            $logoDataUri = $settings['logo_data_uri'] ?? '';
-        @endphp
-        @if (!empty($logoSvg))
-            <div class="logo" style="height:48px; width:auto;">
-                {!! $logoSvg !!}
-            </div>
-        @elseif (!empty($logoDataUri))
-            <img class="logo" src="{{ $logoDataUri }}" alt="Logo" />
-        @elseif (!empty($logoPath))
-            <img class="logo" src="file://{{ $logoPath }}" alt="Logo" />
-        @elseif (file_exists(public_path('images/logo-fundacion-horizontal.svg')))
-            @php $fallback = file_get_contents(public_path('images/logo-fundacion-horizontal.svg')); @endphp
-            <div class="logo" style="height:48px; width:auto;">{!! $fallback !!}</div>
-        @elseif (file_exists(public_path('images/logo-fundacion-horizontal.png')))
-            <img class="logo" src="file://{{ public_path('images/logo-fundacion-horizontal.png') }}" alt="Logo" />
-        @endif
+    <div class="grid">
+        <div style="margin-right: 50px;">
+            @php
+                $logoPath = $settings['logo_abs_path'] ?? '';
+                $logoSvg = $settings['logo_svg_content'] ?? '';
+                $logoDataUri = $settings['logo_data_uri'] ?? '';
+
+            @endphp
+            @if (!empty($logoSvg))
+                <div class="logo" style=" width:auto;">
+                    {!! $logoSvg !!}
+                </div>
+            @elseif (!empty($logoDataUri))
+                <img class="logo" src="{{ $logoDataUri }}" alt="Logo" />
+            @elseif (!empty($logoPath))
+                <img class="logo" src="file://{{ $logoPath }}" alt="Logo" />
+            @elseif (file_exists(public_path('images/logo-fundacion-horizontal.svg')))
+                @php $fallback = file_get_contents(public_path('images/logo-fundacion-horizontal.svg')); @endphp
+                <div class="logo" style=" width:auto;">{!! $fallback !!}</div>
+            @elseif (file_exists(public_path('images/logo-fundacion-horizontal.png')))
+                <img class="logo" src="file://{{ public_path('images/logo-fundacion-horizontal.png') }}" alt="Logo" />
+            @endif
+        </div>
+        <div>
+            <h1>{{ $settings['company'] ?? '' }}</h1>
+            <div>{{ $settings['address'] ?? '' }}. {{ $settings['postal_code'] ?? '' }} {{ $settings['city'] ?? '' }} ({{ $settings['country'] ?? '' }})</div>
+            <div>CIF: {{ $settings['nif'] ?? '' }}</div>
+            @if(isset($settings['phone']) && $settings['phone']!= '')
+                <div>Tel. {{ $settings['phone'] }}</div>
+            @endif
+            @if(isset($settings['email']) && $settings['email']!= '')
+                <div><a href="mailto:{{ $settings['email'] }}" target="_blank">{{ $settings['email'] }}</a></div>
+            @endif
+        </div>
+
     </div>
-    <div>
-        <div class="title">Factura {{ $invoice->number }}</div>
-        <div class="muted">Fecha: {{ $invoice->created_at->format('d/m/Y') }}</div>
-    </div>
+</div>
+<div style="text-align: right; width: 100%;margin: 40px 0 10px 0;">
+    <div class=""><strong>FACTURA SOLIDARIA</strong> Nº {{ $invoice->number }}</div>
+    <div class=""><strong>Fecha:</strong> {{ $invoice->created_at->format('d/m/Y') }}</div>
 </div>
 
 <div class="grid">
-    <div class="box">
-        <strong>Emisor</strong>
-        <div>{{ $settings['company'] ?? '' }} ({{ $settings['nif'] ?? '' }})</div>
-        <div>{{ $settings['address'] ?? '' }}</div>
-        <div>{{ $settings['postal_code'] ?? '' }} {{ $settings['city'] ?? '' }} ({{ $settings['country'] ?? '' }})</div>
-        <div>{{ $settings['email'] ?? '' }} {{ ($settings['phone'] ?? null) ? ' · '.($settings['phone'] ?? '') : '' }}</div>
-    </div>
-    <div class="box">
-        <strong>Cliente</strong>
+    <div>
         @php
             $clientName = '';
             $clientEmail = '';
             if ($invoiceable instanceof Order) {
                 $addr = $invoiceable->billing_address();
-                $clientName = $addr?->name ?? '';
-                $clientEmail = $addr?->email ?? '';
             } elseif ($invoiceable instanceof Donation) {
                 $addr = $invoiceable->certificate() ?: null; // ensure null if false
-                $clientName = $addr?->name ?? '';
-                $clientEmail = $addr?->email ?? '';
             }
+
+            $clientName = $addr?->full_name ?? '';
+            $clientEmail = $addr?->email ?? '';
+            $clientCif = $addr?->nif ?? '';
+            $clientCompany = $addr?->company ?? '';
+            $clientAddress = $addr?->getFullAddress();
+            $clientPhone = $addr?->phone ?? '';
         @endphp
+
+        @if($clientCompany != '')
+            <div><strong>{{ $clientCompany }}</strong></div>
+        @endif
         <div>{{ $clientName }}</div>
-        <div>{{ $clientEmail }}</div>
+        @if($clientCif != '')
+            <div>DNI/CIF: {{ $clientCif }}</div>
+        @endif
+        <div>{{$clientAddress}}</div>
+        @if($clientEmail != '')
+            <div><a href="mailto:{{ $clientEmail }}" target="_blank">{{ $clientEmail }}</a></div>
+        @endif
+        <div>Teléfono: {{$clientPhone}}</div>
     </div>
 </div>
 
 <table>
     <thead>
     <tr>
-        <th>Concepto</th>
+        <th>Descripción</th>
         <th class="right">Cantidad</th>
-        <th class="right">Precio</th>
-        <th class="right">Importe</th>
+        <th class="right">Precio unitario (€)</th>
+        <th class="right">Total (€)</th>
     </tr>
     </thead>
     <tbody>
     @foreach ($lines as $line)
         <tr>
             <td>{{ $line['name'] }}</td>
-            <td class="right">{{ number_format($line['quantity'], 0) }}</td>
-            <td class="right">{{ number_format($line['unit_price'], 2, ',', '.') }} €</td>
-            <td class="right">{{ number_format($line['line_total'], 2, ',', '.') }} €</td>
+            <td class="right">{{ $line['quantity'] }}</td>
+            <td class="right">{{ number_format($line['unit_price'], 2, ',', '.') }} </td>
+            <td class="right">{{ number_format($line['line_total'], 2, ',', '.') }} </td>
         </tr>
     @endforeach
-    @if (($meta['shipping_cost'] ?? 0) > 0)
-        <tr>
-            <td>Gastos de envío</td>
-            <td class="right">1</td>
-            <td class="right">{{ number_format($meta['shipping_cost'], 2, ',', '.') }} €</td>
-            <td class="right">{{ number_format($meta['shipping_cost'], 2, ',', '.') }} €</td>
-        </tr>
-    @endif
+
     </tbody>
 </table>
 
 <table class="totals">
+    @if (($meta['shipping_cost'] ?? 0) > 0)
+        <tr>
+            <td>Gastos de envío: {{ $meta['shipping_method'] }}</td>
+            <td class="right">{{ number_format($meta['shipping_cost'], 2, ',', '.') }} €</td>
+        </tr>
+    @endif
     <tr>
         <td>Base imponible</td>
         <td class="right">{{ number_format($subtotal, 2, ',', '.') }} €</td>
@@ -176,14 +194,23 @@
         <td class="right">{{ number_format($vatAmount, 2, ',', '.') }} €</td>
     </tr>
     <tr>
-        <td><strong>Total</strong></td>
-        <td class="right"><strong>{{ number_format($total, 2, ',', '.') }} €</strong></td>
+        <td class="total"><strong>Total</strong></td>
+        <td class="right total"><strong>{{ number_format($total, 2, ',', '.') }} €</strong></td>
     </tr>
 </table>
+<div class="grid">
+    @php
+        $paymentMethod = $invoiceable->payment_method ?? '';
+    @endphp
+    @if($paymentMethod != '')
+        <div style="margin: 20px 0;">
+            Forma de pago: <span style="text-transform:capitalize;">{{ $paymentMethod }}</span>
+        </div>
+    @endif
+</div>
 
-<div class="footer">
-    Esta factura se emite automáticamente. Para cualquier consulta puede contactar con nosotros en {{ $settings['email'] ?? '' }}.
-    En caso de donaciones, el importe podría estar exento de IVA según la normativa vigente.
+<div class="footer ">
+    Gracias por tu compra solidaria.
 </div>
 </body>
 </html>

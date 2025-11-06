@@ -25,13 +25,13 @@ class PaymentProcess
         $this->data = $data;
         $this->createModel();
         $this->createPayment();
-//        $this->createState();
+        //        $this->createState();
 
     }
 
     private function createModel(): void
     {
-        if ($this->modelo instanceof Order && !isset($this->data['id'])) {
+        if ($this->modelo instanceof Order && ! isset($this->data['id'])) {
             $this->modelo = Order::create([
                 'amount' => convertPriceNumber($this->data['amount']),
                 'number' => generateOrderNumber(),
@@ -50,6 +50,8 @@ class PaymentProcess
                 'number' => generateDonationNumber(),
                 'type' => $this->data['type'],
                 'frequency' => $this->data['frequency'] ?? null,
+                'payment_method' => $this->data['payment_method'] ?? 'tarjeta',
+
             ]);
         }
 
@@ -84,11 +86,9 @@ class PaymentProcess
             // Recurrente
             $data = collect($redsys->getFormNewPagoRecurrente($this->modelo));
         }
-        $this->redSysAttributes = $data->only('Raw')->first();
+        $this->redSysAttributes = (array) $data->only('Raw')->first();
 
         return $data->toArray();
         //        return $data->except('Raw')->toArray();
     }
-
-
 }

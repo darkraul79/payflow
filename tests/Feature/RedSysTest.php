@@ -44,7 +44,6 @@ it('donation.response está exento de CSRF', function () {
 it('donationResponse: firma inválida marca error y redirige a ko', function () {
     $donacion = Donation::factory()->withPayment()->create(); // asumiendo relación hasOne
 
-    $api = new RedsysAPI;
     $params = getMerchanParamasOrderOk($donacion->totalRedsys, $donacion->number);
 
     // Firma incorrecta a propósito (cambia key o altera parámetros)
@@ -105,7 +104,7 @@ it('donationResponse: es idempotente (no duplica estados)', function () {
 
     $donacion->refresh();
     // ACTIVA solo una vez
-    expect($donacion->states()->where('name', 'Activa')->count())->toBe(1);
+    expect($donacion->states()->count())->toBe(1);
 });
 
 it('donationResponse: emite NewDonationEvent', function () {
@@ -129,7 +128,7 @@ it('donationResponse: emite NewDonationEvent', function () {
 it('result: donation en estado ERROR muestra donation.ko', function () {
     $donacion = Donation::factory()->create();
     $donacion->states()->create(['name' => State::ERROR]);
-    $pago = Payment::factory()->create([
+    Payment::factory()->create([
         'payable_type' => Donation::class,
         'payable_id' => $donacion->id,
         'number' => $donacion->number,

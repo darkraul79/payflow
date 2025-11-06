@@ -6,7 +6,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\OrderResource\Pages;
-use App\Filament\Resources\OrderResource\RelationManagers\InvoicesRelationManager;
 use App\Filament\Resources\OrderResource\RelationManagers\ItemsRelationManager;
 use App\Models\Order;
 use App\Models\State;
@@ -66,7 +65,8 @@ class OrderResource extends Resource
                 TextColumn::make('items_count')->counts('items')
                     ->alignCenter()->label('Productos'),
 
-                TextColumn::make('total')
+                TextColumn::make('amount')
+                    ->label('Importe')
                     ->alignCenter()
                     ->formatStateUsing(function ($state) {
                         return convertPrice($state);
@@ -121,7 +121,7 @@ class OrderResource extends Resource
                     ->label('Estado')
                     ->icon('heroicon-o-arrow-path')
                     ->url(fn ($record): string => self::getUrl('update', ['record' => $record->getKey()])),
-                Reusable::facturaActions('App\Models\Order'),
+                Reusable::facturaActions(),
 
             ])
             ->bulkActions([
@@ -191,9 +191,6 @@ class OrderResource extends Resource
                                         ->content(fn (?Order $record
                                         ): string => $record?->updated_at?->diffForHumans() ?? '-'),
                                 ]),
-                            Tabs\Tab::make('Tab 2')
-                                ->schema([
-                                ]),
 
                         ]),
 
@@ -223,7 +220,6 @@ class OrderResource extends Resource
     {
         return [
             ItemsRelationManager::class,
-            InvoicesRelationManager::class,
         ];
     }
 
