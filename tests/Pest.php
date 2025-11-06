@@ -22,6 +22,7 @@ use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use Carbon\Carbon;
+use Filament\Facades\Filament;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
@@ -32,6 +33,17 @@ pest()->extend(Tests\TestCase::class)
 
 arch()->preset()->laravel()
     ->ignoring(AdminPanelProvider::class);
+
+beforeEach(function (): void {
+    // Ensure Filament actions run within the correct panel during tests
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+});
+
+function isCi(): bool
+{
+    // Detect CI environments like GitHub Actions or generic CI runners
+    return (bool) getenv('GITHUB_ACTIONS') || (bool) getenv('CI');
+}
 
 /*
 |--------------------------------------------------------------------------

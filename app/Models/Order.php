@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Invoice;
-
 use App\Models\Traits\HasAddresses;
 use App\Models\Traits\HasPayments;
 use App\Models\Traits\HasStates;
@@ -19,7 +17,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property mixed $items
@@ -28,6 +25,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *
  * @property mixed $amount
  * @property mixed $totalRedsys
+ * @property mixed $number
  */
 #[ObservedBy([OrderObserver::class])]
 class Order extends Model implements HasMedia
@@ -42,6 +40,8 @@ class Order extends Model implements HasMedia
         'amount',
         'taxes',
         'payment_method',
+        'name',
+        'info',
     ];
 
     protected $with = [
@@ -166,13 +166,13 @@ class Order extends Model implements HasMedia
 
     }
 
-    public function billing_address(): ?Address
+    public function billing_address(): Address|Model|null
     {
         // Devuelve la dirección de facturación del pedido
         return $this->addresses()->where('type', Address::BILLING)->latest()->first();
     }
 
-    public function shipping_address(): ?Address
+    public function shipping_address(): Address|Model|null
     {
         // Devuelve la dirección de facturación del pedido
         return $this->addresses()->where('type', Address::SHIPPING)->get()->first() ?? null;
@@ -230,16 +230,6 @@ class Order extends Model implements HasMedia
         return $this->shipping_cost > 0 ? convertPrice($this->shipping_cost) : 'Gratis';
     }
 
-    /**
-     * Devuelve el total del pedido formateado para Redsys.
-     */
-    protected function totalRedsys(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => Str::replace('.', '', number_format($this->attributes['amount'], 2)),
-        );
-    }
-
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('invoices');
@@ -249,11 +239,22 @@ class Order extends Model implements HasMedia
     {
         // Read default from settings, fallback to 21%
         $default = (float) (setting('billing.vat.orders_default', 21) ?? 21);
+
         return round($default / 100, 4);
     }
 
     public function invoices(): MorphMany
     {
-        return $this->morphMany(Invoice::class, 'invoiceable')->latest('created_at');
+        return $this->morphMany(Invoice::class, 'invoiceable')->latest();
+    }
+
+    /**
+     * Devuelve el total del pedido formateado para Redsys.
+     */
+    protected function totalRedsys(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => Str::replace('.', '', number_format($this->attributes['amount'], 2)),
+        );
     }
 }

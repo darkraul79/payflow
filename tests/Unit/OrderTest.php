@@ -58,7 +58,7 @@ test('puedo crear factory con diferentes estados', function (string $estado) {
 
     expect($order->states)->toHaveCount(2)
         ->and($order->state->name)
-        ->toBe(constant(State::class . '::' . strtoupper($estado)));
+        ->toBe(constant(State::class.'::'.strtoupper($estado)));
 
 })->with([
     'pagado',
@@ -135,7 +135,7 @@ test('puedo obtener las imagenes de los productos del pedido', function () {
         ->create();
 
     expect($order->images()->first()->first())->toBeInstanceOf(Media::class);
-})->skip(env('APP_ENV') == 'GITHUB_ACTIONS', 'Se omite en GitHub Actions');
+})->skip(isCi(), 'Se omite en GitHub Actions');
 
 test('cuando realizo pedido resto del stock de producto', function () {
     $producto = Product::factory()->create([

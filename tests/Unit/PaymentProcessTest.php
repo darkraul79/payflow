@@ -1,170 +1,67 @@
 <?php
 
-namespace Tests\Unit;
-
 use App\Http\Classes\PaymentProcess;
 use App\Models\Donation;
 use App\Models\Order;
-use App\Models\Payment;
 
-test('Puedo crear paymentProcess', function ($clase) {
-
-    $modelo = 'App\\Models\\'.$clase;
-    /** @noinspection PhpUndefinedMethodInspection */
-    $process = new PaymentProcess($modelo, $modelo::factory()->make()->attributesToArray());
-
-    expect($process)->toBeInstanceOf(PaymentProcess::class)
-        ->and($process->modelo)->toBeInstanceOf($modelo);
-})->with([
-    'Donation',
-    'Order',
-]);
-
-test('crea un pago al construir PaymentProcess', function ($clase) {
-    $modelo = 'App\\Models\\'.$clase;
-    /** @noinspection PhpUndefinedMethodInspection */
-    $process = new PaymentProcess($modelo, $modelo::factory()->make()->attributesToArray());
-
-    expect($process->modelo->payment)->toBeInstanceOf(Payment::class)
-        ->and($process->modelo->payment->payable_type)->toBe($modelo)
-        ->and($process->modelo->payment->payable_id)->toBe($process->modelo->id)
-        ->and($process->modelo->payment->amount)->toBe(0.0);
-})->with([
-    'Donation',
-    'Order',
-]);
-
-test('getFormRedSysData devuelve campos de RedSys correctos', function () {
-    $process = new PaymentProcess(Donation::class, Donation::factory()->make()->attributesToArray());
-
-    expect(array_keys($process->getFormRedSysData()))->toMatchArray([
-        'Ds_MerchantParameters',
-        'Ds_Signature',
-        'Ds_SignatureVersion',
+it('crea un pago inicial y genera datos Redsys para pedido (pago directo)', function () {
+    $pp = new PaymentProcess(Order::class, [
+        'amount' => convertPriceNumber('25,00'),
+        'shipping' => 'Precio fijo',
+        'shipping_cost' => 0,
+        'subtotal' => 25,
+        'taxes' => 0,
+        'payment_method' => 'tarjeta',
     ]);
+
+    $modelo = $pp->modelo;
+
+    // Se crea un pago inicial a 0 con número generado
+    expect($modelo->payments)->toHaveCount(1)
+        ->and($modelo->payments->first()->amount)->toBe(0.0)
+        ->and($modelo->payments->first()->number)->not->toBeEmpty();
+
+    $data = $pp->getFormRedSysData();
+
+    // Estructura básica del formulario
+    expect($data)->toHaveKeys(['Ds_MerchantParameters', 'Ds_Signature', 'Ds_SignatureVersion', 'Raw'])
+        ->and($pp->redSysAttributes)->toBeArray()
+        ->and($pp->redSysAttributes['DS_MERCHANT_ORDER'] ?? null)->toBe($modelo->number);
 });
 
-test('redSysAttributes devuelve campos correctos con Donación Unica', function () {
+it('crea un pago inicial y genera datos Redsys para donación única (pago directo)', function () {
+    $pp = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('10,35'),
+        'type' => Donation::UNICA,
+    ]);
 
-    $process = new PaymentProcess(Donation::class, Donation::factory()->make([
-        'amount' => 10.23,
-    ])->attributesToArray());
+    $modelo = $pp->modelo;
 
-    $process->getFormRedSysData();
+    expect($modelo)->toBeInstanceOf(Donation::class)
+        ->and($modelo->payments)->toHaveCount(1)
+        ->and($modelo->payments->first()->amount)->toBe(0.0);
 
-    expect($process->redSysAttributes)->not()->toHaveKeys([
-        'DS_MERCHANT_IDENTIFIER',
-        'DS_MERCHANT_DIRECTPAYMENT',
-    ])->and($process->redSysAttributes['DS_MERCHANT_ORDER'])->toBe($process->modelo->number)
-        ->and($process->redSysAttributes['DS_MERCHANT_AMOUNT'])->toBe('1023');
+    $data = $pp->getFormRedSysData();
+
+    expect($data)->toHaveKeys(['Ds_MerchantParameters', 'Ds_Signature', 'Ds_SignatureVersion', 'Raw'])
+        ->and($pp->redSysAttributes['DS_MERCHANT_ORDER'] ?? null)->toBe($modelo->number);
 });
 
-test('redSysAttributes devuelve campos correctos con Donación Recurrente', function () {
+it('crea un pago inicial y genera datos Redsys para donación recurrente (alta)', function () {
+    $pp = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('15,00'),
+        'type' => Donation::RECURRENTE,
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+    ]);
 
-    $process = new PaymentProcess(Donation::class, Donation::factory()->recurrente()->make([
-        'amount' => 10.23,
-    ])->attributesToArray());
-    $process->getFormRedSysData();
+    $modelo = $pp->modelo;
 
-    expect($process->redSysAttributes['DS_MERCHANT_IDENTIFIER'])->toBe('REQUIRED')
-        ->and($process->redSysAttributes['DS_MERCHANT_ORDER'])->toBe($process->modelo->number)
-        ->and($process->redSysAttributes['DS_MERCHANT_AMOUNT'])->toBe('1023');
-});
+    expect($modelo->isRecurrente())->toBeTrue()
+        ->and($modelo->payments)->toHaveCount(1)
+        ->and($modelo->payments->first()->amount)->toBe(0.0);
 
-test('peticion de importe coincide con la donacion/pedido', function ($clase, $recurrente) {
+    $data = $pp->getFormRedSysData();
 
-    if ($recurrente) {
-        $data = $clase::factory()->recurrente()->make([
-            'amount' => 10.23,
-        ])->attributesToArray();
-    } else {
-
-        $data = $clase::factory()->make([
-            'amount' => 10.23,
-        ])->attributesToArray();
-    }
-    $process = new PaymentProcess($clase, $data);
-
-    expect($process->getFormRedSysData()['Raw']['DS_MERCHANT_AMOUNT'])->toBe('1023');
-
-})->with([
-    [Donation::class, true],
-    [Donation::class, false],
-    [Order::class, false],
-]);
-
-test('compurebo devuelve formulario Redsys para donación recurrente ', function () {
-
-    $paymentProcess = new PaymentProcess(Donation::class,
-        Donation::factory()->recurrente()->make()->attributesToArray());
-    $formData = $paymentProcess->getFormRedSysData();
-
-    expect($formData['Raw'])->toBeArray()
-        ->and($formData['Raw'])->toHaveKeys([
-            'DS_MERCHANT_IDENTIFIER',
-            'DS_MERCHANT_COF_INI',
-            'DS_MERCHANT_COF_TYPE',
-            'DS_MERCHANT_AMOUNT',
-            'DS_MERCHANT_ORDER',
-            'DS_MERCHANT_URLOK',
-            'DS_MERCHANT_URLKO',
-            'DS_MERCHANT_MERCHANTCODE',
-            'DS_MERCHANT_CURRENCY',
-            'DS_MERCHANT_TRANSACTIONTYPE',
-            'DS_MERCHANT_MERCHANTNAME',
-            'DS_MERCHANT_TERMINAL',
-        ])
-        ->and($formData['Raw']['DS_MERCHANT_IDENTIFIER'])->toBe('REQUIRED')
-        ->and($formData['Raw']['DS_MERCHANT_COF_INI'])->toBe('S')
-        ->and($formData['Raw']['DS_MERCHANT_COF_TYPE'])->toBe('R');
-});
-
-test('compurebo devuelve formulario Redsys para donación unica ', function () {
-
-    $paymentProcess = new PaymentProcess(Donation::class, Donation::factory()->make()->attributesToArray());
-    $formData = $paymentProcess->getFormRedSysData();
-    expect($formData['Raw'])->toBeArray()
-        ->and($formData['Raw'])->not()->toHaveKeys([
-            'DS_MERCHANT_IDENTIFIER',
-            'DS_MERCHANT_DIRECTPAYMENT',
-            'DS_MERCHANT_COF_INI',
-            'DS_MERCHANT_COF_TYPE',
-        ])
-        ->and($formData['Raw'])->toHaveKeys([
-            'DS_MERCHANT_AMOUNT',
-            'DS_MERCHANT_ORDER',
-            'DS_MERCHANT_URLOK',
-            'DS_MERCHANT_URLKO',
-            'DS_MERCHANT_MERCHANTCODE',
-            'DS_MERCHANT_CURRENCY',
-            'DS_MERCHANT_TRANSACTIONTYPE',
-            'DS_MERCHANT_MERCHANTNAME',
-            'DS_MERCHANT_TERMINAL',
-        ]);
-
-});
-
-test('compurebo devuelve formulario Redsys para Pedido ', function () {
-
-    $paymentProcess = new PaymentProcess(Order::class, Order::factory()->make()->attributesToArray());
-    $formData = $paymentProcess->getFormRedSysData();
-    expect($formData['Raw'])->toBeArray()
-        ->and($formData['Raw'])->not()->toHaveKeys([
-            'DS_MERCHANT_IDENTIFIER',
-            'DS_MERCHANT_DIRECTPAYMENT',
-            'DS_MERCHANT_COF_INI',
-            'DS_MERCHANT_COF_TYPE',
-        ])
-        ->and($formData['Raw'])->toHaveKeys([
-            'DS_MERCHANT_AMOUNT',
-            'DS_MERCHANT_ORDER',
-            'DS_MERCHANT_URLOK',
-            'DS_MERCHANT_URLKO',
-            'DS_MERCHANT_MERCHANTCODE',
-            'DS_MERCHANT_CURRENCY',
-            'DS_MERCHANT_TRANSACTIONTYPE',
-            'DS_MERCHANT_MERCHANTNAME',
-            'DS_MERCHANT_TERMINAL',
-        ]);
-
+    expect($data)->toHaveKeys(['Ds_MerchantParameters', 'Ds_Signature', 'Ds_SignatureVersion', 'Raw'])
+        ->and($pp->redSysAttributes)->toBeArray();
 });

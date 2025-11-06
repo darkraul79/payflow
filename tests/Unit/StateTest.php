@@ -1,5 +1,6 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
+<?php
 
+/** @noinspection PhpUndefinedMethodInspection */
 
 use App\Models\State;
 use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -24,7 +25,6 @@ test('el metodo state devuelve el último estado del modelo', function ($modelo)
         ['name' => State::ACEPTADO],
     ))->create();
 
-
     $this->travel(1)->days();
     $model->states()->create([
         'name' => State::FINALIZADO,
@@ -36,5 +36,3 @@ test('el metodo state devuelve el último estado del modelo', function ($modelo)
     'Order',
     'Donation',
 ]);
-
-

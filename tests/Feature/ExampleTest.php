@@ -9,7 +9,7 @@ it('returns a successful response', function () {
     $response = $this->get(route('home'));
     $response->assertStatus(200);
 
-})->skip(env('APP_ENV') == 'GITHUB_ACTIONS', 'Se omite en GitHub Actions');
+})->skip(isCi(), 'Se omite en GitHub Actions');
 
 test('copio bien las imagenes en seeder', function () {
 
@@ -30,8 +30,8 @@ test('copio bien las imagenes en seeder', function () {
     // Copio estas imagenes a la carpeta de storage
     foreach ($images as $name => $image) {
 
-        copy(base_path('public/images/' . $name), public_path('storage/' . $image));
-        expect(file_exists(public_path('storage/' . $image)))->toBeTrue();
+        copy(base_path('public/images/'.$name), public_path('storage/'.$image));
+        expect(file_exists(public_path('storage/'.$image)))->toBeTrue();
     }
 
-})->skip(env('APP_ENV') == 'GITHUB_ACTIONS', 'Se omite en GitHub Actions');
+})->skip(isCi(), 'Se omite en GitHub Actions');

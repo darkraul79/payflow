@@ -37,10 +37,21 @@ class OrderCreated extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->subject('Nuevo Pedido ' . $this->order->number)
-            ->line('Hay un nuevo pedido.')
-            ->action('Ver pedido', OrderResource::getUrl('update', ['record' => $this->order->id]));
+        $items = collect($this->order->itemsArray());
+        $itemsPreview = $items->map(function (array $item): string {
+            return $item['name'].' × '.$item['quantity'];
+        })->take(5);
+
+        $mail = (new MailMessage)
+            ->subject('Nuevo Pedido '.$this->order->number)
+            ->greeting('Hay un nuevo pedido.')
+            ->line('Importe total: '.convertPrice($this->order->amount));
+
+        if ($itemsPreview->isNotEmpty()) {
+            $mail->line('Resumen de artículos: '.$itemsPreview->implode(', '));
+        }
+
+        return $mail->action('Ver pedido', OrderResource::getUrl('update', ['record' => $this->order->id]));
     }
 
     /**

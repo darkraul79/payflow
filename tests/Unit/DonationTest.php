@@ -195,7 +195,7 @@ test('puedo crear pago a KO donacion recurrente', function () {
         ->and($pagoRecurrente->amount)->toBe(10.35)
         ->and($pagoRecurrente->info->Ds_Response)->toBe('0000');
 
-})->skip(env('APP_ENV') == 'GITHUB_ACTIONS', 'Se omite en GitHub Actions');
+})->skip(isCi(), 'Se omite en GitHub Actions');
 
 test('puedo comprobar si tiene certificado', function () {
     $donacion = Donation::factory()->create();
@@ -268,6 +268,37 @@ test('puedo actualizar la fecha de siguiente cobro según la frecuencia', functi
     $donacion->updateNextPaymentDate();
 
     expect($donacion->next_payment)->toBe($date);
+})->with([
+    [Donation::FREQUENCY['MENSUAL'], '2025-07-05'],
+    [Donation::FREQUENCY['TRIMESTRAL'], '2025-07-05'],
+    [Donation::FREQUENCY['ANUAL'], '2026-06-05'],
+]);
+
+// KO en donación recurrente: marca ERROR y reprograma siguiente cobro al día 5 del mes siguiente
+it('processPay KO en donación recurrente marca ERROR y reprograma next_payment', function () {
+    $this->travelTo('2025-06-11');
+
+    // Donación recurrente mensual
+    $donacion = Donation::factory()->recurrente()->create([
+        'frequency' => Donation::FREQUENCY['MENSUAL'],
+    ]);
+
+    // Situamos la donación en estado ACTIVA (como tras una alta correcta)
+    $donacion->states()->create(['name' => State::ACTIVA]);
+
+    // Simulamos respuesta Redsys KO del cobro recurrente
+    $info = [
+        'Ds_Response' => '9928',
+        'Ds_Order' => $donacion->number,
+    ];
+
+    $donacion->error_pago($info, 'Error RedSys - 9928');
+
+    $donacion->refresh();
+
+    expect($donacion->state->name)->toBe(State::ERROR)
+        // La lógica actual reprograma el siguiente cobro también en KO
+        ->and($donacion->next_payment)->toBe('2025-07-05');
 
 })->with([
     [Donation::FREQUENCY['MENSUAL'], '2025-07-05'],
@@ -298,7 +329,7 @@ test('puedo procesar job ProcessDonationPaymentJob', function () {
         ->and($donacion->payments->last()->created_at->format('Y-m-d'))->toBe($tomorrow)
         ->and($donacion->state->name)->toBe(State::ACTIVA);
 
-})->skip(env('APP_ENV') == 'GITHUB_ACTIONS', 'Se omite en GitHub Actions');
+})->skip(isCi(), 'Se omite en GitHub Actions');
 
 test('cada vez que abro ventana de donación se resetea el componente', function () {
     $home = Page::factory()->create([
