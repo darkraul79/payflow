@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::table('donations', function (Blueprint $table) {
             $table->addColumn('string', 'payment_method', [
                 'default' => 'tarjeta',
+                'nullable' => true,
             ]);
         });
     }
