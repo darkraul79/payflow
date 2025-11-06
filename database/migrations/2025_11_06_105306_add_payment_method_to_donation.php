@@ -9,7 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('donations', function (Blueprint $table) {
-            $table->addColumn('string', 'payment_method');
+            $table->addColumn('string', 'payment_method', [
+                'default' => 'tarjeta',
+            ]);
         });
     }
 
