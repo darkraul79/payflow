@@ -8,10 +8,10 @@ use Livewire\Livewire;
 uses(RefreshDatabase::class);
 
 test('login screen can be rendered', function () {
-    $response = $this->get('/login');
+    $response = $this->get('/admin/login');
 
     $response->assertStatus(200);
-})->skip();
+});
 
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
@@ -41,12 +41,12 @@ test('users can not authenticate with invalid password', function () {
     $this->assertGuest();
 });
 
-//test('users can logout', function () {
+// test('users can logout', function () {
 //    $user = User::factory()->create();
 //
 //    $response = $this->actingAs($user)->post('/logout');
 //
-////    $response->assertRedirect('/');
+// //    $response->assertRedirect('/');
 //
 //    $this->assertGuest();
-//});
+// });

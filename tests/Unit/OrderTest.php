@@ -135,7 +135,7 @@ test('puedo obtener las imagenes de los productos del pedido', function () {
         ->create();
 
     expect($order->images()->first()->first())->toBeInstanceOf(Media::class);
-})->skip(isCi(), 'Se omite en GitHub Actions');
+});
 
 test('cuando realizo pedido resto del stock de producto', function () {
     $producto = Product::factory()->create([
@@ -167,7 +167,7 @@ test('puedo obtener listado de items para emails', function () {
         ->and($order->itemsArray())->toHaveCount(2)
         ->and($order->itemsArray()[0])->toHaveKeys(['name', 'price', 'quantity', 'subtotal', 'image']);
 
-})->skip(isCi(), 'Se omite en GitHub Actions');
+});
 
 test('al crear pedido solo creo un estado pendiente de pago', function () {
 

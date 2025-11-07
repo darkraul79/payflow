@@ -32,6 +32,7 @@
                         class="my-4 w-fit cursor-pointer rounded-full border border-gray-300"
                         x-on:click="$dispatch('resetDonation')"
                         @click="modalIsOpen = false"
+                        data-test="DonacionButtonModalClose"
                     >
                         <x-heroicon-c-x-mark class="h-8 w-8" />
                     </button>

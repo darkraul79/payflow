@@ -9,7 +9,7 @@ it('returns a successful response', function () {
     $response = $this->get(route('home'));
     $response->assertStatus(200);
 
-})->skip(isCi(), 'Se omite en GitHub Actions');
+});
 
 test('copio bien las imagenes en seeder', function () {
 
@@ -34,4 +34,4 @@ test('copio bien las imagenes en seeder', function () {
         expect(file_exists(public_path('storage/'.$image)))->toBeTrue();
     }
 
-})->skip(isCi(), 'Se omite en GitHub Actions');
+});

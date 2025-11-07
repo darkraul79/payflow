@@ -176,7 +176,7 @@ test('puedo crear pago a KO donacion recurrente', function () {
         ->and($pagoRecurrente->amount)->toBe(10.35)
         ->and($pagoRecurrente->info->Ds_Response)->toBe('0000');
 
-})->skip(isCi(), 'Se omite en GitHub Actions');
+});
 
 test('puedo comprobar si tiene certificado', function () {
     $donacion = Donation::factory()->create();
@@ -310,7 +310,7 @@ test('puedo procesar job ProcessDonationPaymentJob', function () {
         ->and($donacion->payments->last()->created_at->format('Y-m-d'))->toBe($tomorrow)
         ->and($donacion->state->name)->toBe(State::ACTIVA);
 
-})->skip(isCi(), 'Se omite en GitHub Actions');
+});
 
 test('cada vez que abro ventana de donación se resetea el componente', function () {
     $home = Page::factory()->create([
@@ -322,13 +322,17 @@ test('cada vez que abro ventana de donación se resetea el componente', function
     $this->get(route('home', ['page' => $home->slug]))
         ->assertSeeLivewire(DonacionBanner::class);
 
-    livewire(DonacionBanner::class)
-        ->dispatch('openmodaldonation')
-        ->set('type', Donation::RECURRENTE)
-        ->dispatch('closemodaldonation')
-        ->assertSet('type', Donation::UNICA);
+    $page = visit(['/']);
+    $page->click('@DonacionButtonModal')
+        ->click('Hazte Socio')
+        ->assertRadioSelected('type', Donation::RECURRENTE)
+        ->type('amount', '10,35')
+        ->click('@DonacionButtonModalClose')
+        ->click('@DonacionButtonModal')
+        ->assertRadioNotSelected('type', Donation::RECURRENTE)
+        ->assertValue('amount', 0);
 
-})->skip();
+});
 
 test('actualizo correctamente la fecha de próximo cobro', function ($tipo) {
 
