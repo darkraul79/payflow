@@ -21,6 +21,7 @@ use Filament\Notifications\Notification;
 use Filament\Support\Enums\ActionSize;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -412,5 +413,19 @@ class Reusable
             ->helperText('¿Deseas enviar la factura por email?')
             ->default(false);
 
+    }
+
+    public static function paymnentMethodColumn(): IconColumn
+    {
+        return IconColumn::make('payment_method')->label('Método de pago')
+            ->alignCenter()
+            ->tooltip(fn ($state) => ucfirst(
+                str_replace('_', ' ', $state)
+            ))
+            ->icon(fn ($state) => match (strtolower($state)) {
+                'tarjeta' => 'heroicon-s-credit-card',
+                'bizum' => 'bizum-logo',
+                default => false,
+            });
     }
 }

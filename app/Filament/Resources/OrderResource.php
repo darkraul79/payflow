@@ -71,10 +71,7 @@ class OrderResource extends Resource
                     ->formatStateUsing(function ($state) {
                         return convertPrice($state);
                     }),
-
-                TextColumn::make('payment_method')->label('Método de pago')
-                    ->alignCenter()
-                    ->icon('heroicon-o-credit-card'),
+                Reusable::paymnentMethodColumn(),
                 Reusable::facturaColumn(),
                 TextColumn::make('updated_at')
                     ->label('Última modificación')

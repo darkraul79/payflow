@@ -4,6 +4,7 @@ use App\Helpers\RedsysAPI;
 use App\Livewire\CardProduct;
 use App\Livewire\FinishOrderComponent;
 use App\Livewire\PageCartComponent;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 
@@ -101,4 +102,28 @@ test('si selecciono tarjeta NO se crea un parametro en redsys Ds_Merchant_Paymet
 
     expect($params)->not->toHaveKey('Ds_Merchant_Paymethods');
 
+});
+
+test('al crear pedido con pago bizum lo reflejo en base de datos', function () {
+    finalizarCompra();
+
+    $billingDetails = [
+        'name' => 'Juan',
+        'last_name' => 'Pérez',
+        'last_name2' => 'Sánchez',
+        'company' => 'Mi empresa',
+        'address' => 'Calle Falsa 123',
+        'province' => 'Madrid',
+        'city' => 'Madrid',
+        'cp' => '28001',
+        'email' => 'info@raulsebastian.es',
+    ];
+
+    $p = livewire(FinishOrderComponent::class)
+        ->set('payment_method', 'bizum')
+        ->set(['billing' => $billingDetails])
+        ->call('submit')
+        ->assertHasNoErrors();
+
+    expect(Order::first()->payment_method)->toBe('bizum');
 });

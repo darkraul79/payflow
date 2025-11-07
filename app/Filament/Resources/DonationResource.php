@@ -76,10 +76,7 @@ class DonationResource extends Resource
                         return convertPrice($state);
                     }),
 
-                TextColumn::make('payment_method')
-                    ->alignCenter()
-                    ->extraAttributes(['class' => 'capitalize'])
-                    ->label('Forma de pago'),
+                Reusable::paymnentMethodColumn(),
                 Reusable::facturaColumn(),
                 TextColumn::make('updated_at')
                     ->label('Certificado')
