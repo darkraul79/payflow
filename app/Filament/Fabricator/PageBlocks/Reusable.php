@@ -310,11 +310,10 @@ class Reusable
         };
     }
 
-    public static function facturaColumn()
+    public static function facturaColumn(): IconColumn
     {
-        return TextColumn::make('latest_invoice')
+        return IconColumn::make('latest_invoice')
             ->label('Factura')
-            ->size(TextColumn\TextColumnSize::ExtraSmall)
             ->tooltip(fn (Model $record) => 'Factura '.$record->invoices()->first()?->number)
             ->getStateUsing(function (Model $record) {
                 return $record->invoices()->first()?->number;
