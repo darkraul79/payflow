@@ -18,11 +18,17 @@ class PaymentProcess
      */
     private array $data;
 
+    /**
+     * @var mixed|string
+     */
+    private string $payment_method;
+
     public function __construct($clase, array $data = [])
     {
 
         $this->modelo = new $clase;
         $this->data = $data;
+        $this->payment_method = $data['payment_method'] ?? 'tarjeta';
         $this->createModel();
         $this->createPayment();
         //        $this->createState();
@@ -39,7 +45,7 @@ class PaymentProcess
                 'shipping_cost' => $this->data['shipping_cost'],
                 'subtotal' => $this->data['subtotal'],
                 'taxes' => $this->data['taxes'],
-                'payment_method' => $this->data['payment_method'],
+                'payment_method' => $this->payment_method,
             ]);
         } elseif ($this->modelo instanceof Order && isset($this->data['id'])) {
             $this->modelo = Order::find($this->data['id']);
@@ -50,7 +56,7 @@ class PaymentProcess
                 'number' => generateDonationNumber(),
                 'type' => $this->data['type'],
                 'frequency' => $this->data['frequency'] ?? null,
-                'payment_method' => $this->data['payment_method'] ?? 'tarjeta',
+                'payment_method' => $this->payment_method,
 
             ]);
         }
@@ -81,7 +87,7 @@ class PaymentProcess
         $data = collect();
 
         if ($this->modelo instanceof Order || ($this->modelo instanceof Donation && $this->modelo->type === Donation::UNICA)) {
-            $data = collect($redsys->getFormDirectPay($this->modelo));
+            $data = collect($redsys->getFormDirectPay($this->modelo, $this->payment_method));
         } elseif ($this->modelo instanceof Donation && $this->modelo->type === Donation::RECURRENTE) {
             // Recurrente
             $data = collect($redsys->getFormNewPagoRecurrente($this->modelo));

@@ -20,7 +20,13 @@ class FinishOrderComponent extends Component
 
     public string $name;
 
-    public $payment_method = 'tarjeta';
+    public string $payment_method;
+
+    public $payments_methods = [
+        'tarjeta' => 'Tarjeta',
+        //        'transferencia' => 'Transferencia',
+        'bizum' => 'Bizum',
+    ];
 
     public $isValid = false;
 
@@ -229,7 +235,9 @@ class FinishOrderComponent extends Component
 
     public function render(): View
     {
-        return view('livewire.finish-order');
+        return view('livewire.finish-order', [
+            'payment_methods' => $this->payments_methods,
+        ]);
     }
 
     protected function messages(): array
@@ -242,6 +250,7 @@ class FinishOrderComponent extends Component
             'integer' => 'El campo debe ser un número entero.',
             'numeric' => 'El campo debe ser un número.',
             'boolean' => 'El campo debe ser verdadero o falso.',
+            'payment_method.required' => 'Debes seleccionar un método de pago.',
         ];
 
     }

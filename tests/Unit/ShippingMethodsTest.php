@@ -137,6 +137,7 @@ test('Al terminar pedido se guardan los datos de envío correctamente', function
         ->call('submit');
 
     livewire(FinishOrderComponent::class)
+        ->set('payment_method', 'tarjeta')
         ->set('billing', [
             'name' => 'Juan',
             'last_name' => 'Pérez',

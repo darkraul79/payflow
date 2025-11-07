@@ -78,10 +78,12 @@ class RedsysAPI
     // ////////////////////////////////////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////////////////////////
 
-    public function getFormDirectPay(Model $model): array
+    public function getFormDirectPay(Model $model, string $payment_method = 'tarjeta'): array
     {
 
         $this->setCommonParameters();
+
+        $this->addBizumParameters($payment_method);
 
         $this->setParameter('DS_MERCHANT_AMOUNT', $model->totalRedsys);
         $this->setParameter('DS_MERCHANT_ORDER', $model->number);
@@ -114,10 +116,19 @@ class RedsysAPI
         $this->setParameter('DS_MERCHANT_TERMINAL', config('redsys.terminal'));
     }
 
-    // Set parameter
     public function setParameter($key, $value): void
     {
         $this->vars_pay[$key] = $value;
+    }
+
+    // Set parameter
+
+    protected function addBizumParameters(mixed $method = false): void
+    {
+        if (strtolower($method) === 'bizum') {
+            $this->setParameter('Ds_Merchant_Paymethods', 'z');
+        }
+
     }
 
     public function setNotificationUrl(Model $model): void
