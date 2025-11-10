@@ -24,20 +24,17 @@ class Invoice extends Model
         'emailed_to',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'subtotal' => 'decimal:2',
-            'vat_rate' => 'decimal:4',
-            'vat_amount' => 'decimal:2',
-            'total' => 'decimal:2',
-            'emailed_to' => 'array',
-            'sent_at' => 'datetime',
-        ];
-    }
-
     public function invoiceable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    protected function casts(): array
+    {
+        return [
+
+            'emailed_to' => 'array',
+            'sent_at' => 'datetime',
+        ];
     }
 }

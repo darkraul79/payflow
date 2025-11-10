@@ -144,15 +144,17 @@ class OrderFactory extends Factory
             ]), 'addresses');
     }
 
-    public function withItems(Collection|Product|int $items): Factory
+    public function withProductos(Collection|Product|int|null $items = null): Factory
     {
         if (is_int($items)) {
             $total = Product::all()->count();
-            if ($total < $items) {
+            if ($total <= $items) {
                 Product::factory()->count($items - $total)->create();
 
                 return $this->afterCreating(function (Order $pedido) {
+                    $sutotalOrder = 0;
                     foreach (Product::all() as $product) {
+                        $sutotalOrder += $product->price;
                         $pedido->items()->create([
                             'product_id' => $product->id,
                             'quantity' => 1,
@@ -160,19 +162,30 @@ class OrderFactory extends Factory
                             'data' => $product->toArray(),
                         ]);
                     }
+                    $pedido->update([
+                        'subtotal' => $sutotalOrder,
+                        'taxes' => round($sutotalOrder / 1.21 * .21, 2),
+                        'amount' => $sutotalOrder + $pedido->shipping_cost,
+                    ]);
                 });
             }
 
         }
 
         if (is_a($items, Product::class)) {
-            return $this->afterCreating(function (Order $pedido) use ($items) {
 
+            return $this->afterCreating(function (Order $pedido) use ($items) {
+                $sutotalOrder = $items->price;
                 $pedido->items()->create([
                     'product_id' => $items->id,
                     'quantity' => 1,
                     'subtotal' => $items->price,
                     'data' => $items->toArray(),
+                ]);
+                $pedido->update([
+                    'subtotal' => $sutotalOrder,
+                    'taxes' => round($sutotalOrder / 1.21 * .21, 2),
+                    'amount' => $sutotalOrder + $pedido->shipping_cost,
                 ]);
             });
         }
@@ -180,7 +193,9 @@ class OrderFactory extends Factory
         // Compruebo que es una coleccion de productos
         if (is_a($items, \Illuminate\Database\Eloquent\Collection::class)) {
             return $this->afterCreating(function (Order $pedido) use ($items) {
+                $sutotalOrder = 0;
                 foreach ($items as $product) {
+                    $sutotalOrder += $product->price;
                     $pedido->items()->create([
                         'product_id' => $product->id,
                         'quantity' => 1,
@@ -188,16 +203,27 @@ class OrderFactory extends Factory
                         'data' => $product->toArray(),
                     ]);
                 }
+                $pedido->update([
+                    'subtotal' => $sutotalOrder,
+                    'taxes' => round($sutotalOrder / 1.21 * .21, 2),
+                    'amount' => $sutotalOrder + $pedido->shipping_cost,
+                ]);
             });
         }
 
         return $this->afterCreating(function (Order $pedido) {
             $product = Product::inRandomOrder()->first();
+            $sutotalOrder = $product->price;
             $pedido->items()->create([
                 'product_id' => $product->id,
                 'quantity' => 1,
                 'subtotal' => $product->price,
                 'data' => $product->toArray(),
+            ]);
+            $pedido->update([
+                'subtotal' => $sutotalOrder,
+                'taxes' => round($sutotalOrder / 1.21 * .21, 2),
+                'amount' => $sutotalOrder + $pedido->shipping_cost,
             ]);
         });
 

@@ -205,7 +205,7 @@ test('al procesar pedido envío email a todos los usuarios', function () {
 
 test('puedo crear factory de pedido con items', function () {
 
-    $order = Order::factory()->withItems(1)->create();
+    $order = Order::factory()->withProductos(1)->create();
 
     expect($order->Items)->toHaveCount(1);
 });
@@ -215,7 +215,7 @@ test('puedo crear factory de pedido con producto seleccionado', function () {
     $producto = Product::factory()->create([
         'name' => 'Producto de prueba',
     ]);
-    $order = Order::factory()->withItems($producto)->create();
+    $order = Order::factory()->withProductos($producto)->create();
 
     expect($order->Items)->toHaveCount(1);
 });
@@ -230,7 +230,7 @@ test('puedo crear factory de pedido con colección de productos seleccionado', f
     ]);
 
     $productos = Product::all();
-    $order = Order::factory()->withItems($productos)->create();
+    $order = Order::factory()->withProductos($productos)->create();
 
     expect($order->Items)->toHaveCount(2);
 });
