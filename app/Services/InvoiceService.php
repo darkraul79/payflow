@@ -36,11 +36,11 @@ class InvoiceService
         $lines = $this->orderLines($order);
         $shippingCost = (float) $order->shipping_cost;
         $shippingMethod = $order->shipping;
-        $vatRate = $order->vatRate();
+        $vatRate = (float) $order->vatRate();
 
-        $subtotal = $this->calculateSubtotal($lines, $shippingCost);
-        $vatAmount = round($subtotal * $vatRate, 2);
-        $total = round($subtotal + $vatAmount, 2);
+        $vatAmount = (float) $order->taxes;
+        $subtotal = (float) $order->subtotal - $vatAmount;
+        $total = (float) $order->amount;
 
         $meta = [
             'shipping_cost' => $shippingCost,
@@ -82,16 +82,6 @@ class InvoiceService
                 'line_total' => round($unitPrice * (int) $item->quantity, 2),
             ];
         })->toArray();
-    }
-
-    /**
-     * @param  array<int, array{line_total: float}>  $lines
-     */
-    protected function calculateSubtotal(array $lines, float $additionalCost = 0): float
-    {
-        $linesTotal = array_sum(array_column($lines, 'line_total'));
-
-        return round($linesTotal + $additionalCost, 2);
     }
 
     /**
@@ -455,7 +445,6 @@ class InvoiceService
         return $relativePath;
     }
 
-    /** @noinspection PhpUndefinedMethodInspection */
     protected function attachMedia(
         Model $model,
         string $relativePath,
@@ -522,6 +511,7 @@ class InvoiceService
         }
     }
 
+    /** @noinspection PhpUndefinedMethodInspection */
     protected function sendInvoiceEmailForOrder(Model $order, Invoice $invoice): void
     {
         $recipients = collect();
@@ -636,6 +626,20 @@ class InvoiceService
                 'line_total' => $amount,
             ],
         ];
+    }
+
+    /**
+     * @param  array<int, array{line_total: float}>  $lines
+     */
+    protected function calculateSubtotal(array $lines, float $additionalCost = 0, float $rateTax = 0): float
+    {
+        if ($rateTax) {
+            $linesTotal = array_sum(array_column($lines, 'line_total')) / $rateTax;
+        } else {
+            $linesTotal = array_sum(array_column($lines, 'line_total'));
+        }
+
+        return round($linesTotal + $additionalCost, 2);
     }
 
     protected function sendInvoiceEmailForDonation(Model $donation, Invoice $invoice): void

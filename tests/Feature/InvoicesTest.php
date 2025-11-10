@@ -4,6 +4,8 @@ use App\Mail\InvoiceMailable;
 use App\Models\Donation;
 use App\Models\Invoice;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\InvoiceService;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -269,3 +271,47 @@ it('throws when storage write fails and does not send email', function () {
         Mail::assertNotSent(InvoiceMailable::class);
     }
 });
+
+test('genero el iva correctamente de las facturas de pedidos',
+    function ($coste_envio, $precio_producto, $iva) {
+
+        $metodoEnvio = ShippingMethod::factory()->create([
+            'name' => 'Gratuito',
+            'price' => $coste_envio,
+        ]);
+
+        $producto = Product::factory()->create([
+            'name' => 'Producto de prueba',
+            'price' => $precio_producto,
+        ]);
+
+        $order = Order::factory()
+            ->withDireccion()
+            ->withProductos($producto)
+            ->create([
+                'shipping' => $metodoEnvio->name,
+                'shipping_cost' => $metodoEnvio->price,
+            ]);
+
+        $order->refresh();
+        //        dd($order->toArray());
+
+        $invoice = $this->service->generateForOrder($order)['invoice'];
+        //        dump($result->subtotal, $order->toArray());
+
+        expect($invoice->vat_amount)->toBe($iva)
+            ->and($invoice->total)->toBe($precio_producto + $coste_envio)
+            ->and($invoice->vat_amount)->toBe($iva);
+
+    })->with([
+        [
+            'coste_envio' => 1.00,
+            'precio_producto' => 10.00,
+            'iva' => 1.74,
+        ],
+        [
+            'coste_envio' => 1.00,
+            'precio_producto' => 10.00,
+            'iva' => 1.74,
+        ],
+    ]);
