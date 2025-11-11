@@ -42,7 +42,6 @@ it('OrderCreated incluye resumen de artículos y total para pedidos con múltipl
     $order->update([
         'subtotal' => 23.50,
         'amount' => 23.50,
-        'taxes' => 0,
     ]);
     $order->refresh();
 
@@ -54,7 +53,7 @@ it('OrderCreated incluye resumen de artículos y total para pedidos con múltipl
     expect($mail->introLines)
         ->toContain('Importe total: '.convertPrice(23.50));
 
-    $resumenLine = collect($mail->introLines)->first(fn ($line) => str_contains($line, 'Resumen de artículos: '));
+    $resumenLine = collect($mail->introLines)->first(fn($line) => str_contains($line, 'Resumen de artículos: '));
 
     expect($resumenLine)
         ->not->toBeNull()

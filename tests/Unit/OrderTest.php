@@ -234,3 +234,23 @@ test('puedo crear factory de pedido con colección de productos seleccionado', f
 
     expect($order->Items)->toHaveCount(2);
 });
+
+test('puedo calcular los impuestos por función', function () {
+
+    $order = Order::factory()->create([
+        'amount' => 27.00,
+
+    ]);
+
+    expect($order->calculateTaxes())->toBe(4.69);
+});
+
+test('puedo calcular los impuestos por atributo', function () {
+
+    $order = Order::factory()->create([
+        'amount' => 27.00,
+
+    ]);
+
+    expect($order->taxes)->toBe(4.69);
+});

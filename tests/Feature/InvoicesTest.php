@@ -294,24 +294,54 @@ test('genero el iva correctamente de las facturas de pedidos',
             ]);
 
         $order->refresh();
-        //        dd($order->toArray());
 
         $invoice = $this->service->generateForOrder($order)['invoice'];
         //        dump($result->subtotal, $order->toArray());
 
+
         expect($invoice->vat_amount)->toBe($iva)
-            ->and($invoice->total)->toBe($precio_producto + $coste_envio)
-            ->and($invoice->vat_amount)->toBe($iva);
+            ->and($invoice->total)->toBe($precio_producto + $coste_envio);
 
     })->with([
-        [
-            'coste_envio' => 1.00,
-            'precio_producto' => 10.00,
-            'iva' => 1.74,
-        ],
-        [
-            'coste_envio' => 1.00,
-            'precio_producto' => 10.00,
-            'iva' => 1.74,
-        ],
-    ]);
+    [
+        'coste_envio' => 3.50,
+        'precio_producto' => 8.00,
+        'iva' => 2.00,
+    ],
+]);
+
+
+test('genero el iva correctamente de las facturas de donaciones',
+    function ($importe, $subtotal, $iva, $porcentaje) {
+
+
+        $donacion = Donation::factory()
+            ->withCertificado()
+            ->create([
+                'amount' => $importe,
+            ]);
+
+        $donacion->refresh();
+
+        Setting::set('billing.vat.donations_default', $porcentaje);
+        $invoice = $this->service->generateForDonation($donacion)['invoice'];
+        //        dump($result->subtotal, $order->toArray());
+
+
+        expect($invoice->vat_amount)->toBe($iva)
+            ->and($invoice->subtotal)->toBe($subtotal)
+            ->and($invoice->total)->toBe($importe);
+
+    })->with([
+    [
+        'importe' => 5.16,
+        'subtotal' => 4.26,
+        'iva' => 0.90,
+        'porcentaje' => 21,
+    ], [
+        'importe' => 5.16,
+        'subtotal' => 5.16,
+        'iva' => 0.0,
+        'porcentaje' => 0,
+    ],
+]);

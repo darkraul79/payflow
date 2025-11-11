@@ -150,7 +150,7 @@ test('NO puedo crear pago a donacion cancelada', function () {
 
     $donacion->cancel();
 
-    expect(fn () => $donacion->recurrentPay())->toThrow(
+    expect(fn() => $donacion->recurrentPay())->toThrow(
         HttpException::class,
         'La donación ya NO está activa y no se puede volver a pagar'
     )
@@ -572,4 +572,25 @@ test('puedo crear factory con donacion recurrente', function () {
     expect($donacion->type)->toBe(Donation::RECURRENTE)
         ->and($donacion->frequency)->toBe(Donation::FREQUENCY['MENSUAL'])
         ->and($donacion->certificate())->toBeInstanceOf(Address::class);
+});
+
+
+test('puedo calcular los impuestos por función', function () {
+
+    $order = Donation::factory()->create([
+        'amount' => 27.00,
+
+    ]);
+
+    expect($order->calculateTaxes())->toBe(4.69);
+});
+
+test('puedo calcular los impuestos por atributo', function () {
+
+    $order = Donation::factory()->create([
+        'amount' => 27.00,
+
+    ]);
+
+    expect($order->taxes)->toBe(4.69);
 });

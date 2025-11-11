@@ -31,14 +31,13 @@ class PaymentProcess
 
     private function createModel(): void
     {
-        if ($this->modelo instanceof Order && ! isset($this->data['id'])) {
+        if ($this->modelo instanceof Order && !isset($this->data['id'])) {
             $this->modelo = Order::create([
                 'amount' => convertPriceNumber($this->data['amount']),
                 'number' => generateOrderNumber(),
                 'shipping' => $this->data['shipping'] ?? 'Precio fijo',
                 'shipping_cost' => $this->data['shipping_cost'],
                 'subtotal' => $this->data['subtotal'],
-                'taxes' => $this->data['taxes'],
                 'payment_method' => $this->data['payment_method'],
             ]);
         } elseif ($this->modelo instanceof Order && isset($this->data['id'])) {

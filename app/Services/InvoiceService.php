@@ -34,12 +34,14 @@ class InvoiceService
         $order->loadMissing(['items.product', 'addresses']);
 
         $lines = $this->orderLines($order);
+
         $shippingCost = (float) $order->shipping_cost;
         $shippingMethod = $order->shipping;
-        $vatRate = (float) $order->vatRate();
 
-        $vatAmount = (float) $order->taxes;
-        $subtotal = (float) $order->subtotal - $vatAmount;
+        $vatRate = (float) $order->vatRate();
+        $vatAmount = (float) $order->calculateTaxes(true);
+
+        $subtotal = (float) $order->amount - $vatAmount;
         $total = (float) $order->amount;
 
         $meta = [
@@ -86,6 +88,7 @@ class InvoiceService
 
     /**
      * @param  array<int, array{name: string, quantity: int, unit_price: float, line_total: float}>  $lines
+     *
      * @return array{invoice: Invoice, path: string, url: string}
      *
      * @throws MpdfException*@throws Throwable
@@ -239,7 +242,7 @@ class InvoiceService
 
         // Build optional data URI for raster images to improve mPDF compatibility
         $logoDataUri = '';
-        if ($logoAbsPath !== '' && ! str_ends_with(strtolower($logoAbsPath), '.svg')) {
+        if ($logoAbsPath !== '' && !str_ends_with(strtolower($logoAbsPath), '.svg')) {
             try {
                 $content = @file_get_contents($logoAbsPath);
                 if ($content !== false) {
@@ -278,7 +281,7 @@ class InvoiceService
     protected function generatePdf(string $html): string
     {
         $tempDir = storage_path('app/tmp/mpdf');
-        if (! is_dir($tempDir)) {
+        if (!is_dir($tempDir)) {
             @mkdir($tempDir, 0775, true);
         }
 
@@ -308,7 +311,7 @@ class InvoiceService
 
         // Ensure directories exist
         try {
-            if (! is_dir($absoluteDir)) {
+            if (!is_dir($absoluteDir)) {
                 @mkdir($absoluteDir, 0775, true);
             }
         } catch (Throwable $e) {
@@ -398,7 +401,7 @@ class InvoiceService
         }
 
         // Final verification, retry once if missing, and fail-fast if still missing
-        if (! file_exists($absolutePath) && ! $disk->exists($relativePath)) {
+        if (!file_exists($absolutePath) && !$disk->exists($relativePath)) {
             Log::warning('[invoice-pdf] PDF not found after the first writing attempt, retrying once', [
                 'invoice_id' => $invoice->id,
                 'number' => $invoice->number,
@@ -430,7 +433,7 @@ class InvoiceService
             }
         }
 
-        if (! file_exists($absolutePath) && ! $disk->exists($relativePath)) {
+        if (!file_exists($absolutePath) && !$disk->exists($relativePath)) {
             Log::error('[invoice-pdf] PDF not found after writing attempts, aborting', [
                 'invoice_id' => $invoice->id,
                 'number' => $invoice->number,
@@ -457,7 +460,7 @@ class InvoiceService
             // Ensure the source file exists on the public disk before attaching
             $absPath = storage_path('app/public/'.ltrim($relativePath, '/'));
             $exists = $disk->exists($relativePath) || file_exists($absPath);
-            if (! $exists) {
+            if (!$exists) {
                 Log::warning('[invoice-pdf] Invoice media source file missing on disk when attaching', [
                     'model_type' => $model->getMorphClass(),
                     'model_id' => $model->getKey(),
@@ -523,7 +526,7 @@ class InvoiceService
         }
 
         if ($shipping = $order->shipping_address()) {
-            if ($shipping->email && ! $recipients->contains($shipping->email)) {
+            if ($shipping->email && !$recipients->contains($shipping->email)) {
                 $recipients->push($shipping->email);
             }
         }
@@ -581,11 +584,12 @@ class InvoiceService
         $donation->loadMissing('addresses');
 
         $lines = $this->donationLines($donation);
-        $vatRate = $donation->vatRate();
 
-        $subtotal = $this->calculateSubtotal($lines);
-        $vatAmount = round($subtotal * $vatRate, 2);
-        $total = round($subtotal + $vatAmount, 2);
+        $vatRate = $donation->vatRate();
+        $vatAmount = (float) $donation->calculateTaxes(true);
+
+        $subtotal = (float) $donation->amount - $vatAmount;
+        $total = $donation->amount;
 
         $meta = [
             'donation_type' => $donation->type,
@@ -628,6 +632,18 @@ class InvoiceService
         ];
     }
 
+    protected function sendInvoiceEmailForDonation(Model $donation, Invoice $invoice): void
+    {
+        $certificate = $donation->certificate();
+
+        // Donation::certificate() may return false; guard it and missing email
+        if (!$certificate || !($certificate->email)) {
+            return;
+        }
+
+        $this->sendInvoiceEmail([$certificate->email], $invoice);
+    }
+
     /**
      * @param  array<int, array{line_total: float}>  $lines
      */
@@ -640,17 +656,5 @@ class InvoiceService
         }
 
         return round($linesTotal + $additionalCost, 2);
-    }
-
-    protected function sendInvoiceEmailForDonation(Model $donation, Invoice $invoice): void
-    {
-        $certificate = $donation->certificate();
-
-        // Donation::certificate() may return false; guard it and missing email
-        if (! $certificate || ! ($certificate->email)) {
-            return;
-        }
-
-        $this->sendInvoiceEmail([$certificate->email], $invoice);
     }
 }

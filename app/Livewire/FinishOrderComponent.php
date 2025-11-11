@@ -112,7 +112,7 @@ class FinishOrderComponent extends Component
             ];
         }
 
-        if (! Cart::canCheckout()) {
+        if (!Cart::canCheckout()) {
             $this->redirectRoute('cart');
         }
 
@@ -168,7 +168,6 @@ class FinishOrderComponent extends Component
             'shipping' => $this->cart['shipping_method']['name'],
             'shipping_cost' => $this->cart['shipping_method']['price'],
             'subtotal' => $this->cart['totals']['subtotal'],
-            'taxes' => $this->cart['totals']['taxes'],
             'amount' => $this->cart['totals']['total'],
             'payment_method' => $this->payment_method,
         ]);
