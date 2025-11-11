@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\Resources\DonationResource\Pages\Listdonations;
 use App\Mail\InvoiceMailable;
 use App\Models\Donation;
 use App\Models\Invoice;
@@ -16,6 +17,7 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Livewire\livewire;
 
 beforeEach(function () {
     Storage::fake('public');
@@ -345,3 +347,60 @@ test('genero el iva correctamente de las facturas de donaciones',
         'porcentaje' => 0,
     ],
 ]);
+
+test('puedo crear facturas de donaciones sin certificado', function () {
+    $donacion = Donation::factory()
+        ->withCertificado()
+        ->create();
+
+    $invoice = $this->service->generateForDonation($donacion)['invoice'];
+
+
+    Storage::disk('public')->assertExists($invoice['path']);
+    expect($invoice)->toBeInstanceOf(Invoice::class)
+        ->and($invoice->total)->toBe($donacion->amount);
+
+    actingAs(User::factory()->create());
+    $response = get(route('invoices.show', $invoice).'?refresh=1');
+
+    $response->assertSuccessful()
+        ->assertHeader('X-Invoice-Refreshed', '1')
+        ->assertHeader('Content-Type', 'application/pdf');
+
+    $donaciones = Donation::all();
+
+    livewire(Listdonations::class)
+        ->assertTableActionVisible('invoice')
+        ->assertTableActionDataSet(['send_email' => false])
+        ->callTableAction('invoice', $donacion)
+        ->assertHasNoTableActionErrors();
+});
+
+test('puedo crear facturas de pedidos sin dirección de envío y con cualquier estado', function () {
+    $pedido = Order::factory()
+        ->error()
+        ->create();
+
+    $invoice = $this->service->generateForDonation($pedido)['invoice'];
+
+
+    Storage::disk('public')->assertExists($invoice['path']);
+    expect($invoice)->toBeInstanceOf(Invoice::class)
+        ->and($invoice->total)->toBe($pedido->amount);
+
+    actingAs(User::factory()->create());
+    $response = get(route('invoices.show', $invoice).'?refresh=1');
+
+    $response->assertSuccessful()
+        ->assertHeader('X-Invoice-Refreshed', '1')
+        ->assertHeader('Content-Type', 'application/pdf');
+
+    $donaciones = Donation::all();
+
+    livewire(Listdonations::class)
+        ->assertTableActionVisible('invoice')
+        ->assertTableActionDataSet(['send_email' => false])
+        ->callTableAction('invoice', $pedido)
+        ->assertTableActionDataSet(['send_email' => false])
+        ->assertHasNoTableActionErrors();
+});
