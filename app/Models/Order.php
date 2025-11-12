@@ -107,7 +107,7 @@ class Order extends Model implements HasMedia
             'name' => State::ERROR,
         ];
 
-        if (!$this->states()->where($estado)->exists()) {
+        if (! $this->states()->where($estado)->exists()) {
 
             $estado['info'] = $redSysResponse;
             $estado['info']['Error'] = $mensaje ?? 'Error al procesar el pedido';
@@ -131,7 +131,7 @@ class Order extends Model implements HasMedia
             ]);
 
         // Si no existe el estado PAGADO, lo creo
-        if (!$this->states()->where('name', State::PAGADO)->exists()) {
+        if (! $this->states()->where('name', State::PAGADO)->exists()) {
             // resto la cantidad al stock de los productos
             $this->subtractStocks();
             $this->states()->create([
@@ -246,7 +246,7 @@ class Order extends Model implements HasMedia
     protected function totalRedsys(): Attribute
     {
         return Attribute::make(
-            get: fn() => Str::replace('.', '', number_format($this->attributes['amount'], 2)),
+            get: fn () => Str::replace('.', '', number_format($this->attributes['amount'], 2)),
         );
     }
 
@@ -256,7 +256,7 @@ class Order extends Model implements HasMedia
     protected function taxes(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->calculateTaxes(),
+            get: fn () => $this->calculateTaxes(),
         );
     }
 
@@ -264,8 +264,6 @@ class Order extends Model implements HasMedia
      * Calcula el IVA del pedido.
      *
      * @param  bool  $amountIncludesVat  Indica si `amount` ya incluye IVA (por defecto true).
-     *
-     * @return float
      */
     public function calculateTaxes(bool $amountIncludesVat = true): float
     {

@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Outerweb\Settings\Models\Setting;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
-
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Livewire\livewire;
@@ -367,7 +366,6 @@ test('puedo crear facturas de donaciones sin certificado', function () {
         ->assertHeader('X-Invoice-Refreshed', '1')
         ->assertHeader('Content-Type', 'application/pdf');
 
-    $donaciones = Donation::all();
 
     livewire(Listdonations::class)
         ->assertTableActionVisible('invoice')
@@ -395,7 +393,6 @@ test('puedo crear facturas de pedidos sin dirección de envío y con cualquier e
         ->assertHeader('X-Invoice-Refreshed', '1')
         ->assertHeader('Content-Type', 'application/pdf');
 
-    $donaciones = Donation::all();
 
     livewire(Listdonations::class)
         ->assertTableActionVisible('invoice')

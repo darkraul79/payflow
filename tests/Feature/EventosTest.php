@@ -17,6 +17,7 @@ use App\Models\State;
 use App\Models\User;
 use App\Notifications\OrderCreated;
 use Database\Seeders\UsersSeeder;
+
 use function Pest\Livewire\livewire;
 
 test('al crear pedido se llama al evento CreateOrder en factory', function () {
@@ -283,7 +284,6 @@ test('al crear donación sin dirección no envío email', function ($state, $typ
         ],
     ]);
 
-
 test('al crear donación recurrente envía email con datos del importe', function () {
 
     Mail::fake();
@@ -319,7 +319,6 @@ test('al crear donación recurrente envía email con datos del importe', functio
             $mail->hasSubject('¡Gracias por unirte como socio/amigo! 🌊');
     });
 });
-
 
 test('email de pedido con impuesto bien calculado', function () {
     Mail::fake();

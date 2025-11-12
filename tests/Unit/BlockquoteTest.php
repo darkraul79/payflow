@@ -18,7 +18,7 @@ test('get random devuelve una frase', function () {
 
 test('si no hay frases el bloque blanco no aparece', function () {
 
-    $home = Page::factory()->create([
+    Page::factory()->create([
         'slug' => 'home',
         'title' => 'Home',
         'is_home' => true,

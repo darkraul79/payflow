@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Services\InvoiceService;
 use Illuminate\Support\Facades\Storage;
 use Outerweb\Settings\Models\Setting;
-
 use function Pest\Laravel\actingAs;
 
 it('regenerates missing PDF in mailable attachments to avoid null body', function () {
@@ -47,7 +46,7 @@ it('regenerates missing PDF in mailable attachments to avoid null body', functio
     $attachments = $mailable->attachments();
 
     // Either it regenerates and attaches, or the worst case sends without attachment.
-    // Primary expectation: file is recreated and one attachment is present.
+    // Primary expectation: a file is recreated and one attachment is present.
     Storage::disk('public')->assertExists($path);
     expect($attachments)->toBeArray()->and(count($attachments))->toBe(1);
 });
