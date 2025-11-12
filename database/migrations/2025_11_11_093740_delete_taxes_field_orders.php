@@ -4,18 +4,17 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
-        Schema::table('Orders', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table) {
             $table->dropColumn('taxes');
         });
     }
 
     public function down(): void
     {
-        Schema::table('Orders', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table) {
             //
             $table->float('taxes')->default(0.00);
         });
