@@ -1,19 +1,17 @@
 {
     "mcpServers": {
         "laravel-boost": {
-            "command": "/Users/Raul Sebastian Pulido/Library/Application Support/Herd/bin/php83",
+            "command": "/Users/raulsebastian/Library/Application Support/Herd/bin/php83",
             "args": [
-                "/Users/Raul Sebastian Pulido/PhpstormProjects/fundacionelenatertre/artisan",
+                "/Users/raulsebastian/PhpstormProjects/fundacionelenatertre/artisan",
                 "boost:mcp"
             ]
         },
         "herd": {
-            "command": "/Users/Raul Sebastian Pulido/Library/Application Support/Herd/bin/php83",
-            "args": [
-                "/Applications/Herd.app/Contents/Resources/herd-mcp.phar"
-            ],
+            "command": "/Users/raulsebastian/Library/Application Support/Herd/bin/php83",
+            "args": ["/Applications/Herd.app/Contents/Resources/herd-mcp.phar"],
             "env": {
-                "SITE_PATH": "/Users/Raul Sebastian Pulido/PhpstormProjects/fundacionelenatertre"
+                "SITE_PATH": "/Users/raulsebastian/PhpstormProjects/fundacionelenatertre"
             }
         }
     }

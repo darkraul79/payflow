@@ -27,3 +27,6 @@ storage/media-library/
 .DS_Store
 */.DS_Store
 
+/.mcp.json
+/.claude/
+/.junie/
