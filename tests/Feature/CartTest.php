@@ -244,9 +244,42 @@ test('no puedo agregar más cantidad de productos mayor que el stock', function 
 
 test('si no hay productos en carrito no muestro totales', function () {
 
-    $metodoEnvio = ShippingMethod::factory()->create();
+    ShippingMethod::factory()->create();
     livewire(PageCartComponent::class)
         ->assertSet('shipping_method', null)
         ->assertDontSeeText('Total del carrito')
         ->assertDontSeeHtml('<button class="btn btn-primary mt-4 w-full cursor-pointer rounded-full" wire:click="submit"> Finalizar compra </button>');
+});
+
+test('calculo bien los impuestos en el proceso del carrito', function () {
+
+    $producto = Product::factory()->create([
+        'price' => 7.50,
+    ]);
+    $metodoEnvio = ShippingMethod::factory()->create([
+        'price' => 2.50,
+    ]);
+
+
+    livewire(CardProduct::class, [
+        'product' => $producto,
+    ])->call('addToCart', $producto);
+
+    livewire(PageCartComponent::class)
+        ->set('shipping_method', $metodoEnvio->id)
+        ->assertSeeTextInOrder(['incluye 1,74', 'de impuestos'])
+        ->call('submit');
+    livewire(FinishOrderComponent::class)
+        ->assertSeeTextInOrder([
+            'Subtotal',
+            '7,50',
+            'Envío',
+            '2,50',
+            'Total',
+            '10,00',
+            'incluye',
+            '1,74',
+            'de impuestos'
+        ]);
+
 });

@@ -11,6 +11,8 @@ use App\Mail\OrderNew;
 use App\Models\Address;
 use App\Models\Donation;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\ShippingMethod;
 use App\Models\State;
 use App\Models\User;
 use App\Notifications\OrderCreated;
@@ -28,7 +30,7 @@ test('al crear pedido se llama al evento CreateOrder en factory', function () {
 
 });
 
-test('al crear pedido por metodo se llama al evento CreateOrder', function () {
+test('al crear pedido por método se llama al evento CreateOrder', function () {
 
     Event::fake([
         CreateOrderEvent::class,
@@ -56,12 +58,16 @@ test('al crear pedido se manda un email a los administradores', function () {
     $pedido = creaPedido();
     $this->get(route('pedido.response', getResponseOrder($pedido, true)));
 
-    Notification::assertSentTo(
-        User::all(), OrderCreated::class
-    );
+    try {
+        Notification::assertSentTo(
+            User::all(), OrderCreated::class
+        );
+    } catch (Exception $e) {
+        dd($e);
+    }
 });
 
-test('al crear pedido se manda un email al email de la dirección de facturacion ', function () {
+test('al crear pedido se manda un email al email de la dirección de facturación ', function () {
 
     Mail::fake();
     Mail::assertNothingSent();
@@ -72,13 +78,14 @@ test('al crear pedido se manda un email al email de la dirección de facturacion
     Mail::assertSent(OrderNew::class, $pedido->billing_address()->email);
 });
 
-test('al crear pedido se manda un email al email de la dirección de facturacion desde factory ', function () {
+test('al crear pedido se manda un email al email de la dirección de facturación desde factory ', function () {
 
     Mail::fake();
     Mail::assertNothingSent();
 
     $p = Order::factory()->withDireccion()->create();
 
+    /** @noinspection PhpPossiblePolymorphicInvocationInspection */
     Mail::assertSent(OrderNew::class, $p->billing_address()->email);
 });
 
@@ -87,7 +94,7 @@ test('al crear pedido si tiene dirección de envío con email diferente pongo en
     Mail::fake();
     Mail::assertNothingSent();
 
-    $p = Order::factory()->withDirecciones([
+    Order::factory()->withDirecciones([
         'email' => 'info@raulsebastian.es',
     ], [
         'email' => 'dakraul@gmail.com',
@@ -103,7 +110,7 @@ test('al crear pedido si tiene misma dirección de envío con email diferente si
     Mail::fake();
     Mail::assertNothingSent();
 
-    $p = Order::factory()->withDirecciones([
+    Order::factory()->withDirecciones([
         'email' => 'info@raulsebastian.es',
     ], [
         'email' => 'info@raulsebastian.es',
@@ -221,10 +228,11 @@ test('al crear donación única envío email al donante', function ($state, $sub
 
     $this->get(route('donation.response', getResponseDonation($donacion, $state)));
 
-    Mail::assertSent(DonationNewMail::class, function (DonationNewMail $mail) use ($subject) {
+    Mail::assertSent(DonationNewMail::class, function (DonationNewMail $mail) use ($subject, $text) {
 
         return $mail->hasTo('info@raulsebastian.es') &&
-            $mail->hasSubject($subject);
+            $mail->hasSubject($subject) &&
+            $mail->assertSeeInText($text);
     });
 })
     ->with([
@@ -240,7 +248,7 @@ test('al crear donación única envío email al donante', function ($state, $sub
         ],
     ]);
 
-test('al crear donación sin direccion no envío email', function ($state, $type) {
+test('al crear donación sin dirección no envío email', function ($state, $type) {
 
     Mail::fake();
     $paymentProcess = new PaymentProcess(Donation::class, [
@@ -276,7 +284,7 @@ test('al crear donación sin direccion no envío email', function ($state, $type
     ]);
 
 
-test('al crear donación recurrente envia email con datos del importe', function () {
+test('al crear donación recurrente envía email con datos del importe', function () {
 
     Mail::fake();
     $paymentProcess = new PaymentProcess(Donation::class, [
@@ -310,4 +318,21 @@ test('al crear donación recurrente envia email con datos del importe', function
             $mail->assertSeeInHtml('mailto:ayuda@fundacionelenatertre.es') &&
             $mail->hasSubject('¡Gracias por unirte como socio/amigo! 🌊');
     });
+});
+
+
+test('email de pedido con impuesto bien calculado', function () {
+    Mail::fake();
+
+    $producto = Product::factory()->create([
+        'price' => 7.50,
+    ]);
+    $metodoEnvio = ShippingMethod::factory()->create([
+        'price' => 2.50,
+    ]);
+
+    $pedido = creaPedido($producto, $metodoEnvio);
+    $mailable = new OrderNew($pedido);
+
+    expect($mailable->content()->with['tax'])->toBe(1.74);
 });

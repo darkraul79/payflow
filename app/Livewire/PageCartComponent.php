@@ -52,7 +52,7 @@ class PageCartComponent extends Component
     {
         $this->subtotal = Cart::getTotalPrice();
         $this->total = $this->subtotal + $this->envio;
-        $this->taxes = calculoImpuestos($this->subtotal);
+        $this->taxes = calculoImpuestos($this->total);
         Cart::setTotals(
             subtotal: $this->subtotal,
             taxes: $this->taxes,
@@ -83,7 +83,8 @@ class PageCartComponent extends Component
     {
         Cart::removeItem($id);
         $this->refreshCart();
-        $this->dispatch('showAlert', type: 'success', title: 'Producto eliminado', message: 'Se ha eliminado el producto del carrito.');
+        $this->dispatch('showAlert', type: 'success', title: 'Producto eliminado',
+            message: 'Se ha eliminado el producto del carrito.');
 
         $this->updateTotals();
 
@@ -102,7 +103,8 @@ class PageCartComponent extends Component
     {
         $this->validate();
         if ($this->disabled) {
-            $this->dispatch('showAlert', type: 'error', title: 'Carrito vacío', message: 'No hay productos en el carrito');
+            $this->dispatch('showAlert', type: 'error', title: 'Carrito vacío',
+                message: 'No hay productos en el carrito');
 
             return;
         }
@@ -123,7 +125,8 @@ class PageCartComponent extends Component
 
     public function clearCart(): void
     {
-        $this->dispatch('showAlert', type: 'info', title: 'Carrito vacío', message: 'Has eliminado todos los productos del carrito.');
+        $this->dispatch('showAlert', type: 'info', title: 'Carrito vacío',
+            message: 'Has eliminado todos los productos del carrito.');
 
         $this->items = [];
         $this->taxes = 0;

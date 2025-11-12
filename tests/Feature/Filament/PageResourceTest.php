@@ -5,7 +5,6 @@ use App\Filament\Resources\PageResource\Pages\CreatePage;
 use App\Filament\Resources\PageResource\Pages\EditPage;
 use App\Filament\Resources\PageResource\Pages\ListPages;
 use App\Models\Page;
-
 use function Pest\Laravel\get;
 use function Pest\Livewire\livewire;
 
@@ -21,7 +20,7 @@ it('un usuario con acceso al panel puede ver el índice de PageResource', functi
         ->assertOk();
 });
 
-it('CreatePage valida campos requeridos y la regla del slug', function () {
+it('CreatePage válida para campos requeridos y la regla del slug', function () {
     asUser();
 
     // Requeridos vacíos
