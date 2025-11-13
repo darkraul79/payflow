@@ -275,6 +275,6 @@ test('kk', function () {
     ]);
     $user->notify(new OrderCreated($order));
 
-    expect(true)->toBe(true);
+    expect(true)->toBeTrue();
 
 });

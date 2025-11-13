@@ -6,7 +6,7 @@
     >
         <header class="mb-12 flex flex-row items-center gap-5 text-center">
             <div
-                class="border-success bg-success-50 inline-block rounded-full border-8 bg-white ring-8"
+                class="border-success inline-block rounded-full border-8 bg-white ring-8"
             >
                 <x-bi-check-lg class="text-azul-marino h-6 w-6" />
             </div>

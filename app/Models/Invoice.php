@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @mixin IdeHelperInvoice
+ */
 class Invoice extends Model
 {
     protected $fillable = [

@@ -136,7 +136,7 @@ it('result: donation en estado ERROR muestra donation.ko', function () {
 
     $this->get(route('donacion.finalizada', $donacion->number))
         ->assertOk()
-        ->assertViewIs('donation.ko');
+        ->assertViewIs('donation.error');
 });
 
 it('convertPriceNumber soporta formatos locales', function () {

@@ -9,7 +9,7 @@ class BadgeProductStock extends Component
 {
     public string $color;
 
-    public $stock;
+    public int $stock;
 
     public string $text;
 

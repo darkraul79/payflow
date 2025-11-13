@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static active()
  *
  * @property mixed $greater
+ *
+ * @mixin IdeHelperShippingMethod
  */
 class ShippingMethod extends Model
 {

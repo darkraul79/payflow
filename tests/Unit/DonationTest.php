@@ -119,7 +119,6 @@ test('puedo crear donacion unica', function () {
         'type' => Donation::UNICA,
         'frequency' => null,
     ]);
-    /** @noinspection DuplicatedCode */
     $donacion = $paymentProcess->modelo;
 
     $this->get(route('donation.response', getResponseDonation($donacion, true)))

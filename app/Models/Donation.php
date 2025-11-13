@@ -26,6 +26,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @method addresses()
  *
  * @property mixed $payments_sum_amount
+ *
+ * @mixin IdeHelperDonation
  */
 class Donation extends Model implements HasMedia
 {
@@ -71,9 +73,9 @@ class Donation extends Model implements HasMedia
     public function getResultView(): string
     {
         if ($this->state->name === State::ERROR) {
-            return 'donation.ko';
+            return 'donation.error';
         } else {
-            return 'donation.ok';
+            return 'donation.success';
         }
     }
 

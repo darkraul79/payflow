@@ -9,6 +9,9 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+/**
+ * @mixin IdeHelperSponsor
+ */
 class Sponsor extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;

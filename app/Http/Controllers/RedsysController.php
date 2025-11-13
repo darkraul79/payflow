@@ -126,17 +126,6 @@ class RedsysController extends Controller
             'pedido' => $pedido->number,
         ])->with('model', class_basename($pedido));
 
-        //        return redirect()->route('pedido.finalizado', ['ok' => $complete]);
-
-    }
-
-    /**
-     * Muestra la vista de resultado de donación.
-     */
-    public function donacionResult(bool $ok = false): View
-    {
-
-        return view('donation.'($ok ? 'ko' : 'ko'), $this->getParams('Donación'));
     }
 
     public function getParams(string $title): array

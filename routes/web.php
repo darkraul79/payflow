@@ -34,10 +34,6 @@ Route::get(News::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'ne
 Route::get(Proyect::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'proyects'])->name('proyects.show');
 Route::get(Product::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'products'])->name('products.show');
 
-// Route::get('/pagina', function () {
-//    return view('page');
-// })->name('pagina');
-
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

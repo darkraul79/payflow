@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property mixed $amount
  * @property mixed $info
+ *
+ * @mixin IdeHelperPayment
  */
 class Payment extends Model
 {

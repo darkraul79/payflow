@@ -26,6 +26,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property mixed $amount
  * @property mixed $totalRedsys
  * @property mixed $number
+ *
+ * @mixin IdeHelperOrder
  */
 #[ObservedBy([OrderObserver::class])]
 class Order extends Model implements HasMedia
@@ -184,9 +186,9 @@ class Order extends Model implements HasMedia
     public function getResultView(): string
     {
         if ($this->state->name === State::ERROR) {
-            return 'cart.ko';
+            return 'order.error';
         } else {
-            return 'cart.ok';
+            return 'order.success';
         }
     }
 

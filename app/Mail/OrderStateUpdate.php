@@ -40,7 +40,7 @@ class OrderStateUpdate extends Mailable
         return match ($this->order->state->name) {
             State::PENDIENTE => '📩 Tu pedido está pendiente de pago',
             State::PAGADO => '📦 Tu pedido está en preparación 💛',
-            State::ENVIADO => '🚚 Tu pedido ya está en camino!',
+            State::ENVIADO => '¡🚚 Tu pedido ya está en camino!',
             State::FINALIZADO => '¡Gracias por subirte a la ola solidaria! 🌊',
             State::ERROR => '⚠️ Atención: problema con tu pedido',
             State::CANCELADO => '❌ Pedido cancelado',
@@ -71,7 +71,6 @@ class OrderStateUpdate extends Mailable
             State::FINALIZADO => 'emails.order-completed',
             State::ERROR => 'emails.order-error',
             State::CANCELADO => 'emails.order-cancel',
-            default => 'emails.order-error',
         };
     }
 

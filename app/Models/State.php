@@ -8,25 +8,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
+/**
+ * @mixin IdeHelperState
+ */
 class State extends Model
 {
     use HasFactory;
 
-    public const PENDIENTE = 'Pendiente de pago';
+    public const string PENDIENTE = 'Pendiente de pago';
 
-    public const PAGADO = 'Pagado';
+    public const string PAGADO = 'Pagado';
 
-    public const ENVIADO = 'Enviado';
+    public const string ENVIADO = 'Enviado';
 
-    public const FINALIZADO = 'Finalizado';
+    public const string FINALIZADO = 'Finalizado';
 
-    public const ERROR = 'ERROR';
+    public const string ERROR = 'ERROR';
 
-    public const CANCELADO = 'Cancelado';
+    public const string CANCELADO = 'Cancelado';
 
-    public const ACEPTADO = 'Aceptado';
+    public const string ACEPTADO = 'Aceptado';
 
-    public const ACTIVA = 'Activa';
+    public const string ACTIVA = 'Activa';
 
     protected $fillable = [
         'stateable_id',
