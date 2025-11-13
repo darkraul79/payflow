@@ -133,4 +133,8 @@
     .form-error {
         @apply text-error/80 text-[11px];
     }
+
+    .attachment__caption:not(.attachment__caption--edited) {
+        @apply hidden;
+    }
 }
