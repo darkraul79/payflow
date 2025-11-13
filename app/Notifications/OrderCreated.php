@@ -44,14 +44,16 @@ class OrderCreated extends Notification
 
         $mail = (new MailMessage)
             ->subject('Nuevo Pedido '.$this->order->number)
-            ->greeting('Hay un nuevo pedido.')
-            ->line('Importe total: '.convertPrice($this->order->amount));
+            ->greeting('Hay un nuevo pedido.');
 
         if ($itemsPreview->isNotEmpty()) {
-            $mail->line('Resumen de artículos: '.$itemsPreview->implode(', '));
+            $mail->line('_Resumen de artículos:_');
+            $mail->line($itemsPreview->implode(', '));
         }
+        $mail->line('## Importe total: **'.convertPrice($this->order->amount).'**');
 
-        return $mail->action('Ver pedido', OrderResource::getUrl('update', ['record' => $this->order->id]));
+        return $mail->action('Ver pedido '.$this->order->number,
+            OrderResource::getUrl('update', ['record' => $this->order->id]));
     }
 
     /**

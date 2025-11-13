@@ -503,8 +503,10 @@ test('compruebo que donacion recurrente trimestral no se repiten los cobros', fu
     expect($donacionesPendientesCobro->count())->toBe(1);
 });
 
-test('al procesar donacion envío email a todos los usuarios', function () {
+test('al procesar donacion envío email a todos los usuarios administradores', function ($enviroment) {
     Notification::fake();
+    // Establezco el entorno actual
+    config(['app.env' => $enviroment]);
 
     User::factory()->count(3)->create();
 
@@ -522,12 +524,21 @@ test('al procesar donacion envío email a todos los usuarios', function () {
             'donacion' => $donacion->number,
         ]));
 
-    Notification::assertSentTo(
-        $users, DonationCreatedNotification::class
-    );
-    Notification::assertCount($users->count());
+    if (app()->environment('production')) {
+        Notification::assertSentTo(
+            User::where('email', 'info@raulsebastian.es')->get(), DonationCreatedNotification::class
+        );
+        Notification::assertCount(1);
+    } else {
+        Notification::assertSentTo(
+            User::all(), DonationCreatedNotification::class
+        );
+        Notification::assertCount($users->count());
+    }
 
-});
+})->with([
+    ['production', 'local'],
+]);
 
 it('Donation::payed simple crea estado PAGADO una sola vez', function () {
     $donacion = Donation::factory()->create(['type' => Donation::UNICA]);

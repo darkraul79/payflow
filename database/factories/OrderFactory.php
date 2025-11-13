@@ -208,6 +208,10 @@ class OrderFactory extends Factory
         }
 
         return $this->afterCreating(function (Order $pedido) {
+
+            if (Product::count() == 0) {
+                Product::factory()->create();
+            }
             $product = Product::inRandomOrder()->first();
             $sutotalOrder = $product->price;
             $pedido->items()->create([

@@ -12,6 +12,7 @@ use App\Models\News;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Proyect;
+use App\Models\User;
 use App\Services\InvoiceService;
 use Illuminate\Support\Facades\Route;
 
@@ -154,4 +155,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
 
+Route::get('kk', function () {
+
+    $pedido = Order::find(1);
+
+    $user = User::find(1);
+
+    $user->notify(new \App\Notifications\OrderCreated($pedido));
+});
 require __DIR__.'/auth.php';

@@ -15,6 +15,7 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\State;
 use App\Models\User;
+use App\Notifications\DonationCreatedNotification;
 use App\Notifications\OrderCreated;
 use Database\Seeders\UsersSeeder;
 
@@ -48,8 +49,10 @@ test('al crear pedido por método se llama al evento CreateOrder', function () {
 
 });
 
-test('al crear pedido se manda un email a los administradores', function () {
+test('al crear pedido se manda un email a los administradores', function ($enviroment) {
 
+    // Establezco el entorno actual
+    config(['app.env' => $enviroment]);
     Notification::fake();
 
     $this->seed(UsersSeeder::class);
@@ -59,14 +62,19 @@ test('al crear pedido se manda un email a los administradores', function () {
     $pedido = creaPedido();
     $this->get(route('pedido.response', getResponseOrder($pedido, true)));
 
-    try {
+    if (app()->environment('production')) {
+        Notification::assertSentTo(
+            User::where('email', 'info@raulsebastian.es')->get(), OrderCreated::class
+        );
+    } else {
         Notification::assertSentTo(
             User::all(), OrderCreated::class
         );
-    } catch (Exception $e) {
-        dd($e);
     }
-});
+
+})->with([
+    ['production', 'local'],
+]);
 
 test('al crear pedido se manda un email al email de la dirección de facturación ', function () {
 
@@ -319,6 +327,38 @@ test('al crear donación recurrente envía email con datos del importe', functio
             $mail->hasSubject('¡Gracias por unirte como socio/amigo! 🌊');
     });
 });
+
+test('al crear donación se manda un email a los administradores', function ($enviroment) {
+
+    // Establezco el entorno actual
+    config(['app.env' => $enviroment]);
+    Notification::fake();
+
+    $this->seed(UsersSeeder::class);
+
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => 1.56,
+        'type' => Donation::UNICA,
+    ]);
+    $donacion = $paymentProcess->modelo;
+
+    Notification::assertNothingSent();
+
+    $this->get(route('donation.response', getResponseDonation($donacion, true)));
+
+    if (app()->environment('production')) {
+        Notification::assertSentTo(
+            User::where('email', 'info@raulsebastian.es')->get(), DonationCreatedNotification::class
+        );
+    } else {
+        Notification::assertSentTo(
+            User::all(), DonationCreatedNotification::class
+        );
+    }
+
+})->with([
+    ['production', 'local'],
+]);
 
 test('email de pedido con impuesto bien calculado', function () {
     Mail::fake();

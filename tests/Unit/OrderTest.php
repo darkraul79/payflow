@@ -186,22 +186,30 @@ test('al crear pedido solo creo un estado pendiente de pago', function () {
         ->and($pedido->states)->toHaveCount(2);
 });
 
-test('al procesar pedido envío email a todos los usuarios', function () {
+test('al procesar pedido envío email a todos los usuarios', function ($enviroment) {
 
+    // Establezco el entorno actual
+    config(['app.env' => $enviroment]);
     Notification::fake();
 
     User::factory()->count(3)->create();
 
-    $users = User::all();
-
     $pedido = creaPedido();
     $this->get(route('pedido.response', getResponseOrder($pedido, true)));
 
-    Notification::assertSentTo(
-        $users, OrderCreated::class
-    );
+    if (app()->environment('production')) {
+        Notification::assertSentTo(
+            User::where('email', 'info@raulsebastian.es')->get(), OrderCreated::class
+        );
+    } else {
+        Notification::assertSentTo(
+            User::all(), OrderCreated::class
+        );
+    }
 
-});
+})->with([
+    ['production', 'local'],
+]);
 
 test('puedo crear factory de pedido con items', function () {
 
@@ -253,4 +261,20 @@ test('puedo calcular los impuestos por atributo', function () {
     ]);
 
     expect($order->taxes)->toBe(4.69);
+});
+
+test('kk', function () {
+
+    // Establezco el entorno actual
+    config(['app.env' => 'local']);
+
+    $order = Order::factory()->withProductos()->create();
+
+    $user = User::factory()->create([
+        'email' => 'darkraul@gmail.com',
+    ]);
+    $user->notify(new OrderCreated($order));
+
+    expect(true)->toBe(true);
+
 });
