@@ -144,7 +144,8 @@ class ShippingMethodResource extends Resource
                     ->badge()
                     ->html()
                     ->size(TextColumn\TextColumnSize::ExtraSmall)
-                    ->tooltip(fn ($record): string => $record->isVisibleToday() ? $record->from?->format('d/m/Y').' - '.$record->until?->format('d/m/Y') : false)
+                    ->tooltip(fn ($record
+                    ): string => $record->isVisibleToday() ? $record->from?->format('d/m/Y').' - '.$record->until?->format('d/m/Y') : false)
                     ->formatStateUsing(function (Model $record): string {
                         return $record->isVisibleToday() ? 'activo' : 'oculto';
                     }),

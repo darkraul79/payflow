@@ -46,9 +46,4 @@ class FrontEndController extends Controller
 
         return view('products.show', compact('page'));
     }
-
-    private function getType($class)
-    {
-        return class_basename($class);
-    }
 }

@@ -22,6 +22,9 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+/**
+ * @mixin IdeHelperActivity
+ */
 class Activity extends Model implements HasMedia
 {
     use HasBlockQuotes, HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, WithCommonAttributes;

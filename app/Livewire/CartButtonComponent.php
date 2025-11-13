@@ -34,7 +34,8 @@ class CartButtonComponent extends Component
 
     public function resetCart(): void
     {
-        $this->dispatch('showAlert', type: 'info', title: 'Carrito vacío', message: 'Has eliminado todos los productos del carrito.');
+        $this->dispatch('showAlert', type: 'info', title: 'Carrito vacío',
+            message: 'Has eliminado todos los productos del carrito.');
         Cart::clearCart();
         $this->updateQuantity();
 

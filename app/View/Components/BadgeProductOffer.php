@@ -7,11 +7,11 @@ use Illuminate\View\Component;
 
 class BadgeProductOffer extends Component
 {
-    public $visible;
+    public bool $visible;
 
     public function __construct(?int $visible = 0)
     {
-        $this->visible = $visible > 0 ? true : false;
+        $this->visible = $visible > 0;
     }
 
     public function render(): View

@@ -16,6 +16,9 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+/**
+ * @mixin IdeHelperProduct
+ */
 class Product extends Model implements HasMedia
 {
     use HasBreadcrumbs, HasFactory, HasTags, InteractsWithMedia, SoftDeletes, WithCommonAttributes;
@@ -80,7 +83,7 @@ class Product extends Model implements HasMedia
         return convertPrice($this->price);
     }
 
-    public function getPrice()
+    public function getPrice(): ?float
     {
         if ($this->offer_price) {
             return $this->offer_price;

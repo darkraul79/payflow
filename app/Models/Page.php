@@ -21,6 +21,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * Post
  *
  * @mixin Builder
+ * @mixin IdeHelperPage
  */
 class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia, MenuPanelable
 {

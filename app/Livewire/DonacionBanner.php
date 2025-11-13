@@ -1,6 +1,6 @@
 <?php
 
-namespace app\Livewire;
+namespace App\Livewire;
 
 use App\Http\Classes\PaymentProcess;
 use App\Models\Address;

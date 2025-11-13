@@ -1,12 +1,10 @@
 <?php
 
-/** @noinspection PhpUndefinedMethodInspection */
-
 namespace App\Filament\Fabricator\PageBlocks;
 
-use App\Models\Activity;
-use App\Models\News;
-use App\Models\Proyect;
+use app\Models\Activity;
+use app\Models\News;
+use app\Models\Proyect;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;

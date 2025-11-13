@@ -78,7 +78,8 @@ class ContentPaginated extends Component
         $sortBy = explode('-', $this->sortBy);
         $orderField = $sortBy[0];
         $direction = $sortBy[1] ?? 'desc';
-        if (in_array($this->sortBy, ['price-asc', 'price-desc']) && method_exists($modelClass, 'scopeOrderByEffectivePrice')) {
+        if (in_array($this->sortBy, ['price-asc', 'price-desc']) && method_exists($modelClass,
+            'scopeOrderByEffectivePrice')) {
             $query->orderByEffectivePrice($direction);
         } else {
             $allowed = ['name', 'title', 'created_at', 'updated_at'];
@@ -99,11 +100,13 @@ class ContentPaginated extends Component
     {
 
         if ((Cart::getQuantityProduct($product->id) + 1) > $product->stock) {
-            $this->dispatch('showAlert', type: 'error', title: 'No se puede agregar el producto', message: 'No hay suficiente stock');
+            $this->dispatch('showAlert', type: 'error', title: 'No se puede agregar el producto',
+                message: 'No hay suficiente stock');
         } else {
             Cart::addItem($product);
             $this->dispatch('updatedCart');
-            $this->dispatch('showAlert', type: 'success', title: 'Producto agregado', message: 'El producto ha sido agregado al carrito.');
+            $this->dispatch('showAlert', type: 'success', title: 'Producto agregado',
+                message: 'El producto ha sido agregado al carrito.');
         }
     }
 }

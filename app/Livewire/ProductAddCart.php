@@ -31,13 +31,15 @@ class ProductAddCart extends Component
     public function addToCart(): void
     {
         if ($this->checkStock()) {
-            $this->dispatch('showAlert', type: 'warning', title: 'No se puede agregar al carrito', message: 'No hay suficiente stock');
+            $this->dispatch('showAlert', type: 'warning', title: 'No se puede agregar al carrito',
+                message: 'No hay suficiente stock');
 
         } else {
             Cart::addItem($this->product, $this->quantity);
 
             $this->dispatch('updatedCart');
-            $this->dispatch('showAlert', type: 'success', title: 'Producto agregado', message: 'El producto ha sido agregado al carrito.');
+            $this->dispatch('showAlert', type: 'success', title: 'Producto agregado',
+                message: 'El producto ha sido agregado al carrito.');
         }
 
     }

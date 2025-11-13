@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUndefinedMethodInspection */
-
 namespace App\Filament\Fabricator\PageBlocks;
 
 use App\Models\Activity;

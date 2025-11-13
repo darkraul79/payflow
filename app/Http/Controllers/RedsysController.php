@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Events\CreateOrderEvent;
 use App\Events\NewDonationEvent;
 use App\Helpers\RedsysAPI;
-use App\Models\Donation;
 use App\Models\Order;
 use App\Models\Page;
 use App\Models\Payment;
@@ -164,20 +163,5 @@ class RedsysController extends Controller
         $modelo = $pago->payable;
 
         return view($modelo->getResultView(), $modelo->getStaticViewParams());
-    }
-
-    public function kk()
-    {
-
-        $donacion = Donation::find(2);
-        $par = $donacion->recurrentPay();
-        //        $redSys = new RedsysAPI();
-        //        $par = $redSys->getFormPagoAutomatico($donacion, false, $nu);
-        dd($par);
-
-        return view('kk', [
-            'form' => $par,
-            'donacion' => $donacion,
-        ]);
     }
 }
