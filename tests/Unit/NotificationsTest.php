@@ -9,7 +9,7 @@ use App\Notifications\DonationCreatedNotification;
 use App\Notifications\OrderCreated;
 
 it('OrderCreated genera un MailMessage con subject y action correctos', function () {
-    $user = User::factory()->create();
+    User::factory()->create();
     $order = Order::factory()->create();
 
     $notification = new OrderCreated($order);
@@ -17,14 +17,14 @@ it('OrderCreated genera un MailMessage con subject y action correctos', function
     $mail = $notification->toMail();
 
     expect($mail->subject)->toBe('Nuevo Pedido '.$order->number)
-        ->and($mail->actionText)->toBe('Ver pedido')
+        ->and($mail->actionText)->toBe('Ver pedido '.$order->number)
         ->and($mail->actionUrl)->toBe(
             App\Filament\Resources\OrderResource::getUrl('update', ['record' => $order->id])
         );
 });
 
 it('OrderCreated incluye resumen de artículos y total para pedidos con múltiples ítems', function () {
-    $user = User::factory()->create();
+    User::factory()->create();
     $order = Order::factory()->create([
         'amount' => 0,
     ]);
@@ -51,22 +51,20 @@ it('OrderCreated incluye resumen de artículos y total para pedidos con múltipl
 
     // Debe incluir el total y un resumen con nombre × cantidad
     expect($mail->introLines)
-        ->toContain('Importe total: '.convertPrice(23.50));
-
-    $resumenLine = collect($mail->introLines)->first(fn ($line) => str_contains($line, 'Resumen de artículos: '));
-
-    expect($resumenLine)
+        ->toContain('## Importe total: **'.convertPrice(23.50).'**')
+        ->and($mail->introLines)
         ->not->toBeNull()
-        ->and($resumenLine)
+        ->and($mail->introLines)
         ->toContain('Producto A × 2')
-        ->and($resumenLine)
+        ->and($mail->introLines)
         ->toContain('Producto B × 1')
-        ->and($resumenLine)
+        ->and($mail->introLines)
         ->toContain('Producto C × 3');
+
 });
 
 it('DonationCreatedNotification (única) compone el mensaje y acción correctamente', function () {
-    $user = User::factory()->create();
+    User::factory()->create();
     $donation = Donation::factory()->create(); // por defecto única
 
     $notification = new DonationCreatedNotification($donation);
@@ -85,7 +83,7 @@ it('DonationCreatedNotification (única) compone el mensaje y acción correctame
 });
 
 it('DonationCreatedNotification (recurrente) añade la frecuencia al texto', function () {
-    $user = User::factory()->create();
+    User::factory()->create();
     $donation = Donation::factory()->recurrente()->create();
 
     $notification = new DonationCreatedNotification($donation);

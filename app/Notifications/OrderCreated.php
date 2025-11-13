@@ -40,7 +40,7 @@ class OrderCreated extends Notification
         $items = collect($this->order->itemsArray());
         $itemsPreview = $items->map(function (array $item): string {
             return $item['name'].' × '.$item['quantity'];
-        })->take(5);
+        });
 
         $mail = (new MailMessage)
             ->subject('Nuevo Pedido '.$this->order->number)
@@ -48,7 +48,10 @@ class OrderCreated extends Notification
 
         if ($itemsPreview->isNotEmpty()) {
             $mail->line('_Resumen de artículos:_');
-            $mail->line($itemsPreview->implode(', '));
+            foreach ($itemsPreview as $chunk) {
+                $mail->line($chunk);
+            }
+            //            $mail->line($itemsPreview->implode(', '));
         }
         $mail->line('## Importe total: **'.convertPrice($this->order->amount).'**');
 

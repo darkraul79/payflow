@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace app\Livewire;
 
 use App\Http\Classes\PaymentProcess;
 use App\Models\Address;
@@ -25,11 +25,11 @@ class DonacionBanner extends Component
 
     public bool $amount_select_100 = false;
 
-    public string $frequency;
+    public mixed $frequency = null;
 
     public mixed $needsCertificate = true;
 
-    public string $type = Donation::UNICA;
+    public string $type;
 
     public string $MerchantParameters = '';
 
@@ -41,7 +41,7 @@ class DonacionBanner extends Component
 
     public int $step = 1;
 
-    public $certificate = [
+    public array $certificate = [
         'name' => '',
         'last_name' => '',
         'last_name2' => '',
@@ -69,11 +69,16 @@ class DonacionBanner extends Component
 
     }
 
-    public function updatedType(): void
+    public function updatedType(string $value): void
     {
-        $this->frequency = $this->type === Donation::UNICA
-            ? false
-            : $this->frequency ?? Donation::FREQUENCY['MENSUAL'];
+        if ($value === Donation::UNICA) {
+            $this->frequency = null;
+
+            return;
+        }
+
+        // RECURRENTE: si ya hay frecuencia, se mantiene; si no, por defecto MENSUAL
+        $this->frequency = $this->frequency ?: Donation::FREQUENCY['MENSUAL'];
     }
 
     public function mount($prefix): void
@@ -216,6 +221,7 @@ class DonacionBanner extends Component
                         }
                     },
                 ],
+                'frequency' => 'required_if:type,'.Donation::RECURRENTE,
                 'type' => 'required|in:'.Donation::UNICA.','.Donation::RECURRENTE,
             ],
             2 => [
@@ -237,6 +243,8 @@ class DonacionBanner extends Component
     {
         return [
             'required' => 'El campo es obligatorio.',
+            'type.required' => 'Debes seleccionar el tipo de donación.',
+            'frequency.required_if' => 'Debes seleccionar la frecuencia de pago.',
             'min' => 'Debe ser mayor que 0.',
             'integer' => 'El campo debe ser un número entero.',
             'numeric' => 'El campo debe ser un número.',

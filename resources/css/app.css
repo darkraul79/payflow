@@ -154,7 +154,7 @@
     }
 
     input[type='number'].item-number {
-        -moz-appearance: textfield;
+        /*-moz-appearance: textfield;*/
 
         &::-webkit-outer-spin-button,
         &::-webkit-inner-spin-button {
@@ -198,6 +198,7 @@
     &.btn-primary-outline {
         @apply text-azul-mist border-azul-mist border bg-white;
 
+
         &:hover,
         &:focus,
         &:active {
@@ -215,10 +216,33 @@
                 @apply visible! w-auto!;
             }
         }
+
+
     }
+
+
 }
 @utility card {
     @apply border-azul-cobalt block rounded-lg border bg-white p-4 shadow-md;
+}
+
+
+.radio-buttons {
+    /* Primer segmento: borde izq. y radio izq. */
+
+    .collapsed {
+        @apply rounded-none border-x-0;
+    }
+
+    .block:first-child > .collapsed {
+        @apply rounded-l-3xl! border-l!;
+    }
+
+    /* Último segmento: borde der. y radio der. */
+
+    .block:last-child > .collapsed {
+        @apply rounded-r-3xl border-r;
+    }
 }
 
 .sliderHome {
@@ -293,9 +317,7 @@
     &::before {
         @apply absolute left-0 z-40 hidden h-full w-[70%] overflow-hidden bg-white bg-no-repeat lg:block;
         content: ' ';
-        background: url('/public/images/elena.jpeg');
-        background-position: 72% center;
-        background-repeat: no-repeat;
+        background: url('/public/images/elena.jpeg') no-repeat 72% center;
         background-size: cover;
     }
 }

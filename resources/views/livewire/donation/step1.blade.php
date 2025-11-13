@@ -7,7 +7,7 @@
         !Dona a la FUNDACIÓN Elena Tertre!
     </h5>
 
-    <div class="my-6 flex w-full">
+    <div class="my-6 flex flex-col w-full">
         <x-radiobutton-donacion
             name="type"
             :prefix="$prefix"
@@ -23,13 +23,16 @@
                 ],
             ]"
         />
+
+        <x-error class="form-error" field="type" />
     </div>
     @if ($type === Donation::RECURRENTE)
-        <div class="my-6 flex w-full" wire:model="frequency">
+        <div class="my-6 flex flex-col w-full" wire:model="frequency">
             <x-radiobutton-donacion
                 name="frequency"
                 :prefix="$prefix"
                 :default="$frequency"
+                :is-grouped="true"
                 :options="[
                     [
                         'text' => 'Mensual',
@@ -45,29 +48,35 @@
                     ],
                 ]"
             />
+
+            <small class="text-gray-400 block w-full text-[10px]">
+                Puedes cancelar en cualquier momento
+            </small>
+            <x-error class="form-error" field="frequency" />
         </div>
     @endif
 
-    <div class="my-6 flex w-full" wire:model="amount_select">
+    <div class="my-6 flex flex-col w-full" wire:model="amount_select">
         <x-radiobutton-donacion
             name="amount_select"
             :prefix="$prefix"
             :default="$amount_select"
             :options="[
                 [
-                    'text' => '10',
+                    'text' => '10 €',
                     'value' => 10,
                 ],
                 [
-                    'text' => '50',
+                    'text' => '50 €' ,
                     'value' => 50,
                 ],
                 [
-                    'text' => '100',
+                    'text' => '100 €',
                     'value' => 100,
                 ],
             ]"
         />
+        <x-error class="form-error" field="amount_select" />
     </div>
 
     <div>
@@ -87,7 +96,7 @@
                 €
             </div>
         </div>
-        <small class="text-azul-gray block w-full text-[11px]">
+        <small class="text-primary block w-full text-[11px]">
             O si lo prefieres, puedes escribir otra cantidad
         </small>
 

@@ -219,6 +219,7 @@ test('no permite donaciones menores a 1', function () {
 test('valido campos de certificado', function () {
 
     livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+        ->set('type', Donation::UNICA)
         ->set('amount', '10')
         ->call('toStep', 3)
         ->call('submit')->assertHasErrors([
