@@ -14,20 +14,21 @@ class PaymentProcess
     public array $redSysAttributes;
 
     /**
+     * @var mixed|string
+     */
+    public string $payment_method;
+
+    /**
      * @var int|mixed
      */
     private array $data;
-
-    /**
-     * @var mixed|string
-     */
-    private string $payment_method;
 
     public function __construct($clase, array $data = [])
     {
 
         $this->modelo = new $clase;
         $this->data = $data;
+        $this->payment_method = $data['payment_method'] ?? 'tarjeta';
         $this->createModel();
         $this->createPayment();
         //        $this->createState();
