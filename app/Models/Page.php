@@ -50,7 +50,7 @@ class Page extends \Z3d0X\FilamentFabricator\Models\Page implements HasMedia, Me
 
     public function getMenuPanelUrlUsing(): callable
     {
-        return fn(self $model) => $model->getLink();
+        return fn (self $model) => $model->getLink();
     }
 
     public function registerMediaConversions(?Media $media = null): void

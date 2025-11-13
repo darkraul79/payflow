@@ -2,7 +2,6 @@
 
 namespace App\Models\Traits;
 
-
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -13,6 +12,4 @@ trait HasPublishedField
     {
         $query->where('published', true);
     }
-
-
 }

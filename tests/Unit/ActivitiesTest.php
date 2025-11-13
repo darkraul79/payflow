@@ -5,6 +5,7 @@
 /** @noinspection PhpUndefinedMethodInspection */
 
 use App\Models\Activity;
+
 use function Pest\Livewire\livewire;
 
 test('puedo crear una nueva actividad noticia, y proyecto', function ($model) {
@@ -81,6 +82,5 @@ test('latest_activities devuelve las últimas actividades ordenadas por fecha de
     expect($actividades->count())->toBe(2)
         ->and($actividades->first()->id)->toBe($actividadPrimera->id)
         ->and($actividades->last()->id)->toBe($actividadUltima->id);
-
 
 });

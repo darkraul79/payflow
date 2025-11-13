@@ -14,7 +14,7 @@ it('OrderCreated genera un MailMessage con subject y action correctos', function
 
     $notification = new OrderCreated($order);
 
-    $mail = $notification->toMail($user);
+    $mail = $notification->toMail();
 
     expect($mail->subject)->toBe('Nuevo Pedido '.$order->number)
         ->and($mail->actionText)->toBe('Ver pedido')
@@ -47,13 +47,13 @@ it('OrderCreated incluye resumen de artículos y total para pedidos con múltipl
 
     $notification = new OrderCreated($order->load('items.product'));
 
-    $mail = $notification->toMail($user);
+    $mail = $notification->toMail();
 
     // Debe incluir el total y un resumen con nombre × cantidad
     expect($mail->introLines)
         ->toContain('Importe total: '.convertPrice(23.50));
 
-    $resumenLine = collect($mail->introLines)->first(fn($line) => str_contains($line, 'Resumen de artículos: '));
+    $resumenLine = collect($mail->introLines)->first(fn ($line) => str_contains($line, 'Resumen de artículos: '));
 
     expect($resumenLine)
         ->not->toBeNull()
@@ -71,7 +71,7 @@ it('DonationCreatedNotification (única) compone el mensaje y acción correctame
 
     $notification = new DonationCreatedNotification($donation);
 
-    $mail = $notification->toMail($user);
+    $mail = $notification->toMail();
 
     expect($mail->subject)->toBe('Nueva Donación ')
         ->and($mail->introLines[0])
@@ -90,7 +90,7 @@ it('DonationCreatedNotification (recurrente) añade la frecuencia al texto', fun
 
     $notification = new DonationCreatedNotification($donation);
 
-    $mail = $notification->toMail($user);
+    $mail = $notification->toMail();
 
     expect($mail->introLines[0])
         ->toContain($donation->type.': '.$donation->frequency)

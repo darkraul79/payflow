@@ -23,7 +23,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class News extends Model implements HasMedia
 {
-    use HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, HasBlockQuotes, WithCommonAttributes;
+    use HasBlockQuotes, HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, WithCommonAttributes;
 
     protected static array $parentsSlugs = [
         [
@@ -35,7 +35,6 @@ class News extends Model implements HasMedia
             'title' => 'Actualidad',
         ],
     ];
-
 
     protected $fillable = [
         'title',
@@ -87,7 +86,6 @@ class News extends Model implements HasMedia
     {
         return $this->resume ?? Str::limit(strip_tags($this->content), 200);
     }
-
 
     protected function casts(): array
     {

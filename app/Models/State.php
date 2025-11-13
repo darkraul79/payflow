@@ -52,8 +52,7 @@ class State extends Model
             self::PENDIENTE => 'bi-cash-coin',
             self::PAGADO => 'bi-credit-card',
             self::ENVIADO => 'bi-truck',
-            self::FINALIZADO => 'bi-check',
-            self::ACTIVA => 'bi-check',
+            self::FINALIZADO, self::ACTIVA => 'bi-check',
             self::ERROR => 'bi-exclamation-circle-fill',
             self::CANCELADO => 'bi-ban',
             default => 'bi-hash',
@@ -71,8 +70,7 @@ class State extends Model
             self::ACTIVA => 'green',
             self::ENVIADO => 'secondary',
             self::FINALIZADO => 'info',
-            self::CANCELADO => 'danger',
-            self::ERROR => 'danger',
+            self::CANCELADO, self::ERROR => 'danger',
             default => 'primary',
         };
     }
@@ -88,6 +86,4 @@ class State extends Model
             'info' => AsArrayObject::class,
         ];
     }
-
-
 }

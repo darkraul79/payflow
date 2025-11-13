@@ -10,9 +10,7 @@ class Breadcrumbs extends Component
     public function __construct(
         public $page,
         public $type
-    )
-    {
-    }
+    ) {}
 
     public function render(): View
     {
@@ -20,6 +18,4 @@ class Breadcrumbs extends Component
             'breadcrumbs' => $this->page->getBreadcrumbs(),
         ]);
     }
-
-  
 }

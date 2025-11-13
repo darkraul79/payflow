@@ -39,7 +39,6 @@ class GetPaymentsOfMonth extends Command
         Log::info($this->initMessage);
         $this->info($this->initMessage);
 
-
         $donaciones = Donation::nextPaymentsDonations()->get();
 
         foreach ($donaciones as $donacion) {

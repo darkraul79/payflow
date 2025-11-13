@@ -9,6 +9,7 @@ use Livewire\Component;
 class NavMenu extends Component
 {
     public $menu;
+
     protected $type;
 
     protected $view = 'frontend.elements.header.navMenuDesktop';

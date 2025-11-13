@@ -8,11 +8,8 @@ use Illuminate\Support\Facades\Mail;
 
 class SendEmailsOrderStateUpdateListener
 {
-
-
     public function handle(UpdateOrderStateEvent $event): void
     {
-
 
         // Envío email al email de la dirección de facturación con los detalles del pedido
         Mail::to($event->order->billing_address()->email)

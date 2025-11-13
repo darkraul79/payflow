@@ -16,7 +16,6 @@ class Carta extends PageBlock
                     ->label('Imagen'),
                 Reusable::Basic(),
 
-
             ]);
     }
 

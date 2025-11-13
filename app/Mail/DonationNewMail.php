@@ -42,7 +42,7 @@ class DonationNewMail extends Mailable
         $new = $this->payed ? 'new' : 'error';
         $type = $this->donation->type === Donation::RECURRENTE ? 'recurrente' : 'unica';
 
-        return 'emails.donation-' . $new . '-' . $type;
+        return 'emails.donation-'.$new.'-'.$type;
 
     }
 

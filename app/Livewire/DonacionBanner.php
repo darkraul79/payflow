@@ -118,7 +118,7 @@ class DonacionBanner extends Component
 
         $this->validate();
 
-        if ($step == 3 && !$this->needsCertificate) {
+        if ($step == 3 && ! $this->needsCertificate) {
             $this->submit();
         } else {
 
@@ -216,7 +216,7 @@ class DonacionBanner extends Component
                         }
                     },
                 ],
-                'type' => 'required|in:' . Donation::UNICA . ',' . Donation::RECURRENTE,
+                'type' => 'required|in:'.Donation::UNICA.','.Donation::RECURRENTE,
             ],
             2 => [
                 'needsCertificate' => '',

@@ -56,7 +56,7 @@ class ItemsNumericos extends PageBlock
                                     ]),
                             ]),
                     ])->model(Page::class)
-                    ->itemLabel(fn(array $state): ?string => 'Item - ' . $state['title'] ?? null),
+                    ->itemLabel(fn (array $state): ?string => 'Item - '.$state['title'] ?? null),
 
                 //
             ]);

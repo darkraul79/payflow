@@ -26,6 +26,5 @@ class MenusSeeder extends Seeder
             ]);
         }
 
-
     }
 }

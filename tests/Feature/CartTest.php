@@ -9,8 +9,8 @@ use App\Livewire\QuantityButtons;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Services\Cart;
-use function Pest\Livewire\livewire;
 
+use function Pest\Livewire\livewire;
 
 test('suma correctamente el número de artículos', function () {
     $producto = Product::factory()->create([
@@ -241,7 +241,6 @@ test('no puedo agregar más cantidad de productos mayor que el stock', function 
     expect(Cart::getQuantityProduct($producto->id))->toBe(1);
 });
 
-
 test('si no hay productos en carrito no muestro totales', function () {
 
     ShippingMethod::factory()->create();
@@ -259,7 +258,6 @@ test('calculo bien los impuestos en el proceso del carrito', function () {
     $metodoEnvio = ShippingMethod::factory()->create([
         'price' => 2.50,
     ]);
-
 
     livewire(CardProduct::class, [
         'product' => $producto,
@@ -279,7 +277,7 @@ test('calculo bien los impuestos en el proceso del carrito', function () {
             '10,00',
             'incluye',
             '1,74',
-            'de impuestos'
+            'de impuestos',
         ]);
 
 });

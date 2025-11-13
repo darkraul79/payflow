@@ -18,7 +18,7 @@ class CreateProduct extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        if (!$data['oferta']) {
+        if (! $data['oferta']) {
             $data['offer_price'] = null;
         }
         unset($data['oferta']);

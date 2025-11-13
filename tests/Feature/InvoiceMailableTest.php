@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\InvoiceService;
 use Illuminate\Support\Facades\Storage;
 use Outerweb\Settings\Models\Setting;
+
 use function Pest\Laravel\actingAs;
 
 it('regenerates missing PDF in mailable attachments to avoid null body', function () {

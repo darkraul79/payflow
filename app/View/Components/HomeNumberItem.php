@@ -7,9 +7,7 @@ use Illuminate\View\Component;
 
 class HomeNumberItem extends Component
 {
-    public function __construct(public $number, public $title, public $icon, public $color)
-    {
-    }
+    public function __construct(public $number, public $title, public $icon, public $color) {}
 
     public function render(): View
     {

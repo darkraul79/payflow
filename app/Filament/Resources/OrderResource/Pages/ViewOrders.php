@@ -15,6 +15,4 @@ class ViewOrders extends ViewRecord
     {
         $this->record = $this->resolveRecord($record);
     }
-
-
 }

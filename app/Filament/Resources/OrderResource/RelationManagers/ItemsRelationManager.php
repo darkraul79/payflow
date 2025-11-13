@@ -10,8 +10,8 @@ use Filament\Tables\Table;
 class ItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
-    protected static ?string $label = 'Resumen';
 
+    protected static ?string $label = 'Resumen';
 
     public function table(Table $table): Table
     {

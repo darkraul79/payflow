@@ -2,9 +2,10 @@
 
 use App\Livewire\Auth\ConfirmPassword;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('confirm password screen can be rendered', function () {
     $user = User::factory()->create();
@@ -28,7 +29,7 @@ test('password can be confirmed', function () {
         ->assertRedirect(route('dashboard', absolute: false));
 });
 
-test('password is not confirmed with invalid password', function () {
+test('password is not confirmed with an invalid password', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user);

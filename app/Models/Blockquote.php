@@ -16,7 +16,7 @@ class Blockquote extends Model
 
     public static function getRandom(): ?string
     {
-        // Return a random item from database
+        // Return a random item from a database
         return Blockquote::inRandomOrder()->take(1)->first()?->text;
 
     }
@@ -28,6 +28,4 @@ class Blockquote extends Model
     {
         return $this->morphedByMany(Page::class, 'blockquoteable');
     }
-
-
 }

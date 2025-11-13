@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Outerweb\Settings\Models\Setting;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
+
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Livewire\livewire;
@@ -299,22 +300,19 @@ test('genero el iva correctamente de las facturas de pedidos',
         $invoice = $this->service->generateForOrder($order)['invoice'];
         //        dump($result->subtotal, $order->toArray());
 
-
         expect($invoice->vat_amount)->toBe($iva)
             ->and($invoice->total)->toBe($precio_producto + $coste_envio);
 
     })->with([
-    [
-        'coste_envio' => 3.50,
-        'precio_producto' => 8.00,
-        'iva' => 2.00,
-    ],
-]);
-
+        [
+            'coste_envio' => 3.50,
+            'precio_producto' => 8.00,
+            'iva' => 2.00,
+        ],
+    ]);
 
 test('genero el iva correctamente de las facturas de donaciones',
     function ($importe, $subtotal, $iva, $porcentaje) {
-
 
         $donacion = Donation::factory()
             ->withCertificado()
@@ -328,24 +326,23 @@ test('genero el iva correctamente de las facturas de donaciones',
         $invoice = $this->service->generateForDonation($donacion)['invoice'];
         //        dump($result->subtotal, $order->toArray());
 
-
         expect($invoice->vat_amount)->toBe($iva)
             ->and($invoice->subtotal)->toBe($subtotal)
             ->and($invoice->total)->toBe($importe);
 
     })->with([
-    [
-        'importe' => 5.16,
-        'subtotal' => 4.26,
-        'iva' => 0.90,
-        'porcentaje' => 21,
-    ], [
-        'importe' => 5.16,
-        'subtotal' => 5.16,
-        'iva' => 0.0,
-        'porcentaje' => 0,
-    ],
-]);
+        [
+            'importe' => 5.16,
+            'subtotal' => 4.26,
+            'iva' => 0.90,
+            'porcentaje' => 21,
+        ], [
+            'importe' => 5.16,
+            'subtotal' => 5.16,
+            'iva' => 0.0,
+            'porcentaje' => 0,
+        ],
+    ]);
 
 test('puedo crear facturas de donaciones sin certificado', function () {
     $donacion = Donation::factory()
@@ -353,7 +350,6 @@ test('puedo crear facturas de donaciones sin certificado', function () {
         ->create();
 
     $invoice = $this->service->generateForDonation($donacion)['invoice'];
-
 
     Storage::disk('public')->assertExists($invoice['path']);
     expect($invoice)->toBeInstanceOf(Invoice::class)
@@ -365,7 +361,6 @@ test('puedo crear facturas de donaciones sin certificado', function () {
     $response->assertSuccessful()
         ->assertHeader('X-Invoice-Refreshed', '1')
         ->assertHeader('Content-Type', 'application/pdf');
-
 
     livewire(Listdonations::class)
         ->assertTableActionVisible('invoice')
@@ -381,7 +376,6 @@ test('puedo crear facturas de pedidos sin dirección de envío y con cualquier e
 
     $invoice = $this->service->generateForDonation($pedido)['invoice'];
 
-
     Storage::disk('public')->assertExists($invoice['path']);
     expect($invoice)->toBeInstanceOf(Invoice::class)
         ->and($invoice->total)->toBe($pedido->amount);
@@ -392,7 +386,6 @@ test('puedo crear facturas de pedidos sin dirección de envío y con cualquier e
     $response->assertSuccessful()
         ->assertHeader('X-Invoice-Refreshed', '1')
         ->assertHeader('Content-Type', 'application/pdf');
-
 
     livewire(Listdonations::class)
         ->assertTableActionVisible('invoice')

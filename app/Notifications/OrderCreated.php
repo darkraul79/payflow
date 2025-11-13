@@ -27,7 +27,7 @@ class OrderCreated extends Notification
      *
      * @return array<int, string>
      */
-    public function via(object $notifiable): array
+    public function via(): array
     {
         return ['mail'];
     }
@@ -35,7 +35,7 @@ class OrderCreated extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(): MailMessage
     {
         $items = collect($this->order->itemsArray());
         $itemsPreview = $items->map(function (array $item): string {
@@ -59,7 +59,7 @@ class OrderCreated extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toArray(): array
     {
         return [
             //

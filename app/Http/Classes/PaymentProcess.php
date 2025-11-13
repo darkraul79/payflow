@@ -31,7 +31,7 @@ class PaymentProcess
 
     private function createModel(): void
     {
-        if ($this->modelo instanceof Order && !isset($this->data['id'])) {
+        if ($this->modelo instanceof Order && ! isset($this->data['id'])) {
             $this->modelo = Order::create([
                 'amount' => convertPriceNumber($this->data['amount']),
                 'number' => generateOrderNumber(),

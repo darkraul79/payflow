@@ -8,18 +8,19 @@ use Illuminate\View\Component;
 
 class ProductTagsCategories extends Component
 {
-
     public $types = [
         'tags' => 'Tags',
         'categories' => 'Categorías',
     ];
+
     public $tags;
+
     public $categories;
 
     public function __construct(Product $product)
     {
         $this->tags = $product->tags;
-//        $this->categories = $categories;
+        //        $this->categories = $categories;
     }
 
     public function render(): View

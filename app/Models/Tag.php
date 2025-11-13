@@ -14,7 +14,6 @@ class Tag extends Model
         'name',
     ];
 
-
     /**
      * Get all of the videos that are assigned this tag.
      */

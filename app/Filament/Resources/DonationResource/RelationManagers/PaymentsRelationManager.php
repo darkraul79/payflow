@@ -12,6 +12,7 @@ use Filament\Tables\Table;
 class PaymentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'payments';
+
     protected static ?string $pluralLabel = 'Pagos';
 
     public function form(Form $form): Form
@@ -43,8 +44,7 @@ class PaymentsRelationManager extends RelationManager
                     ->verticallyAlignStart()
                     ->alignLeft()
                     ->since(),
-                ViewColumn::make('info')->view('filament.tables.columns.info')->label(false)->grow()
-                ,
+                ViewColumn::make('info')->view('filament.tables.columns.info')->label(false)->grow(),
             ])
             ->filters([
                 //

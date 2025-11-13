@@ -112,7 +112,7 @@ class FinishOrderComponent extends Component
             ];
         }
 
-        if (!Cart::canCheckout()) {
+        if (! Cart::canCheckout()) {
             $this->redirectRoute('cart');
         }
 

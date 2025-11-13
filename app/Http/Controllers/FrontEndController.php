@@ -30,7 +30,6 @@ class FrontEndController extends Controller
     {
         $page = Proyect::where('slug', $slug)->first();
 
-
         return view('activities.show', compact('page'));
     }
 

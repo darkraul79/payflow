@@ -2,7 +2,6 @@
 
 namespace App\Models\Traits;
 
-
 use App\Models\State;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,8 +11,6 @@ use ReflectionClass;
 
 trait HasStates
 {
-
-
     public static function getStates(): array
     {
         $reflector = new ReflectionClass(State::class);
@@ -122,6 +119,4 @@ trait HasStates
             $query->where('name', State::ACTIVA);
         });
     }
-
-
 }

@@ -32,9 +32,9 @@ class Descargas extends PageBlock
                                     ->columnSpan('full'),
                                 FileUpload::make('file')
                                     ->label('Archivo')
-                                    ->directory('descargas')
-                            ])
-                    ])
+                                    ->directory('descargas'),
+                            ]),
+                    ]),
             ]);
 
     }

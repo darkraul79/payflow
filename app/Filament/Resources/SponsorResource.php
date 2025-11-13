@@ -30,7 +30,6 @@ class SponsorResource extends Resource
 
     protected static ?int $navigationSort = 31;
 
-
     protected static ?string $navigationGroup = 'Configuración';
 
     protected static ?string $navigationIcon = 'bi-apple';
@@ -118,6 +117,4 @@ class SponsorResource extends Resource
             //            'edit' => EditSponsor::route('/{record}/edit'),
         ];
     }
-
-
 }

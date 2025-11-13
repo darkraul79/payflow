@@ -6,6 +6,7 @@ use App\Livewire\CardProduct;
 use App\Livewire\ProductAddCart;
 use App\Models\Product;
 use App\Services\Cart;
+
 use function Pest\Livewire\livewire;
 
 test('puedo crear Productos', function () {
@@ -43,7 +44,6 @@ test('puedo editar productos', function () {
 
     expect(Product::first()->title)->toBe('Producto editado');
 });
-
 
 test('urlPrefix es correcto', function () {
     expect(Product::factory()->make()->getUrlPrefix())->toBe('/tienda-solidaria/');
@@ -88,7 +88,6 @@ test('no puedo agregar más cantidad de productos mayor que el stock en la tarje
         ->assertDispatched('showAlert', type: 'error', title: 'No se puede agregar el producto', message: 'No hay suficiente stock')
         ->assertNotDispatched('updatedCart');
 
-
     expect(Cart::getQuantityProduct($producto->id))->toBe(1);
 
 });
@@ -129,9 +128,7 @@ test('latest_activities devuelve los últimos productos ordenados por fecha actu
         ->and($productos->first()->id)->toBe($primerProducto->id)
         ->and($productos->last()->id)->toBe($ultimoProductos->id);
 
-
 });
-
 
 test('next_activities devuelve los productos ordenados por fecha de actualizacion asc', function () {
 
@@ -144,6 +141,4 @@ test('next_activities devuelve los productos ordenados por fecha de actualizacio
         ->and($productos->first()->id)->toBe($primerProducto->id)
         ->and($productos->last()->id)->toBe($ultimoProductos->id);
 
-
 });
-

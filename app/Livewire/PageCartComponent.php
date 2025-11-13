@@ -25,6 +25,7 @@ class PageCartComponent extends Component
     public bool $disabled = true;
 
     public float $taxes = 0;
+
     public Collection $shipping_methods;
 
     public $shipping_method = null;

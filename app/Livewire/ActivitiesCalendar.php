@@ -8,9 +8,7 @@ use Omnia\LivewireCalendar\LivewireCalendar;
 
 class ActivitiesCalendar extends LivewireCalendar
 {
-
-//    public $dayOfWeekView = 'components/calendar/day-of-week.blade.php';
-
+    //    public $dayOfWeekView = 'components/calendar/day-of-week.blade.php';
 
     public function events(): Collection
     {

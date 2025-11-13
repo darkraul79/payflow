@@ -20,7 +20,7 @@ class OrderFactory extends Factory
     {
         $shippingMethod = ShippingMethod::inRandomOrder()->first();
 
-        if (!$shippingMethod) {
+        if (! $shippingMethod) {
             $shippingMethod = ShippingMethod::factory()->create();
         }
 
@@ -38,10 +38,9 @@ class OrderFactory extends Factory
 
     public function configure(): static
     {
-        return $this->afterMaking(function (Order $pedido) {
-        })->afterCreating(function (Order $pedido) {
+        return $this->afterMaking(function (Order $pedido) {})->afterCreating(function (Order $pedido) {
 
-            if (!$pedido->address?->exists()) {
+            if (! $pedido->address?->exists()) {
                 $address = Address::factory()->create([
                     'type' => Address::BILLING,
                 ]);
