@@ -56,7 +56,7 @@ class ContentPaginated extends Component
 
     public function getData()
     {
-        $modelClass = resolve('App\\Models\\' . $this->type);
+        $modelClass = resolve('App\\Models\\'.$this->type);
 
         switch ($this->filter) {
             default:
@@ -85,7 +85,6 @@ class ContentPaginated extends Component
             $column = in_array($orderField, $allowed) ? $orderField : 'created_at';
             $query->orderBy($column, $direction ?? 'desc');
         }
-
 
         return $query->paginate($this->perPage);
     }

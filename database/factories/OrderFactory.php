@@ -30,7 +30,6 @@ class OrderFactory extends Factory
             'shipping_cost' => $shippingMethod->price,
             'subtotal' => $this->faker->randomFloat(2, 1, 100),
             'amount' => $this->faker->randomFloat(2, 1, 100),
-            'taxes' => $this->faker->randomFloat(),
             'payment_method' => fake()->word(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
@@ -164,7 +163,6 @@ class OrderFactory extends Factory
                     }
                     $pedido->update([
                         'subtotal' => $sutotalOrder,
-                        'taxes' => round($sutotalOrder / 1.21 * .21, 2),
                         'amount' => $sutotalOrder + $pedido->shipping_cost,
                     ]);
                 });
@@ -184,7 +182,6 @@ class OrderFactory extends Factory
                 ]);
                 $pedido->update([
                     'subtotal' => $sutotalOrder,
-                    'taxes' => round($sutotalOrder / 1.21 * .21, 2),
                     'amount' => $sutotalOrder + $pedido->shipping_cost,
                 ]);
             });
@@ -205,7 +202,6 @@ class OrderFactory extends Factory
                 }
                 $pedido->update([
                     'subtotal' => $sutotalOrder,
-                    'taxes' => round($sutotalOrder / 1.21 * .21, 2),
                     'amount' => $sutotalOrder + $pedido->shipping_cost,
                 ]);
             });
@@ -222,7 +218,6 @@ class OrderFactory extends Factory
             ]);
             $pedido->update([
                 'subtotal' => $sutotalOrder,
-                'taxes' => round($sutotalOrder / 1.21 * .21, 2),
                 'amount' => $sutotalOrder + $pedido->shipping_cost,
             ]);
         });

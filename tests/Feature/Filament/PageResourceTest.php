@@ -21,7 +21,7 @@ it('un usuario con acceso al panel puede ver el índice de PageResource', functi
         ->assertOk();
 });
 
-it('CreatePage valida campos requeridos y la regla del slug', function () {
+it('CreatePage válida para campos requeridos y la regla del slug', function () {
     asUser();
 
     // Requeridos vacíos

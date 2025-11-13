@@ -23,7 +23,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Proyect extends Model implements HasMedia
 {
-    use HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, HasBlockQuotes, WithCommonAttributes;
+    use HasBlockQuotes, HasBreadcrumbs, HasFactory, HasPublishedField, HasTags, InteractsWithMedia, SoftDeletes, WithCommonAttributes;
 
     protected static array $parentsSlugs = [
         [
@@ -35,7 +35,6 @@ class Proyect extends Model implements HasMedia
             'title' => 'Qué hacemos',
         ],
     ];
-
 
     protected $fillable = [
         'title',

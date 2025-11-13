@@ -34,18 +34,17 @@ class Items extends PageBlock
                                     ->columns(1)
                                     ->columnSpan(3)
                                     ->schema([
-                                        Reusable::Basic(['subtitle'])
+                                        Reusable::Basic(['subtitle']),
                                     ]),
                             ]),
                         Reusable::BotonFields(),
 
                     ])->model(Page::class)
-                    ->itemLabel(fn(array $state): ?string => 'Item - ' . $state['title'] ?? null),
+                    ->itemLabel(fn (array $state): ?string => 'Item - '.$state['title'] ?? null),
 
                 //
             ]);
     }
-
 
     public static function mutateData(array $data): array
     {

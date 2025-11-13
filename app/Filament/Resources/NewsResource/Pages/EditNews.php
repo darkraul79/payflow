@@ -22,7 +22,7 @@ class EditNews extends EditRecord
             RestoreAction::make(),
             Action::make('visit')
                 ->label('Visitar')
-                ->url(fn(?News $record) => $record->getLink() ?? null)
+                ->url(fn (?News $record) => $record->getLink() ?? null)
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->openUrlInNewTab()
                 ->color('success')

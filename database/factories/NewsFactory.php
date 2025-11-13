@@ -11,7 +11,6 @@ use Illuminate\Support\Carbon;
 
 class NewsFactory extends Factory
 {
-
     use withDonaciones, withImages, withPublished;
 
     protected $model = News::class;

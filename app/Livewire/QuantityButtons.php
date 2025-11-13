@@ -38,7 +38,7 @@ class QuantityButtons extends Component
     public function updateQuantity(int $newQuantity): void
     {
         if ($newQuantity > $this->product->stock) {
-            $this->errorMessage = 'No hay suficiente stock (' . $this->product->stock . ' max)';
+            $this->errorMessage = 'No hay suficiente stock ('.$this->product->stock.' max)';
             $this->quantity = $this->product->stock;
         } elseif ($newQuantity < 1) {
             $this->errorMessage = 'No puedes agregar menos de 1 producto';

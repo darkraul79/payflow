@@ -42,7 +42,6 @@ class ActivitiesSeeder extends Seeder
                 'resume' => 'El pasado sábado 5 de abril, tuvo lugar en la Dehesa de Navalcarbón',
             ]);
 
-
         $titulo = 'III CARRERA SOLIDARIA FUNDACIÓN ELENA TERTRE';
         Activity::factory()
             ->donacion()
@@ -54,7 +53,6 @@ class ActivitiesSeeder extends Seeder
                 'address' => 'Explanada de la Dehesa de Navalcarbón',
                 'resume' => 'Únete a la Carrera Solidaria y la Marcha Familiar en apoyo a la Fundación Elena Tertre!',
             ]);
-
 
         Activity::factory()->count(9)->create();
     }

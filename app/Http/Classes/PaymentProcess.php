@@ -28,7 +28,6 @@ class PaymentProcess
 
         $this->modelo = new $clase;
         $this->data = $data;
-        $this->payment_method = $data['payment_method'] ?? 'tarjeta';
         $this->createModel();
         $this->createPayment();
         //        $this->createState();
@@ -44,8 +43,7 @@ class PaymentProcess
                 'shipping' => $this->data['shipping'] ?? 'Precio fijo',
                 'shipping_cost' => $this->data['shipping_cost'],
                 'subtotal' => $this->data['subtotal'],
-                'taxes' => $this->data['taxes'],
-                'payment_method' => $this->payment_method,
+                'payment_method' => $this->data['payment_method'],
             ]);
         } elseif ($this->modelo instanceof Order && isset($this->data['id'])) {
             $this->modelo = Order::find($this->data['id']);
@@ -56,7 +54,7 @@ class PaymentProcess
                 'number' => generateDonationNumber(),
                 'type' => $this->data['type'],
                 'frequency' => $this->data['frequency'] ?? null,
-                'payment_method' => $this->payment_method,
+                'payment_method' => $this->data['payment_method'] ?? 'tarjeta',
 
             ]);
         }

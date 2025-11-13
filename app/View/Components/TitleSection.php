@@ -7,11 +7,9 @@ use Illuminate\View\Component;
 
 class TitleSection extends Component
 {
-
     public $title;
 
     public function __construct($model)
-
     {
         switch (getTypeContent($model)) {
             case 'Product':

@@ -2,7 +2,6 @@
 
 namespace App\Models\Traits;
 
-
 use App\Models\Tag;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
@@ -12,6 +11,4 @@ trait HasTags
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }
-
-
 }

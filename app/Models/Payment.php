@@ -27,13 +27,10 @@ class Payment extends Model
         return $this->morphTo();
     }
 
-
     protected function casts(): array
     {
         return [
             'info' => AsArrayObject::class,
         ];
     }
-
-
 }

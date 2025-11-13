@@ -218,7 +218,7 @@ return [
         'db' => [
             'with_params' => true,   // Render SQL with the parameters substituted
             'exclude_paths' => [       // Paths to exclude entirely from the collector
-//                'vendor/laravel/framework/src/Illuminate/Session', // Exclude sessions queries
+                //                'vendor/laravel/framework/src/Illuminate/Session', // Exclude sessions queries
             ],
             'backtrace' => true,   // Use a backtrace to find the origin of the query in your files.
             'backtrace_exclude_paths' => [],   // Paths to exclude from backtrace. (in addition to defaults)
@@ -243,7 +243,7 @@ return [
             'data' => false,        // True for all data, 'keys' for only names, false for no parameters.
             'group' => 50,          // Group duplicate views. Pass value to auto-group, or true/false to force
             'exclude_paths' => [    // Add the paths which you don't want to appear in the views
-                'vendor/filament'   // Exclude Filament components by default
+                'vendor/filament',   // Exclude Filament components by default
             ],
         ],
         'route' => [

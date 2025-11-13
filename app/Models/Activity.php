@@ -48,8 +48,6 @@ class Activity extends Model implements HasMedia
         'donacion',
     ];
 
-
-    /** @noinspection PhpIncompatibleReturnTypeInspection */
     public static function getFooterActivities(): Collection
     {
         return Activity::query()

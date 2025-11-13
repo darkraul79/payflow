@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Mail;
 
 class SendNewDonationEmailListener
 {
-
     public function handle(NewDonationEvent $event): void
     {
         foreach (User::all() as $user) { // Notifico a todos los usuarios que hay un nuevo pedido

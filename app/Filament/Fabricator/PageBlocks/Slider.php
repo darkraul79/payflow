@@ -39,7 +39,7 @@ class Slider extends PageBlock
                                 'right' => 'Derecha',
                             ])
                             ->default('center'),
-                    ])->itemLabel(fn(array $state): ?string => $state['title'] ?? null),
+                    ])->itemLabel(fn (array $state): ?string => $state['title'] ?? null),
 
             ]);
     }

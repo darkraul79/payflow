@@ -37,6 +37,4 @@ class PageFactory extends Factory
             'is_home' => true,
         ]);
     }
-
-
 }

@@ -34,12 +34,15 @@ class InvoiceService
         $order->loadMissing(['items.product', 'addresses']);
 
         $lines = $this->orderLines($order);
+
         $shippingCost = (float) $order->shipping_cost;
         $shippingMethod = $order->shipping;
-        $vatRate = (float) $order->vatRate();
+        $vatRate = $order->vatRate();
 
-        $vatAmount = (float) $order->taxes;
-        $subtotal = (float) $order->subtotal - $vatAmount;
+        $vatRate = (float) $order->vatRate();
+        $vatAmount = (float) $order->calculateTaxes(true);
+
+        $subtotal = (float) $order->amount - $vatAmount;
         $total = (float) $order->amount;
 
         $meta = [
@@ -445,6 +448,7 @@ class InvoiceService
         return $relativePath;
     }
 
+    /** @noinspection PhpUndefinedMethodInspection */
     protected function attachMedia(
         Model $model,
         string $relativePath,
@@ -581,11 +585,12 @@ class InvoiceService
         $donation->loadMissing('addresses');
 
         $lines = $this->donationLines($donation);
-        $vatRate = $donation->vatRate();
 
-        $subtotal = $this->calculateSubtotal($lines);
-        $vatAmount = round($subtotal * $vatRate, 2);
-        $total = round($subtotal + $vatAmount, 2);
+        $vatRate = $donation->vatRate();
+        $vatAmount = (float) $donation->calculateTaxes(true);
+
+        $subtotal = (float) $donation->amount - $vatAmount;
+        $total = $donation->amount;
 
         $meta = [
             'donation_type' => $donation->type,
@@ -628,6 +633,18 @@ class InvoiceService
         ];
     }
 
+    protected function sendInvoiceEmailForDonation(Model $donation, Invoice $invoice): void
+    {
+        $certificate = $donation->certificate();
+
+        // Donation::certificate() may return false; guard it and missing email
+        if (! $certificate || ! ($certificate->email)) {
+            return;
+        }
+
+        $this->sendInvoiceEmail([$certificate->email], $invoice);
+    }
+
     /**
      * @param  array<int, array{line_total: float}>  $lines
      */
@@ -640,17 +657,5 @@ class InvoiceService
         }
 
         return round($linesTotal + $additionalCost, 2);
-    }
-
-    protected function sendInvoiceEmailForDonation(Model $donation, Invoice $invoice): void
-    {
-        $certificate = $donation->certificate();
-
-        // Donation::certificate() may return false; guard it and missing email
-        if (! $certificate || ! ($certificate->email)) {
-            return;
-        }
-
-        $this->sendInvoiceEmail([$certificate->email], $invoice);
     }
 }

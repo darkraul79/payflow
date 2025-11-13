@@ -11,7 +11,6 @@ use Illuminate\Support\Carbon;
 
 class ProyectFactory extends Factory
 {
-
     use withDonaciones, withImages, withPublished;
 
     protected $model = Proyect::class;

@@ -95,13 +95,6 @@ class Donation extends Model implements HasMedia
         $this->addMediaCollection('invoices');
     }
 
-    public function vatRate(): float
-    {
-        $default = (float) (setting('billing.vat.donations_default', 0) ?? 0);
-
-        return round($default / 100, 4);
-    }
-
     public function invoices(): MorphMany
     {
         return $this->morphMany(Invoice::class, 'invoiceable')->latest();
@@ -334,6 +327,42 @@ class Donation extends Model implements HasMedia
     public function isRecurrente(): bool
     {
         return $this->type == self::RECURRENTE;
+    }
+
+    /**
+     * Devuelve el total del pedido formateado para Redsys.
+     */
+    protected function taxes(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->calculateTaxes(),
+        );
+    }
+
+    /**
+     * Calcula el IVA del pedido.
+     *
+     * @param  bool  $amountIncludesVat  Indica si `amount` ya incluye IVA (por defecto true).
+     */
+    public function calculateTaxes(bool $amountIncludesVat = true): float
+    {
+        $rate = $this->vatRate(); // p. ej. 0.21 para 21%
+
+        if ($amountIncludesVat) {
+            // Si amount es bruto (incluye IVA): IVA = total - (total / (1 + rate))
+            return round($this->amount - ($this->amount / (1 + $rate)), 2);
+        }
+
+        // Si amount es neto (excluye IVA): IVA = neto * rate
+        return round($this->amount * $rate, 2);
+    }
+
+    public function vatRate(): float
+    {
+        // Read default from settings, fallback to 21%
+        $default = (float) (setting('billing.vat.donations_default', 21) ?? 21);
+
+        return round($default / 100, 4);
     }
 
     protected function casts(): array

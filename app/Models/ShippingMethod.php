@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static available()
  * @method static forAmount(float $param)
  * @method static active()
+ *
  * @property mixed $greater
  */
 class ShippingMethod extends Model
@@ -25,7 +26,6 @@ class ShippingMethod extends Model
         'until',
         'greater',
     ];
-
 
     #[Scope]
     public function scopeActive($query)

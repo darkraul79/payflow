@@ -21,7 +21,7 @@ class EditProduct extends EditRecord
             RestoreAction::make(),
             Action::make('visit')
                 ->label('Visitar')
-                ->url(fn($record) => $record->getLink() ?? null)
+                ->url(fn ($record) => $record->getLink() ?? null)
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->openUrlInNewTab()
                 ->color('success'),
@@ -31,7 +31,7 @@ class EditProduct extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        if (!$data['oferta']) {
+        if (! $data['oferta']) {
             $data['offer_price'] = null;
         }
         unset($data['oferta']);

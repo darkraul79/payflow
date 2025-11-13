@@ -22,7 +22,7 @@ class EditProyect extends EditRecord
             RestoreAction::make(),
             Action::make('visit')
                 ->label('Visitar')
-                ->url(fn(?Proyect $record) => $record->getLink() ?? null)
+                ->url(fn (?Proyect $record) => $record->getLink() ?? null)
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->openUrlInNewTab()
                 ->color('success')

@@ -7,12 +7,10 @@ use Illuminate\View\Component;
 
 class HomeItem extends Component
 {
-  public function __construct(public $title, public $description, public $link, public $linkText, public $icon)
-  {
-  }
+    public function __construct(public $title, public $description, public $link, public $linkText, public $icon) {}
 
-  public function render(): View
-  {
-    return view('components.home-item');
-  }
+    public function render(): View
+    {
+        return view('components.home-item');
+    }
 }

@@ -577,3 +577,23 @@ test('puedo crear factory con donacion recurrente', function () {
         ->and($donacion->frequency)->toBe(Donation::FREQUENCY['MENSUAL'])
         ->and($donacion->certificate())->toBeInstanceOf(Address::class);
 });
+
+test('puedo calcular los impuestos por función', function () {
+
+    $order = Donation::factory()->create([
+        'amount' => 27.00,
+
+    ]);
+
+    expect($order->calculateTaxes())->toBe(4.69);
+});
+
+test('puedo calcular los impuestos por atributo', function () {
+
+    $order = Donation::factory()->create([
+        'amount' => 27.00,
+
+    ]);
+
+    expect($order->taxes)->toBe(4.69);
+});

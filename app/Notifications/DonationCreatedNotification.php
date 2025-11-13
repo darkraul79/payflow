@@ -16,26 +16,26 @@ class DonationCreatedNotification extends Notification
         $this->donation = $donation;
     }
 
-    public function via($notifiable): array
+    public function via(): array
     {
         return ['mail'];
     }
 
-    public function toMail($notifiable): MailMessage
+    public function toMail(): MailMessage
     {
 
         $donationTitle = $this->donation->type;
         if ($this->donation->isRecurrente()) {
-            $donationTitle .= ': ' . $this->donation->frequency;
+            $donationTitle .= ': '.$this->donation->frequency;
         }
 
         return (new MailMessage)
             ->subject('Nueva Donación ')
-            ->line('Hay una nueva donación ' . $donationTitle . ' (' . convertPrice($this->donation->amount) . ').')
+            ->line('Hay una nueva donación '.$donationTitle.' ('.convertPrice($this->donation->amount).').')
             ->action('Ver donacion ', DonationResource::getUrl('view', ['record' => $this->donation]));
     }
 
-    public function toArray($notifiable): array
+    public function toArray(): array
     {
         return [];
     }

@@ -7,13 +7,15 @@ use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Models\Activity;
+use App\Models\Donation;
 use App\Models\News;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Proyect;
+use App\Services\InvoiceService;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontEndController::class, 'index'])->name('home');
-
 
 Route::get('/tienda-solidaria/cesta', [CartController::class, 'index'])->name('cart');
 Route::get('/tienda-solidaria/cesta/pedido', [CartController::class, 'form'])->name('checkout');
@@ -39,14 +41,15 @@ Route::middleware(['auth'])->group(function () {
         if ($forceRefresh) {
             try {
                 $invoiceable = $invoice->invoiceable; // Order or Donation
-                $service = app(\App\Services\InvoiceService::class);
-                if ($invoiceable instanceof \App\Models\Order) {
+                $service = app(InvoiceService::class);
+                if ($invoiceable instanceof Order) {
                     $service->generateForOrder($invoiceable, series: $invoice->series, sendEmail: false, force: true);
-                } elseif ($invoiceable instanceof \App\Models\Donation) {
-                    $service->generateForDonation($invoiceable, series: $invoice->series, sendEmail: false, force: true);
+                } elseif ($invoiceable instanceof Donation) {
+                    $service->generateForDonation($invoiceable, series: $invoice->series, sendEmail: false,
+                        force: true);
                 }
                 $refreshed = true;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('Failed to refresh invoice PDF', [
                     'invoice_id' => $invoice->id,
                     'number' => $invoice->number,
@@ -55,19 +58,19 @@ Route::middleware(['auth'])->group(function () {
             }
         }
 
-        // If file missing, try to regenerate it once
+        // If a file missing, try to regenerate it at once
         if (! ($invoice->storage_path && $disk->exists($invoice->storage_path))) {
             try {
                 $invoiceable = $invoice->invoiceable; // Order or Donation
-                $service = app(\App\Services\InvoiceService::class);
-                if ($invoiceable instanceof \App\Models\Order) {
+                $service = app(InvoiceService::class);
+                if ($invoiceable instanceof Order) {
                     $service->generateForOrder($invoiceable, series: $invoice->series, sendEmail: false);
                     $regenerated = true;
-                } elseif ($invoiceable instanceof \App\Models\Donation) {
+                } elseif ($invoiceable instanceof Donation) {
                     $service->generateForDonation($invoiceable, series: $invoice->series, sendEmail: false);
                     $regenerated = true;
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('Failed to regenerate invoice PDF', [
                     'invoice_id' => $invoice->id,
                     'number' => $invoice->number,
@@ -82,7 +85,6 @@ Route::middleware(['auth'])->group(function () {
                 $media = optional($invoice->invoiceable)->getMedia('invoices')->first();
                 if ($media && file_exists($media->getPath())) {
                     // Try to restore the expected file path from the media file
-                    $relativeFromMedia = trim(str_replace(storage_path('app/public/'), '', $media->getPath()), '/');
 
                     try {
                         $content = @file_get_contents($media->getPath());
@@ -90,7 +92,7 @@ Route::middleware(['auth'])->group(function () {
                             $disk->put($invoice->storage_path, $content);
                             $regenerated = true;
                         }
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         \Illuminate\Support\Facades\Log::warning('Failed to restore invoice from media', [
                             'invoice_id' => $invoice->id,
                             'number' => $invoice->number,
@@ -99,7 +101,7 @@ Route::middleware(['auth'])->group(function () {
                         ]);
                     }
 
-                    // If still missing, stream directly from media path
+                    // If still missing, stream directly from a media path
                     if (! ($invoice->storage_path && $disk->exists($invoice->storage_path))) {
                         return response()->file($media->getPath(), [
                             'Content-Type' => 'application/pdf',
@@ -109,7 +111,7 @@ Route::middleware(['auth'])->group(function () {
                         ]);
                     }
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('Invoice media fallback failed', [
                     'invoice_id' => $invoice->id,
                     'number' => $invoice->number,
@@ -130,10 +132,11 @@ Route::middleware(['auth'])->group(function () {
     })->name('invoices.show');
 });
 
-Route::get(Activity::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'activities'])->name('activities.show');
-Route::get(News::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'news'])->name('news.show');
-Route::get(Proyect::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'proyects'])->name('proyects.show');
-Route::get(Product::getStaticUrlPrefix() . '/{slug}', [FrontEndController::class, 'products'])->name('products.show');
+Route::get(Activity::getStaticUrlPrefix().'/{slug}',
+    [FrontEndController::class, 'activities'])->name('activities.show');
+Route::get(News::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'news'])->name('news.show');
+Route::get(Proyect::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'proyects'])->name('proyects.show');
+Route::get(Product::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'products'])->name('products.show');
 
 // Route::get('/pagina', function () {
 //    return view('page');
@@ -151,4 +154,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

@@ -339,19 +339,19 @@ class Reusable
                 ) => $record->invoices()->exists() ? 'warning' : 'primary')
                 ->icon(fn (Model $record
                 ) => $record->invoices()->exists() ? 'heroicon-s-arrow-path' : 'heroicon-o-document-currency-euro')
-                ->visible(function (Model $record
-                ) {
-                    return match ($record->getMorphClass()) {
-                        'App\Models\Order' => $record->billing_address() && in_array($record->state?->name, [
-                            State::PAGADO,
-                            State::ENVIADO,
-                            State::FINALIZADO,
-                        ]),
-                        'App\Models\Donation' => (bool) $record->certificate(),
-                        default => false,
-                    };
+                /* ->visible(function (Model $record
+                 ) {
+                     return match ($record->getMorphClass()) {
+                         'App\Models\Order' => $record->billing_address() && in_array($record->state?->name, [
+                             State::PAGADO,
+                             State::ENVIADO,
+                             State::FINALIZADO,
+                         ]),
+                         'App\Models\Donation' => (bool) $record->certificate(),
+                         default => false,
+                     };
 
-                })
+                 })*/
                 ->form([
                     self::toggleSendEmail(),
                 ])
@@ -408,6 +408,19 @@ class Reusable
     public static function toggleSendEmail(): Toggle
     {
         return Toggle::make('send_email')
+            ->visible(function (Model $record
+            ) {
+                return match ($record->getMorphClass()) {
+                    'App\Models\Order' => $record->billing_address() && in_array($record->state?->name, [
+                        State::PAGADO,
+                        State::ENVIADO,
+                        State::FINALIZADO,
+                    ]),
+                    'App\Models\Donation' => (bool) $record->certificate(),
+                    default => false,
+                };
+
+            })
             ->label('Enviar por email')
             ->helperText('¿Deseas enviar la factura por email?')
             ->default(false);

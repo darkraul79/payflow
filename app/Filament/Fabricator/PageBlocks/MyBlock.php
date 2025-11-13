@@ -13,8 +13,7 @@ class MyBlock extends PageBlock
         return Block::make('my')
             ->schema([
                 //
-                RichEditor::make('content')
-
+                RichEditor::make('content'),
 
             ]);
     }

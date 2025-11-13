@@ -44,7 +44,6 @@ class ProyectResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
-
     public static function form(Form $form): Form
     {
 
@@ -69,7 +68,7 @@ class ProyectResource extends Resource
                     Action::make('visit')
                         ->label('Visitar')
                         ->icon('heroicon-o-arrow-top-right-on-square')
-                        ->url(fn($record): string => route('proyects.show', ['slug' => $record->slug]), true),
+                        ->url(fn ($record): string => route('proyects.show', ['slug' => $record->slug]), true),
                     EditAction::make(),
                     DeleteAction::make(),
                     RestoreAction::make(),

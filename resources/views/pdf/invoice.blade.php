@@ -144,15 +144,21 @@
         @if($clientCompany != '')
             <div><strong>{{ $clientCompany }}</strong></div>
         @endif
-        <div>{{ $clientName }}</div>
+        @if($clientName != '')
+            <div>{{ $clientName }}</div>
+        @endif
         @if($clientCif != '')
             <div>DNI/CIF: {{ $clientCif }}</div>
         @endif
-        <div>{{$clientAddress}}</div>
+        @if($clientAddress != '')
+            <div>{{$clientAddress}}</div>
+        @endif
         @if($clientEmail != '')
             <div><a href="mailto:{{ $clientEmail }}" target="_blank">{{ $clientEmail }}</a></div>
         @endif
-        <div>Teléfono: {{$clientPhone}}</div>
+        @if($clientPhone != '')
+            <div>Teléfono: {{$clientPhone}}</div>
+        @endif
     </div>
 </div>
 

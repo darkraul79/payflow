@@ -2,13 +2,11 @@
 
 namespace App\Models\Traits;
 
-
 use App\Models\Blockquote;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 trait HasBlockQuotes
 {
-
     /**
      * Get the BlockQuote.
      */
@@ -16,6 +14,4 @@ trait HasBlockQuotes
     {
         return $this->morphToMany(Blockquote::class, 'blockquoteable')->latest();
     }
-
-
 }

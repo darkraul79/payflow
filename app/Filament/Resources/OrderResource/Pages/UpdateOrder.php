@@ -47,7 +47,7 @@ class UpdateOrder extends Page implements HasForms
             ->schema([
                 Select::make('estado')
                     ->label('Estado')
-                    ->options(fn() => method_exists($this->record, 'available_states') ? $this->record->available_states() : []),
+                    ->options(fn () => method_exists($this->record, 'available_states') ? $this->record->available_states() : []),
                 /*TextInput::make('mensaje')
                     ->helperText('Mensaje opcional, que el usuario podrá ver en su historial de pedidos')
                     ->label('Mensaje')
@@ -63,7 +63,6 @@ class UpdateOrder extends Page implements HasForms
             'mensaje' => 'nullable|string|max:255',
         ]);
 
-
         $this->record->states()->create([
             'name' => $this->pedido->getStates()[$campos['estado']],
             'message' => $campos['mensaje'],
@@ -74,7 +73,6 @@ class UpdateOrder extends Page implements HasForms
 
         $this->record->refresh();
         $this->pedido->refresh();
-
 
         UpdateOrderStateEvent::dispatch($this->record);
 

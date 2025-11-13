@@ -9,7 +9,6 @@ use Livewire\Component;
 
 class CartButtonComponent extends Component
 {
-
     public $quantity = 0;
 
     public function mount(): void
@@ -39,8 +38,5 @@ class CartButtonComponent extends Component
         Cart::clearCart();
         $this->updateQuantity();
 
-
     }
-
-
 }

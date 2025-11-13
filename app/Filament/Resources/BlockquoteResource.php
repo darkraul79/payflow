@@ -25,6 +25,7 @@ class BlockquoteResource extends Resource
     protected static ?string $pluralLabel = 'Inspiraciones';
 
     protected static ?int $navigationSort = 33;
+
     protected static ?string $slug = 'blockquotes';
 
     //    protected static ?string $navigationIcon = 'heroicon-o-code-bracket-square';

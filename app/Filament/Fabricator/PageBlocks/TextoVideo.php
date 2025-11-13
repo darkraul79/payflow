@@ -16,7 +16,7 @@ class TextoVideo extends PageBlock
                 TextInput::make('video')
                     ->label('Vídeo')
                     ->columnSpan(1)
-                    ->activeUrl()
+                    ->activeUrl(),
             ]);
     }
 

@@ -14,10 +14,11 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         $name = $this->faker->unique()->word();
+
         return [
             'name' => $this->faker->name(),
             'slug' => Str::slug($name),
-            'price' => $this->faker->randomFloat(min: 1, max: 50, nbMaxDecimals: 2),
+            'price' => $this->faker->randomFloat(nbMaxDecimals: 2, min: 1, max: 50),
             'stock' => $this->faker->randomNumber(),
             'description' => $this->faker->text(),
             'offer_price' => null,

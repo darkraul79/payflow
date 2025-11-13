@@ -25,10 +25,10 @@ class ViewDonation extends ViewRecord
             Action::make('cancelar')
                 ->label('Cancelar')
                 ->requiresConfirmation()
-                ->action(fn(Donation $record) => $record->cancel())
+                ->action(fn (Donation $record) => $record->cancel())
                 ->icon('heroicon-o-no-symbol')
                 ->color('danger')
-                ->visible(fn(Donation $record) => $record->type === Donation::RECURRENTE &&
+                ->visible(fn (Donation $record) => $record->type === Donation::RECURRENTE &&
                     $record->state?->name === State::ACTIVA),
         ];
     }

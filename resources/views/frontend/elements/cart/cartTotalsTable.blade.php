@@ -10,7 +10,7 @@
                 <span>Envío</span>
                 <div class="text-xs text-red-500">
                     @error('shipping_method')
-                        {{ $message }}
+                    {{ $message }}
                     @enderror
                 </div>
             </div>
@@ -27,7 +27,7 @@
                 {{ convertPrice($total) }}
                 @if ($taxes)
                     <span>
-                        incluye {{ convertPrice(calculoImpuestos($subtotal)) }}
+                        incluye {{ convertPrice($taxes) }}
                         de impuestos
                     </span>
                 @endif

@@ -12,6 +12,7 @@ use Filament\Tables\Table;
 class AddressRelationManager extends RelationManager
 {
     protected static string $relationship = 'addresses';
+
     protected static ?string $label = 'Direcciones';
 
     public function form(Form $form): Form

@@ -35,7 +35,7 @@ class CartController extends Controller
 
     public function form()
     {
-        if (!session()->has('cart') || empty(session('cart'))) {
+        if (! session()->has('cart') || empty(session('cart'))) {
             return redirect()->route('cart');
         }
 
@@ -43,7 +43,6 @@ class CartController extends Controller
             $this->getParams('Detalles de facturación')
         );
     }
-
 
     public function pagar_pedido(Order $pedido)
     {
@@ -56,6 +55,4 @@ class CartController extends Controller
 
         return view('frontend.pagar-pedido', compact('data'));
     }
-
-
 }

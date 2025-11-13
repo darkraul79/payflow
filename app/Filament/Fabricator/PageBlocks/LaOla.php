@@ -38,9 +38,8 @@ class LaOla extends PageBlock
                                         Reusable::Basic(['subtitle']),
                                     ])->columnSpan(1),
                             ]),
-                        
-                    ])
 
+                    ]),
 
             ]);
 

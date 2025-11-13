@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\Resources\DonationResource\Pages\Listdonations;
 use App\Mail\InvoiceMailable;
 use App\Models\Donation;
 use App\Models\Invoice;
@@ -16,6 +17,7 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Livewire\livewire;
 
 beforeEach(function () {
     Storage::fake('public');
@@ -294,24 +296,101 @@ test('genero el iva correctamente de las facturas de pedidos',
             ]);
 
         $order->refresh();
-        //        dd($order->toArray());
 
         $invoice = $this->service->generateForOrder($order)['invoice'];
         //        dump($result->subtotal, $order->toArray());
 
         expect($invoice->vat_amount)->toBe($iva)
-            ->and($invoice->total)->toBe($precio_producto + $coste_envio)
-            ->and($invoice->vat_amount)->toBe($iva);
+            ->and($invoice->total)->toBe($precio_producto + $coste_envio);
 
     })->with([
         [
-            'coste_envio' => 1.00,
-            'precio_producto' => 10.00,
-            'iva' => 1.74,
-        ],
-        [
-            'coste_envio' => 1.00,
-            'precio_producto' => 10.00,
-            'iva' => 1.74,
+            'coste_envio' => 3.50,
+            'precio_producto' => 8.00,
+            'iva' => 2.00,
         ],
     ]);
+
+test('genero el iva correctamente de las facturas de donaciones',
+    function ($importe, $subtotal, $iva, $porcentaje) {
+
+        $donacion = Donation::factory()
+            ->withCertificado()
+            ->create([
+                'amount' => $importe,
+            ]);
+
+        $donacion->refresh();
+
+        Setting::set('billing.vat.donations_default', $porcentaje);
+        $invoice = $this->service->generateForDonation($donacion)['invoice'];
+        //        dump($result->subtotal, $order->toArray());
+
+        expect($invoice->vat_amount)->toBe($iva)
+            ->and($invoice->subtotal)->toBe($subtotal)
+            ->and($invoice->total)->toBe($importe);
+
+    })->with([
+        [
+            'importe' => 5.16,
+            'subtotal' => 4.26,
+            'iva' => 0.90,
+            'porcentaje' => 21,
+        ], [
+            'importe' => 5.16,
+            'subtotal' => 5.16,
+            'iva' => 0.0,
+            'porcentaje' => 0,
+        ],
+    ]);
+
+test('puedo crear facturas de donaciones sin certificado', function () {
+    $donacion = Donation::factory()
+        ->withCertificado()
+        ->create();
+
+    $invoice = $this->service->generateForDonation($donacion)['invoice'];
+
+    Storage::disk('public')->assertExists($invoice['path']);
+    expect($invoice)->toBeInstanceOf(Invoice::class)
+        ->and($invoice->total)->toBe($donacion->amount);
+
+    actingAs(User::factory()->create());
+    $response = get(route('invoices.show', $invoice).'?refresh=1');
+
+    $response->assertSuccessful()
+        ->assertHeader('X-Invoice-Refreshed', '1')
+        ->assertHeader('Content-Type', 'application/pdf');
+
+    livewire(Listdonations::class)
+        ->assertTableActionVisible('invoice')
+        ->assertTableActionDataSet(['send_email' => false])
+        ->callTableAction('invoice', $donacion)
+        ->assertHasNoTableActionErrors();
+});
+
+test('puedo crear facturas de pedidos sin dirección de envío y con cualquier estado', function () {
+    $pedido = Order::factory()
+        ->error()
+        ->create();
+
+    $invoice = $this->service->generateForDonation($pedido)['invoice'];
+
+    Storage::disk('public')->assertExists($invoice['path']);
+    expect($invoice)->toBeInstanceOf(Invoice::class)
+        ->and($invoice->total)->toBe($pedido->amount);
+
+    actingAs(User::factory()->create());
+    $response = get(route('invoices.show', $invoice).'?refresh=1');
+
+    $response->assertSuccessful()
+        ->assertHeader('X-Invoice-Refreshed', '1')
+        ->assertHeader('Content-Type', 'application/pdf');
+
+    livewire(Listdonations::class)
+        ->assertTableActionVisible('invoice')
+        ->assertTableActionDataSet(['send_email' => false])
+        ->callTableAction('invoice', $pedido)
+        ->assertTableActionDataSet(['send_email' => false])
+        ->assertHasNoTableActionErrors();
+});

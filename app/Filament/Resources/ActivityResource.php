@@ -39,8 +39,8 @@ class ActivityResource extends Resource
     protected static ?string $pluralModelLabel = 'Actividades';
 
     protected static ?string $navigationGroup = 'Contenido';
-    protected static ?string $recordTitleAttribute = 'title';
 
+    protected static ?string $recordTitleAttribute = 'title';
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-date-range';
 
@@ -67,7 +67,7 @@ class ActivityResource extends Resource
                     Action::make('visit')
                         ->label('Visitar')
                         ->icon('heroicon-o-arrow-top-right-on-square')
-                        ->url(fn($record): string => route('activities.show', ['slug' => $record->slug]), true),
+                        ->url(fn ($record): string => route('activities.show', ['slug' => $record->slug]), true),
                     EditAction::make(),
                     DeleteAction::make(),
                     RestoreAction::make(),
