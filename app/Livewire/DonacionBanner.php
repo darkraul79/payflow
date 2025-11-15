@@ -135,7 +135,9 @@ class DonacionBanner extends Component
     public function toStep(int $step): void
     {
 
-        $this->validate();
+        if ($step > $this->step) {
+            $this->validate();
+        }
 
         if ($step == 4 && ! $this->needsCertificate) {
             $this->submit();

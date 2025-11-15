@@ -3,9 +3,13 @@
 @endphp
 
 <div class="{{ $step === 4 ? 'block' : 'hidden' }}">
-    <h5 class=" text-xl text-pretty">
-        Método de pago
-    </h5>
+    <div class="flex justify-between items-top">
+        <x-bi-arrow-left-short class="h-7 w-7 mt-0 cursor-pointer inline-block"
+                               wire:click="toStep({{ $needsCertificate ? 3 : 2 }})" />
+        <h5 class="text-left text-xl text-pretty flex-1">
+            Método de pago
+        </h5>
+    </div>
 
     <div class="form-xs mt-6 form-style text-sm  mb-12">
         <p class="font-medium">Pagar con:</p>

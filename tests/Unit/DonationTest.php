@@ -751,3 +751,24 @@ test('compruebo validación metodos de pago donación unica', function () {
         ->assertHasErrors(['payment_method' => 'El método de pago no es válido.']);
 
 });
+
+test('puedo moverme entre pasos de la donación', function () {
+    livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+        ->set('type', Donation::UNICA)
+        ->set('amount', 10)
+        ->call('toStep', 2)
+        ->assertSee('¿Necesitas un certificado de donaciones?')
+        ->set('needsCertificate', false)
+        ->call('toStep', 3)
+        ->set('payment_method', PaymentMethod::BIZUM)
+        ->call('toStep', 2)
+        ->assertSee('¿Necesitas un certificado de donaciones?')
+        ->call('toStep', 1)
+        ->assertSee('!Dona a la FUNDACIÓN Elena Tertre!')
+        ->call('toStep', 2)
+        ->assertSee('¿Necesitas un certificado de donaciones?')
+        ->call('toStep', 3)
+//        ->set('payment_method', PaymentMethod::BIZUM)
+        ->call('submit')
+        ->assertHasNoErrors();
+});

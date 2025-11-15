@@ -85,8 +85,9 @@
         >
             <input
                 type="text"
+
                 name="amount"
-                id="amount"
+                id="{{ $prefix . '-amount' }}"
                 class="w-full border-0 p-1 text-end font-semibold shadow-none focus:border-0! focus:ring-0 focus:outline-0!"
                 wire:model.live="amount"
             />

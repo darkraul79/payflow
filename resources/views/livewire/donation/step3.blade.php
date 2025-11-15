@@ -3,12 +3,15 @@
 @endphp
 
 <div class="{{ $step === 3 ? 'block' : 'hidden' }}">
-    <h5 class="text-center text-xl text-pretty">
-        Datos para certificado de donaciones
-    </h5>
+    <div class="flex justify-between items-top">
+        <x-bi-arrow-left-short class="h-7 w-7 mt-0 cursor-pointer inline-block" wire:click="toStep(2)" />
+        <h5 class="text-center text-xl text-pretty flex-1">
+            Datos para certificado de donaciones
+        </h5>
+    </div>
 
     <div class="form-style group form-xs mt-6 grid grid-cols-6 gap-1.5 text-xs">
-        @include('frontend.elements.order.fields', ['prefix' => 'certificate.'])
+        @include('frontend.elements.order.fields', ['prefix' => 'certificate.','suffix' => $prefix])
     </div>
 
     <div class="my-6">

@@ -25,6 +25,8 @@ class FinishOrderComponent extends Component
 
     public array $payments_methods = [];
 
+    public string $suffix = '';
+
     public $isValid = false;
 
     public $shipping = [

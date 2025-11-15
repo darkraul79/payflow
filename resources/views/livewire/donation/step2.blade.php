@@ -3,10 +3,12 @@
 @endphp
 
 <div class="{{ $step === 2 ? 'block' : 'hidden' }}">
-    <h5 class="text-center text-xl text-pretty">
-        ¿Necesitas un certificado de donaciones?
-    </h5>
-
+    <div class="flex justify-between items-top">
+        <x-bi-arrow-left-short class="h-7 w-7 mt-0 cursor-pointer block" wire:click="toStep(1)" />
+        <h5 class="text-center text-xl text-pretty flex-1">
+            ¿Necesitas un certificado de donaciones?
+        </h5>
+    </div>
     <p class="my-3 text-center">
         Para acceder a las deducciones fiscales en tu declaración de renta,
         asegúrate de contar con el Certificado de Donaciones, emitido por la
