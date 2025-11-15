@@ -6,7 +6,7 @@
 >
     <svg
         width="24"
-        height="26"
+        height="24"
         viewBox="0 0 24 26"
         class="stroke-azul-sea group-hover:stroke-white group-hover:text-white"
         fill="none"
