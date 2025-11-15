@@ -109,6 +109,7 @@ class AdminPanelProvider extends PanelProvider
                 'secondary' => '#36A0BF',
                 'danger' => '#EA4B48',
             ])
-            ->sidebarCollapsibleOnDesktop();
+            ->sidebarCollapsibleOnDesktop()
+            ->favicon(asset('favicon/favicon.ico'));
     }
 }
