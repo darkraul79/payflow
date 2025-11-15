@@ -6,7 +6,7 @@
             @foreach ($menu->menuItems as $item)
                 @if ($item->children->count() && $item->title != 'Home')
                     <flux:dropdown>
-                        <flux:navbar.item icon:trailing="chevron-down">
+                        <flux:navbar.item icon:trailing="chevron-down" class="px-0!">
                             @if ($item->linkable->blocks)
                                 <a href="{{ $item->url }}">
                                     {{ $item->title }}

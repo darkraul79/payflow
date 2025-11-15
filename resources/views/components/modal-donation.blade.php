@@ -10,7 +10,7 @@
             x-trap.inert.noscroll="modalIsOpen"
             x-on:keydown.esc.window="(modalIsOpen = false), $dispatch('resetDonation')"
             x-on:click.self="(modalIsOpen = false), $dispatch('resetDonation')"
-            class="fixed inset-0 z-30 sm:flex items-end sm:justify-center block overflow-auto bg-black/70 p-4 pb-8 sm:items-center lg:p-8"
+            class="fixed inset-0 z-30  items-end sm:justify-center overflow-auto bg-black/70  sm:items-center h-[100vh] m-0 p-0 block"
             {{-- x-on:wire:click.self="" --}}
             role="dialog"
             aria-modal="true"
@@ -23,7 +23,6 @@
                 x-transition:enter="transition delay-100 duration-200 ease-out motion-reduce:transition-opacity"
                 x-transition:enter-start="scale-110 opacity-0"
                 x-transition:enter-end="scale-100 opacity-100"
-                class="lg:top-0"
             >
                 <div
                     class="z-50 flex w-full flex-col items-end justify-end p-1 sm:p-4 lg:max-w-xl"

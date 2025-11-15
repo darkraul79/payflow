@@ -1,26 +1,24 @@
 @php
     use App\Models\Activity;
-    use App\Models\Post;
-    use App\Models\Setting;
 @endphp
 
 <footer
-    class="@container bg-azul-sky full-container flex pt-8 pb-4 shadow-lg lg:px-[72px] lg:pt-14 lg:pb-0 lg:pb-10"
+    class="@container bg-azul-sky full-container flex pt-8 pb-4 shadow-lg lg:px-[72px] lg:pt-14 lg:pb-10"
 >
     <div class="@container container">
         <div
             class="flex w-full flex-col justify-between gap-5 gap-y-8 lg:flex-row lg:gap-y-0"
         >
             <div class="contact lg:min-h-[250px]">
-                <div class="space-y-2 font-semibold">
-                    <h5 class="mb-5 inline-flex gap-2 font-bold">
+                <div class="space-y-2 font-semibold text-sm leading-3.5">
+                    <h6 class="mb-5 inline-flex gap-2 font-bold text-base">
                         <img
                             src="{{ asset('images/icons/heart-hand.svg') }}"
                             class="w-4"
                             alt="{{ config('app.name') }}"
                         />
                         {{ config('app.name') }}
-                    </h5>
+                    </h6>
                     @if (setting('contact.telefono'))
                         <p>Teléfono: {{ setting('contact.telefono') }}</p>
                     @endif

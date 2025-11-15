@@ -3,7 +3,7 @@
     use App\Models\Donation;
 @endphp
 
-<div class="card mb-6 h-auto w-full sm:p-6 p-2">
+<div class="card h-auto w-full sm:p-6 p-2">
     @include('livewire.donation.step1')
 
     @include('livewire.donation.step2')

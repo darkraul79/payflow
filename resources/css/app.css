@@ -312,7 +312,7 @@
 }
 
 #modalDonation {
-    @apply relative z-50 flex w-full max-w-6xl flex-col items-end justify-end gap-4 overflow-hidden rounded-lg bg-white lg:rounded-tr-lg lg:rounded-br-lg;
+    @apply relative z-50  w-full max-w-6xl gap-4 rounded-lg bg-white lg:rounded-tr-lg lg:rounded-br-lg h-fit overflow-auto block lg:flex lg:justify-end lg:mx-auto mt-2 lg:mt-6 top-0 ;
 
     &::before {
         @apply absolute left-0 z-40 hidden h-full w-[70%] overflow-hidden bg-white bg-no-repeat lg:block;

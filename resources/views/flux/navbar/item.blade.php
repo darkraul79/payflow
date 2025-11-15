@@ -28,9 +28,8 @@
     $iconClasses = Flux::classes($square ? 'size-6' : 'size-5');
 
     $classes = Flux::classes()
-        ->add('px-3 h-8 flex items-center rounded-lg')
+        ->add('h-8 px-1.5! flex items-center rounded-lg')
         ->add('relative') // This is here for the "active" bar at the bottom to be positioned correctly...
-        ->add($square ? '' : 'px-2.5!')
         ->add('text-azul-sea font-light data-current:font-semibold')
         // Styles for when this link is the "current" one...
         ->add(['[--hover-fill:color-mix(in_oklab,_var(--color-accent-content),_transparent_90%)]'])
@@ -44,12 +43,12 @@
 
 <flux:button-or-link
     :attributes="$attributes->class($classes)"
-    data-flux-navbar-items
+    :data-flux-navbar-items="true"
 >
     <?php if ($icon): ?>
 
     <div class="relative">
-        <?php if (is_string($icon) && $icon !== ''): ?>
+            <?php if (is_string($icon) && $icon !== ''): ?>
 
         <flux:icon
             :$icon
@@ -63,7 +62,7 @@
 
         <?php endif; ?>
 
-        <?php if ($iconDot): ?>
+            <?php if ($iconDot): ?>
 
         <div class="absolute end-[-2px] top-[-2px]">
             <div
