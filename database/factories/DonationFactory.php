@@ -123,4 +123,13 @@ class DonationFactory extends Factory
             ];
         });
     }
+
+    public function porBizum(): Factory
+    {
+        return $this->state(function () {
+            return [
+                'payment_method' => 'bizum',
+            ];
+        });
+    }
 }

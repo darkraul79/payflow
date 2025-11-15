@@ -37,8 +37,8 @@ function finalizarCompra(): void
 test('puedo ver los métodos de pago Tarjeta y Bizum en Finalizar Compra', function () {
     finalizarCompra();
     livewire(FinishOrderComponent::class)
-        ->assertSee('Tarjeta')
-        ->assertSee('Bizum');
+        ->assertSee('tarjeta')
+        ->assertSee('bizum');
 });
 
 test('no puedo finalizar compra sin seleccionar método de pago', function () {
@@ -119,7 +119,7 @@ test('al crear pedido con pago bizum lo reflejo en base de datos', function () {
         'email' => 'info@raulsebastian.es',
     ];
 
-    $p = livewire(FinishOrderComponent::class)
+    livewire(FinishOrderComponent::class)
         ->set('payment_method', 'bizum')
         ->set(['billing' => $billingDetails])
         ->call('submit')

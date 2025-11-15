@@ -65,29 +65,11 @@
 
     <div class="my-6">
         <h2 class="text-azul-sea text-sm">Método de pago</h2>
-        <div class="ms-4">
-            @foreach ($payment_methods as $index=>$method)
-                <div class="flex items-center gap-x-2 py-1">
-                    <x-input
-                        type="radio"
-                        name="payment_method"
-                        id="payment_method_{{ $index }}"
-                        wire:model="payment_method"
-                        value="{{ $index }}"
-                    ></x-input>
-
-                    <label
-                        for="payment_method_{{ $index }}"
-                        class="text-[12px]"
-                    >
-                        {{ $method }}
-                    </label>
-                </div>
-            @endforeach</div>
-        <x-error
-            class="text-error/80 w-full text-[11px]"
-            field="payment_method"
-        />
+        @if($payments_methods && count($payments_methods) > 0)
+            <div class="text-sm">
+                <x-payments-methods :payment_methods="$payments_methods" />
+            </div>
+        @endif
     </div>
 
     <div class="px-4">

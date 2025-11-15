@@ -7,6 +7,7 @@ use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\Cart;
+use App\Support\PaymentMethodRepository;
 use Illuminate\View\View;
 use Livewire\Attributes\Session;
 use Livewire\Component;
@@ -22,11 +23,7 @@ class FinishOrderComponent extends Component
 
     public string $payment_method;
 
-    public $payments_methods = [
-        'tarjeta' => 'Tarjeta',
-        //        'transferencia' => 'Transferencia',
-        'bizum' => 'Bizum',
-    ];
+    public $payments_methods;
 
     public $isValid = false;
 
@@ -124,6 +121,7 @@ class FinishOrderComponent extends Component
 
         $this->cart = session()->get('cart');
 
+        $this->payments_methods = (new PaymentMethodRepository)->getPaymentsMethods(false)->toArray();
     }
 
     public function submit(): void

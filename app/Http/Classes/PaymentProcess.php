@@ -94,6 +94,5 @@ class PaymentProcess
         $this->redSysAttributes = (array) $data->only('Raw')->first();
 
         return $data->toArray();
-        //        return $data->except('Raw')->toArray();
     }
 }

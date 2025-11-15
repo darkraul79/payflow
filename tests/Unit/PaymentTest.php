@@ -2,9 +2,11 @@
 
 /** @noinspection PhpUndefinedMethodInspection */
 
+use App\Enums\PaymentMethod;
 use App\Models\Donation;
 use App\Models\Payment;
 use App\Models\State;
+use App\Support\PaymentMethodRepository;
 
 test('puedo crear pagos en diferentes modelos', function ($modelo) {
 
@@ -111,4 +113,30 @@ test('puedo hacer pagos a una donacion recurrente', function () {
 
     expect($donacion->recurrentPay())->toBeInstanceOf(Payment::class)
         ->and($donacion->state->name)->toBe(State::ACTIVA);
+});
+
+it('comprueba exists y find con códigos válidos e inválidos', function (): void {
+    $repo = new PaymentMethodRepository;
+
+    $first = PaymentMethod::cases()[0] ?? null;
+    expect($first)->not->toBeNull()
+        ->and($repo->exists($first->value))->toBeTrue()
+        ->and($repo->find($first->value))->not->toBeNull();
+
+    $invalid = '__invalid-payment-code__';
+    expect($repo->exists($invalid))->toBeFalse()
+        ->and($repo->find($invalid))->toBeNull();
+});
+
+it('getPaymentsMethods devuelve todo por defecto y filtra cuando includeRecurring es true', function (): void {
+    $repo = new PaymentMethodRepository;
+
+    $all = $repo->all();
+    $default = $repo->getPaymentsMethods(); // includeRecurring=false => no filtra
+    expect($default->count())->toBe($all->count());
+
+    $onlyRecurring = $repo->getPaymentsMethods(true);
+    $onlyRecurring->each(function ($item): void {
+        expect($item->method->supportsRecurring())->toBeTrue();
+    });
 });

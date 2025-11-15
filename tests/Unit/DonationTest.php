@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Enums\PaymentMethod;
+use App\Helpers\RedsysAPI;
 use App\Http\Classes\PaymentProcess;
 use App\Jobs\ProcessDonationPaymentJob;
 use App\Livewire\DonacionBanner;
@@ -185,7 +187,7 @@ test('puedo comprobar si tiene certificado', function () {
 test('puedo hacer donacion con certificado DonacionBanner', function () {
 
     livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('amount', '10,35')
+        ->set('amount', 10.35)
         ->set('type', Donation::UNICA)
         ->set('needsCertificate', true)
         ->set('certificate.name', 'Nombre')
@@ -207,7 +209,7 @@ test('puedo hacer donacion con certificado DonacionBanner', function () {
 test('no permite donaciones menores a 1', function () {
 
     livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('amount', '0,35')
+        ->set('amount', 0.35)
         ->call('toStep', 2)
         ->assertHasErrors([
             'amount' => 'El importe debe ser mayor o igual a 1,00 €',
@@ -607,4 +609,145 @@ test('puedo calcular los impuestos por atributo', function () {
     ]);
 
     expect($order->taxes)->toBe(4.69);
+});
+
+test('puedo crear factory de pago por bizum', function () {
+    $donacion = Donation::factory()->porBizum()->create();
+
+    expect($donacion->payment_method)->toBe('bizum');
+});
+
+test('si no selecciono certificado no veo paso 3(formulario certificados)', function () {
+    livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+        ->set('type', Donation::UNICA)
+        ->set('amount', 10)
+        ->call('toStep', 2)
+        ->assertSee('¿Necesitas un certificado de donaciones?')
+        ->set('needsCertificate', false)
+        ->call('toStep', 3)
+        ->assertSet('step', 4)
+        ->assertSee('Método de pago');
+});
+
+test('puedo ver los 4 pasos en la donación', function () {
+    livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+        ->set('type', Donation::UNICA)
+        ->set('amount', 10.50)
+        ->call('toStep', 2)
+        ->assertSee('¿Necesitas un certificado de donaciones?')
+        ->set('needsCertificate', true)
+        ->call('toStep', 3)
+        ->assertSee('Datos para certificado de donaciones')
+        ->set('certificate.name', 'Nombre')
+        ->set('certificate.last_name', 'Apellido')
+        ->set('certificate.nif', '1234567489W')
+        ->set('certificate.last_name2', 'Apellido')
+        ->set('certificate.company', 'Empresa SL')
+        ->set('certificate.address', 'Calle Falsa 123')
+        ->set('certificate.cp', '28001')
+        ->set('certificate.province', 'Madrid')
+        ->set('certificate.email', 'info@raulsebastian.es')
+        ->call('toStep', 4)
+        ->assertSet('step', 4)
+        ->assertSee('Método de pago')
+        ->assertSee('Pagar 10,50 €');
+});
+
+test('al actualizar tipo recurrente no existe método de pago Bizum', function () {
+    $component = livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+        ->set('type', Donation::RECURRENTE);
+
+    $methods = $component->get('payments_methods');
+    $codes = collect($methods)->pluck('code');
+
+    expect($codes->contains('bizum'))->toBeFalse()
+        ->and($codes->contains('tarjeta'))->toBeTrue();
+});
+
+test('al actualizar tipo si no es recurrente devuelvo todos los métodos de pago', function () {
+    $component = livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+        ->set('type', Donation::UNICA);
+
+    $methods = $component->get('payments_methods');
+    $codes = collect($methods)->pluck('code');
+
+    expect($codes->contains('bizum'))->toBeTrue()
+        ->and($codes->contains('tarjeta'))->toBeTrue();
+});
+
+test('si selecciono bizum agrego campo z a formulario redsys', function () {
+    $comp = livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+        ->set('type', Donation::UNICA)
+        ->set('amount', 10)
+        ->call('toStep', 2)
+        ->assertSee('¿Necesitas un certificado de donaciones?')
+        ->set('needsCertificate', false)
+        ->call('toStep', 3)
+        ->set('payment_method', 'bizum')
+        ->call('submit');
+
+    /** @noinspection PhpUndefinedFieldInspection */
+    $params = json_decode((new RedsysAPI)->decodeMerchantParameters($comp->MerchantParameters), true);
+
+    expect($params['Ds_Merchant_Paymethods'])->toBe('z');
+
+});
+
+test('si selecciono tarjeta no existe campo z en formulario redsys', function () {
+    $comp = livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+        ->set('type', Donation::UNICA)
+        ->set('amount', 10)
+        ->call('toStep', 2)
+        ->assertSee('¿Necesitas un certificado de donaciones?')
+        ->set('needsCertificate', false)
+        ->call('toStep', 3)
+        ->set('payment_method', PaymentMethod::TARJETA)
+        ->call('submit');
+
+    /** @noinspection PhpUndefinedFieldInspection */
+    $params = json_decode((new RedsysAPI)->decodeMerchantParameters($comp->MerchantParameters), true);
+
+    expect($params)->not->toHaveKey('Ds_Merchant_Paymethods');
+
+});
+
+test('compruebo validación metodos de pago donación recurrente', function () {
+    livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+        ->set('type', Donation::RECURRENTE)
+        ->set('amount', 10)
+        ->call('toStep', 2)
+        ->assertSee('¿Necesitas un certificado de donaciones?')
+        ->set('needsCertificate', false)
+        ->call('toStep', 3)
+        ->set('payment_method', PaymentMethod::BIZUM)
+        ->call('submit')
+        ->assertHasErrors(['payment_method' => 'El método de pago no es válido.'])
+        ->call('submit')
+        ->set('payment_method', PaymentMethod::TARJETA)
+        ->call('submit')
+        ->assertHasNoErrors(['payment_method'])
+        ->set('payment_method', 'kk')
+        ->call('submit')
+        ->assertHasErrors(['payment_method' => 'El método de pago no es válido.']);
+
+});
+test('compruebo validación metodos de pago donación unica', function () {
+    livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+        ->set('type', Donation::UNICA)
+        ->set('amount', 10)
+        ->call('toStep', 2)
+        ->assertSee('¿Necesitas un certificado de donaciones?')
+        ->set('needsCertificate', false)
+        ->call('toStep', 3)
+        ->set('payment_method', PaymentMethod::BIZUM)
+        ->call('submit')
+        ->assertHasNoErrors(['payment_method'])
+        ->call('submit')
+        ->set('payment_method', PaymentMethod::TARJETA)
+        ->call('submit')
+        ->assertHasNoErrors(['payment_method'])
+        ->set('payment_method', 'kk')
+        ->call('submit')
+        ->assertHasErrors(['payment_method' => 'El método de pago no es válido.']);
+
 });

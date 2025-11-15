@@ -8,6 +8,7 @@
 
     @include('livewire.donation.step2')
     @include('livewire.donation.step3')
+    @include('livewire.donation.step4')
 
     @include('components.formRedSys')
 

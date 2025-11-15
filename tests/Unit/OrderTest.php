@@ -263,18 +263,8 @@ test('puedo calcular los impuestos por atributo', function () {
     expect($order->taxes)->toBe(4.69);
 });
 
-test('kk', function () {
+test('puedo crear factory de pago por bizum', function () {
+    $pedido = Order::factory()->porBizum()->create();
 
-    // Establezco el entorno actual
-    config(['app.env' => 'local']);
-
-    $order = Order::factory()->withProductos()->create();
-
-    $user = User::factory()->create([
-        'email' => 'darkraul@gmail.com',
-    ]);
-    $user->notify(new OrderCreated($order));
-
-    expect(true)->toBeTrue();
-
+    expect($pedido->payment_method)->toBe('bizum');
 });

@@ -2,11 +2,14 @@
 
 namespace App\Livewire;
 
+use App\Enums\PaymentMethod;
 use App\Http\Classes\PaymentProcess;
 use App\Models\Address;
 use App\Models\Donation;
+use App\Support\PaymentMethodRepository;
 use Closure;
 use Exception;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
@@ -16,6 +19,8 @@ class DonacionBanner extends Component
 {
     #[Validate]
     public string $amount = '0';
+
+    public string $payment_method = '';
 
     public string $amount_select = '0';
 
@@ -57,8 +62,11 @@ class DonacionBanner extends Component
 
     public bool $isValid = false;
 
+    public $payments_methods = [];
+
     public function render(): View
     {
+
         return view('livewire.donacion-banner');
     }
 
@@ -71,13 +79,19 @@ class DonacionBanner extends Component
 
     public function updatedType(string $value): void
     {
+        $paymentMethods = new PaymentMethodRepository;
         if ($value === Donation::UNICA) {
             $this->frequency = null;
+            $this->payments_methods = $paymentMethods->getPaymentsMethods(false)
+                ->map(fn ($method) => $method->toArray())
+                ->toArray();
 
             return;
         }
 
-        // RECURRENTE: si ya hay frecuencia, se mantiene; si no, por defecto MENSUAL
+        $this->payments_methods = $paymentMethods->getPaymentsMethods(true)
+            ->map(fn ($method) => $method->toArray())
+            ->toArray();
         $this->frequency = $this->frequency ?: Donation::FREQUENCY['MENSUAL'];
     }
 
@@ -123,10 +137,13 @@ class DonacionBanner extends Component
 
         $this->validate();
 
-        if ($step == 3 && ! $this->needsCertificate) {
+        if ($step == 4 && ! $this->needsCertificate) {
             $this->submit();
         } else {
 
+            if ($step == 3 && ! $this->needsCertificate) {
+                $step = 4;
+            }
             $this->step = $step;
         }
 
@@ -144,6 +161,7 @@ class DonacionBanner extends Component
             'amount' => convertPriceNumber($this->amount),
             'type' => $this->type,
             'frequency' => $this->frequency ?? null,
+            'payment_method' => $this->payment_method,
         ]);
 
         if ($this->needsCertificate) {
@@ -234,6 +252,18 @@ class DonacionBanner extends Component
                 'certificate.nif' => 'required|string|max:255',
                 'certificate.cp' => 'required|string|max:5',
                 'certificate.email' => 'required|email|max:255',
+            ],
+            4 => [
+                // compruebo que si es donación recurrente el método de pago es tarjeta
+
+                'payment_method' => [
+                    Rule::enum(PaymentMethod::class)
+                        ->when(
+                            $this->type === Donation::RECURRENTE,
+                            fn ($rule) => $rule->only(PaymentMethod::TARJETA),
+                        ),
+                    'required', 'string', 'max:255',
+                ],
             ]
         };
 
@@ -248,6 +278,8 @@ class DonacionBanner extends Component
             'min' => 'Debe ser mayor que 0.',
             'integer' => 'El campo debe ser un número entero.',
             'numeric' => 'El campo debe ser un número.',
+            'payment_method.enum' => 'El método de pago no es válido.',
+            'payment_method.required' => 'Debes seleccionar un método de pago.',
         ];
 
     }
