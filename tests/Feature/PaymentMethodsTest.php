@@ -7,6 +7,7 @@ use App\Livewire\PageCartComponent;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
+use App\Support\PaymentMethodRepository;
 
 use function Pest\Livewire\livewire;
 
@@ -126,4 +127,10 @@ test('al crear pedido con pago bizum lo reflejo en base de datos', function () {
         ->assertHasNoErrors();
 
     expect(Order::first()->payment_method)->toBe('bizum');
+});
+
+test('puedo obtener el icono de los métodos de pago', function () {
+    $metodos = (new PaymentMethodRepository)->getPaymentsMethods(false)->toArray();
+
+    expect(array_column($metodos, 'icon'))->toHaveCount(2);
 });

@@ -30,6 +30,7 @@ final class PaymentMethodData implements Arrayable
             'code' => $this->method->value,
             'label' => $this->method->label(),
             'supportsRecurring' => $this->method->supportsRecurring(),
+            'icon' => $this->method->getIcon(),
         ];
     }
 }

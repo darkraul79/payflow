@@ -1,5 +1,8 @@
 <?php
 
+use App\Enums\PaymentMethod;
+use App\Helpers\RedsysAPI;
+use App\Livewire\FinishOrderComponent;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
@@ -9,6 +12,8 @@ use App\Notifications\OrderCreated;
 use App\Services\Cart;
 use Illuminate\Support\Facades\Notification;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+
+use function Pest\Livewire\livewire;
 
 test('puedo crear Pedido por defecto en factory', function () {
 
@@ -267,4 +272,57 @@ test('puedo crear factory de pago por bizum', function () {
     $pedido = Order::factory()->porBizum()->create();
 
     expect($pedido->payment_method)->toBe('bizum');
+});
+
+test('al finalizar pedido veo los métodos de pago disponbles', function () {
+    $producto = getProducto();
+
+    addProductToCart($producto);
+
+    setShippingMethod();
+
+    livewire(FinishOrderComponent::class)
+        ->assertSeeTextInOrder(['Método de pago', 'bizum', 'tarjeta']);
+
+});
+
+test('debo seleccionar un método de pago para poder finalizar pedido', function () {
+    $producto = getProducto();
+
+    addProductToCart($producto);
+
+    setShippingMethod();
+
+    livewire(FinishOrderComponent::class)
+        ->call('submit')
+        ->assertHasErrors(['payment_method' => 'Debes seleccionar un método de pago.']);
+});
+
+test('si selecciono bizum agrego campo z a formulario redsys', function () {
+    $producto = getProducto();
+
+    addProductToCart($producto);
+
+    setShippingMethod();
+    $comp = livewire(FinishOrderComponent::class)
+        ->set([
+            'payment_method' => PaymentMethod::BIZUM,
+            'billing' => [
+                'name' => 'Juan',
+                'last_name' => 'Pérez',
+                'last_name2' => 'Sánchez',
+                'company' => 'Mi empresa',
+                'address' => 'Calle Falsa 123',
+                'province' => 'Madrid',
+                'city' => 'Madrid',
+                'cp' => '28001',
+                'email' => 'info@raulsebastian.es',
+            ],
+        ])->call('submit');
+
+    /** @noinspection PhpUndefinedFieldInspection */
+    $params = json_decode((new RedsysAPI)->decodeMerchantParameters($comp->MerchantParameters), true);
+
+    expect($params['Ds_Merchant_Paymethods'])->toBe('z');
+
 });

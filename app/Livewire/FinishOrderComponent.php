@@ -23,7 +23,7 @@ class FinishOrderComponent extends Component
 
     public string $payment_method;
 
-    public $payments_methods;
+    public array $payments_methods = [];
 
     public $isValid = false;
 

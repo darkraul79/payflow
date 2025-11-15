@@ -22,4 +22,12 @@ enum PaymentMethod: string
             self::BIZUM => false,
         };
     }
+
+    public function getIcon(): ?string
+    {
+        return match ($this) {
+            self::TARJETA => 'heroicon-o-credit-card',
+            self::BIZUM => 'bizum-logo',
+        };
+    }
 }

@@ -63,8 +63,8 @@
         </li>
     </ul>
 
-    <div class="my-6">
-        <h2 class="text-azul-sea text-sm">Método de pago</h2>
+    <div class="my-6 border-y border-gray-200 p-4 bg-azul-gray/10">
+        <h2 class="text-azul-sea text-mb-6 text-[16px] ">Método de pago</h2>
         @if($payments_methods && count($payments_methods) > 0)
             <div class="text-sm">
                 <x-payments-methods :payment_methods="$payments_methods" />

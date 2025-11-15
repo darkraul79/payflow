@@ -73,24 +73,11 @@ function asUser(): User
 function creaPedido(?Product $producto = null, ?ShippingMethod $shippingMethod = null): Order
 {
 
-    if (! $producto) {
-        $producto = Product::factory()->create([
-            'name' => 'Producto de prueba',
-            'price' => 10,
-            'stock' => 2,
-        ]);
-    }
+    $producto = getProducto($producto);
 
-    livewire(CardProduct::class, [
-        'product' => $producto,
-        'quantity' => 1,
-    ])->call('addToCart');
+    addProductToCart($producto);
 
-    $metodoEnvio = $shippingMethod ?? ShippingMethod::factory()->create();
-
-    livewire(PageCartComponent::class)
-        ->set('shipping_method', $metodoEnvio->id)
-        ->call('submit');
+    setShippingMethod($shippingMethod);
 
     livewire(FinishOrderComponent::class)
         ->assertOk()
@@ -113,6 +100,28 @@ function creaPedido(?Product $producto = null, ?ShippingMethod $shippingMethod =
     session()->flush();
 
     return Order::latest()->first();
+}
+
+function setShippingMethod(?ShippingMethod $shippingMethod = null): void
+{
+    $metodoEnvio = $shippingMethod ?? ShippingMethod::factory()->create();
+
+    livewire(PageCartComponent::class)
+        ->set('shipping_method', $metodoEnvio->id)
+        ->call('submit');
+}
+
+function getProducto(?Product $producto = null): Product
+{
+    if (! $producto) {
+        $producto = Product::factory()->create([
+            'name' => 'Producto de prueba',
+            'price' => 10,
+            'stock' => 2,
+        ]);
+    }
+
+    return $producto;
 }
 
 function addProductToCart(?Product $producto = null): void
