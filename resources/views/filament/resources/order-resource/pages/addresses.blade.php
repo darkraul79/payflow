@@ -1,5 +1,5 @@
 @php
-    use App\Models\Address;
+    use App\Enums\AddressType;
 @endphp
 
 @foreach ($record->addresses as $address)
@@ -10,7 +10,7 @@
             <span
                 class="flex flex-row items-center gap-1 font-semibold text-gray-400!"
             >
-                @if ($address->type === Address::CERTIFICATE)
+                @if ($address->type === AddressType::CERTIFICATE->value)
                     <x-heroicon-m-check-badge class="fill-lime h-6 w-6" />
                     {{ $address->type }}
                 @else

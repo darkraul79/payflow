@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,22 +15,6 @@ use Illuminate\Support\Carbon;
 class State extends Model
 {
     use HasFactory;
-
-    public const string PENDIENTE = 'Pendiente de pago';
-
-    public const string PAGADO = 'Pagado';
-
-    public const string ENVIADO = 'Enviado';
-
-    public const string FINALIZADO = 'Finalizado';
-
-    public const string ERROR = 'ERROR';
-
-    public const string CANCELADO = 'Cancelado';
-
-    public const string ACEPTADO = 'Aceptado';
-
-    public const string ACTIVA = 'Activa';
 
     protected $fillable = [
         'stateable_id',
@@ -51,31 +36,27 @@ class State extends Model
      */
     public function icono(): string
     {
-        return match ($this->name) {
-            self::PENDIENTE => 'bi-cash-coin',
-            self::PAGADO => 'bi-credit-card',
-            self::ENVIADO => 'bi-truck',
-            self::FINALIZADO, self::ACTIVA => 'bi-check',
-            self::ERROR => 'bi-exclamation-circle-fill',
-            self::CANCELADO => 'bi-ban',
-            default => 'bi-hash',
-        };
+        $status = $this->status();
+
+        return $status?->icon() ?? 'bi-question-circle';
     }
 
     /**
-     * Devuelve el icono asociado al estado de pedido
+     * Obtiene el enum OrderStatus correspondiente al estado actual
+     */
+    public function status(): ?OrderStatus
+    {
+        return OrderStatus::tryFrom($this->name);
+    }
+
+    /**
+     * Devuelve el color asociado al estado de pedido
      */
     public function colorEstado(): string
     {
-        return match ($this->name) {
-            self::PENDIENTE => 'warning',
-            self::PAGADO => 'success',
-            self::ACTIVA => 'green',
-            self::ENVIADO => 'secondary',
-            self::FINALIZADO => 'info',
-            self::CANCELADO, self::ERROR => 'danger',
-            default => 'primary',
-        };
+        $status = $this->status();
+
+        return $status?->color() ?? 'primary';
     }
 
     public function fechaHumanos(): string

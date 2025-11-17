@@ -2,8 +2,8 @@
 
 namespace App\Listeners;
 
+use App\Enums\OrderStatus;
 use App\Events\CreateOrderEvent;
-use App\Models\State;
 
 class CreateOrderStateAfterCreateListener
 {
@@ -12,7 +12,7 @@ class CreateOrderStateAfterCreateListener
     public function handle(CreateOrderEvent $event): void
     {
         $event->order->states()->create([
-            'name' => State::PENDIENTE,
+            'name' => OrderStatus::PENDIENTE->value,
         ]);
     }
 }

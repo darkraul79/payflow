@@ -65,7 +65,7 @@ class UpdateOrder extends Page implements HasForms
         ]);
 
         $this->record->states()->create([
-            'name' => $this->pedido->getStates()[$campos['estado']],
+            'name' => $campos['estado'],
             'message' => $campos['mensaje'],
         ]);
         $this->estado = false;

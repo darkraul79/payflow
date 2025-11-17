@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Models\Donation;
 use App\Models\Order;
 use Illuminate\Database\Eloquent\Model;
+use RuntimeException;
 
 /**
  * NOTA SOBRE LA LICENCIA DE USO DEL SOFTWARE.
@@ -306,7 +307,7 @@ class RedsysAPI
         return strtr(base64_encode((string) $input), '+/', '-_');
     }
 
-    public function send()
+    public function send(): bool|string
     {
 
         $data['Ds_MerchantParameters'] = $this->createMerchantParameters();
@@ -329,17 +330,29 @@ class RedsysAPI
 
         $tmp = curl_exec($rest);
         $httpCode = curl_getinfo($rest, CURLINFO_HTTP_CODE);
-
-        if ($tmp !== false && $httpCode == 200) {
-            $result = $tmp;
-        } else {
-            $strError = 'Request failure '.(($httpCode != 200) ? "[HttpCode: '".$httpCode."']" : '').((curl_error($rest)) ? " [Error: '".curl_error($rest)."']" : '');
-            exit($strError);
-        }
+        $curlError = curl_error($rest);
 
         curl_close($rest);
 
-        return $result;
+        if ($tmp === false || $httpCode != 200) {
+            $errorMessage = 'Redsys API Request failure';
+
+            if ($httpCode != 200) {
+                $errorMessage .= " [HTTP $httpCode]";
+            }
+
+            if ($curlError) {
+                $errorMessage .= " [cURL Error: $curlError]";
+            }
+
+            if ($tmp !== false) {
+                $errorMessage .= " [Response: $tmp]";
+            }
+
+            throw new RuntimeException($errorMessage);
+        }
+
+        return $tmp;
     }
 
     public static function getRedsysUrl($payDirect = false): string

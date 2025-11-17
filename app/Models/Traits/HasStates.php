@@ -2,24 +2,18 @@
 
 namespace App\Models\Traits;
 
+use App\Enums\OrderStatus;
 use App\Models\State;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
-use ReflectionClass;
 
 trait HasStates
 {
     public static function getStates(): array
     {
-        $reflector = new ReflectionClass(State::class);
-        $constants = $reflector->getConstants();
-
-        unset($constants['CREATED_AT']);
-        unset($constants['UPDATED_AT']);
-
-        return $constants;
+        return OrderStatus::values();
     }
 
     public function state(): MorphOne
@@ -33,13 +27,13 @@ trait HasStates
     }
 
     /**
-     * Delimita el listado de modelos a los finalizados.
+     * Delimita el listado de modelos a los aceptados.
      */
     #[Scope]
     public function aceptados(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
-            $query->where('name', State::ACEPTADO);
+            $query->where('name', OrderStatus::ACEPTADO->value);
         });
     }
 
@@ -50,7 +44,7 @@ trait HasStates
     public function finalizados(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
-            $query->where('name', State::FINALIZADO);
+            $query->where('name', OrderStatus::FINALIZADO->value);
         });
     }
 
@@ -61,18 +55,18 @@ trait HasStates
     public function pendientePago(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
-            $query->where('name', State::PENDIENTE);
+            $query->where('name', OrderStatus::PENDIENTE->value);
         });
     }
 
     /**
-     * Delimita el listado de modelos a los modelps cancelados.
+     * Delimita el listado de modelos a los modelos cancelados.
      */
     #[Scope]
     public function cancelados(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
-            $query->where('name', State::CANCELADO);
+            $query->where('name', OrderStatus::CANCELADO->value);
         });
     }
 
@@ -83,18 +77,18 @@ trait HasStates
     public function pagados(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
-            $query->where('name', State::PAGADO);
+            $query->where('name', OrderStatus::PAGADO->value);
         });
     }
 
     /**
-     * Delimita el listado de modelos a los modelps enviados.
+     * Delimita el listado de modelos a los modelos enviados.
      */
     #[Scope]
     public function enviados(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
-            $query->where('name', State::ENVIADO);
+            $query->where('name', OrderStatus::ENVIADO->value);
         });
     }
 
@@ -105,7 +99,7 @@ trait HasStates
     public function conErrores(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
-            $query->where('name', State::ERROR);
+            $query->where('name', OrderStatus::ERROR->value);
         });
     }
 
@@ -116,7 +110,7 @@ trait HasStates
     public function activas(Builder $query): void
     {
         $query->whereHas('state', function ($query): void {
-            $query->where('name', State::ACTIVA);
+            $query->where('name', OrderStatus::ACTIVA->value);
         });
     }
 }

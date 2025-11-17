@@ -15,18 +15,18 @@
             :options="[
                 [
                     'text' => 'Donación única',
-                    'value' => Donation::UNICA,
+                    'value' => \App\Enums\DonationType::UNICA->value,
                 ],
                 [
                     'text' => 'Hazte Socio',
-                    'value' => Donation::RECURRENTE,
+                    'value' => \App\Enums\DonationType::RECURRENTE->value,
                 ],
             ]"
         />
 
         <x-error class="form-error" field="type" />
     </div>
-    @if ($type === Donation::RECURRENTE)
+    @if ($type === \App\Enums\DonationType::RECURRENTE->value)
         <div class="my-6 flex flex-col w-full" wire:model="frequency">
             <x-radiobutton-donacion
                 name="frequency"
@@ -36,15 +36,15 @@
                 :options="[
                     [
                         'text' => 'Mensual',
-                        'value' => Donation::FREQUENCY['MENSUAL'],
+                        'value' => \App\Enums\DonationFrequency::MENSUAL->value,
                     ],
                     [
                         'text' => 'Trimestral',
-                        'value' => Donation::FREQUENCY['TRIMESTRAL'],
+                        'value' => \App\Enums\DonationFrequency::TRIMESTRAL->value,
                     ],
                     [
                         'text' => 'Anual',
-                        'value' => Donation::FREQUENCY['ANUAL'],
+                        'value' => \App\Enums\DonationFrequency::ANUAL->value,
                     ],
                 ]"
             />

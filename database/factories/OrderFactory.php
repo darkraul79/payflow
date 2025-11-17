@@ -2,12 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Enums\AddressType;
+use App\Enums\OrderStatus;
 use App\Events\CreateOrderEvent;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
-use App\Models\State;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -40,9 +41,9 @@ class OrderFactory extends Factory
     {
         return $this->afterMaking(function (Order $pedido) {})->afterCreating(function (Order $pedido) {
 
-            if (! $pedido->address?->exists()) {
+            if ($pedido->addresses()->count() === 0) {
                 $address = Address::factory()->create([
-                    'type' => Address::BILLING,
+                    'type' => AddressType::BILLING->value,
                 ]);
                 $pedido->addresses()->attach($address);
             }
@@ -55,7 +56,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $pedido->states()->create([
-                'name' => State::PAGADO,
+                'name' => OrderStatus::PAGADO->value,
             ]);
         });
     }
@@ -64,7 +65,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $pedido->states()->create([
-                'name' => State::ENVIADO,
+                'name' => OrderStatus::ENVIADO->value,
             ]);
         });
     }
@@ -73,7 +74,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $pedido->states()->create([
-                'name' => State::FINALIZADO,
+                'name' => OrderStatus::FINALIZADO->value,
             ]);
         });
     }
@@ -82,7 +83,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $pedido->states()->create([
-                'name' => State::ERROR,
+                'name' => OrderStatus::ERROR->value,
             ]);
         });
     }
@@ -91,7 +92,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $pedido->states()->create([
-                'name' => State::CANCELADO,
+                'name' => OrderStatus::CANCELADO->value,
             ]);
         });
     }
@@ -100,7 +101,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) use ($params) {
             $address = Address::factory()->create([
-                'type' => ADDRESS::SHIPPING,
+                'type' => AddressType::SHIPPING->value,
                 ...$params ?? [],
             ]);
             $pedido->addresses()->attach($address);
@@ -111,7 +112,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function (Order $pedido) {
             $address = Address::factory()->create([
-                'type' => ADDRESS::CERTIFICATE,
+                'type' => AddressType::CERTIFICATE->value,
             ]);
             $pedido->addresses()->attach($address);
         });
@@ -122,7 +123,7 @@ class OrderFactory extends Factory
 
         return $this->afterCreating(function (Order $pedido) use ($params) {
             $address = Address::factory()->create([
-                'type' => ADDRESS::BILLING,
+                'type' => AddressType::BILLING->value,
                 ...$params ?? [],
             ]);
             $pedido->addresses()->attach($address);
@@ -134,11 +135,11 @@ class OrderFactory extends Factory
 
         return $this
             ->has(Address::factory()->state([
-                'type' => Address::BILLING,
+                'type' => AddressType::BILLING->value,
                 ...$billingAddress ?? [],
             ]), 'addresses')
             ->has(Address::factory()->state([
-                'type' => Address::SHIPPING,
+                'type' => AddressType::SHIPPING->value,
                 ...$shippingAddress ?? [],
             ]), 'addresses');
     }

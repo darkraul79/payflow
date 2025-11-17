@@ -2,6 +2,7 @@
 
 namespace App\Models\Traits;
 
+use App\Enums\AddressType;
 use App\Models\Address;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -13,11 +14,11 @@ trait HasAddresses
         return match (class_basename($this)) {
             'App\Models\Order' => Attribute::make(
                 get: function () {
-                    return $this->addresses()->where('type', Address::BILLING)->first();
+                    return $this->addresses()->where('type', AddressType::BILLING->value)->first();
                 }),
             'App\Models\Donation' => Attribute::make(
                 get: function () {
-                    return $this->addresses()->where('type', Address::CERTIFICATE)->first();
+                    return $this->addresses()->where('type', AddressType::CERTIFICATE->value)->first();
                 }),
             default => Attribute::make(
                 get: function () {
@@ -35,6 +36,6 @@ trait HasAddresses
 
     public function certificate(): Address|bool
     {
-        return $this->addresses()->where('type', Address::CERTIFICATE)->first() ?? false;
+        return $this->addresses()->where('type', AddressType::CERTIFICATE->value)->first() ?? false;
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\OrderStatus;
 use App\Events\NewDonationEvent;
 use App\Helpers\RedsysAPI;
 use App\Models\Donation;
 use App\Models\Payment;
-use App\Models\State;
 use Illuminate\Support\Facades\Event;
 
 test('confirmo pedido cambia a pagado después de llegar a ok', function () {
@@ -21,7 +21,7 @@ test('confirmo pedido cambia a pagado después de llegar a ok', function () {
     ]))
         ->assertRedirect(route('pedido.finalizado', $pedido->number));
     //    $pedido->refresh();
-    expect($pedido->state->name)->toBe(State::PAGADO);
+    expect($pedido->state->name)->toBe(OrderStatus::PAGADO->value);
 
 });
 
@@ -57,7 +57,7 @@ it('donationResponse: firma inválida marca error y redirige a ko', function () 
 
     $donacion->refresh();
 
-    expect($donacion->state->name)->toBe(State::ERROR) // State::ERROR
+    expect($donacion->state->name)->toBe(OrderStatus::ERROR->value) // OrderStatus::ERROR->value
         ->and($donacion->state->info['Error'])
         ->toBe('Firma no válida');
 });
@@ -77,7 +77,7 @@ it('donationResponse: Ds_Response>99 actualiza a error con mensaje de Redsys', f
 
     $donacion->refresh();
 
-    expect($donacion->state->name)->toBe(State::ERROR)
+    expect($donacion->state->name)->toBe(OrderStatus::ERROR->value)
         ->and($donacion->state->info['Error'])->toBe('Error RedSys - 9928');
 });
 
@@ -127,7 +127,7 @@ it('donationResponse: emite NewDonationEvent', function () {
 
 it('result: donation en estado ERROR muestra donation.ko', function () {
     $donacion = Donation::factory()->create();
-    $donacion->states()->create(['name' => State::ERROR]);
+    $donacion->states()->create(['name' => OrderStatus::ERROR->value]);
     Payment::factory()->create([
         'payable_type' => Donation::class,
         'payable_id' => $donacion->id,

@@ -4,11 +4,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\OrderStatus;
 use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\ItemsRelationManager;
 use App\Models\Order;
-use App\Models\State;
 use App\Services\InvoiceService;
 use Exception;
 use Filament\Forms\Components\Placeholder;
@@ -85,13 +85,12 @@ class OrderResource extends Resource
                     ->form([
                         Select::make('estado')
                             ->options([
-
-                                1 => State::FINALIZADO,
-                                2 => State::PENDIENTE,
-                                3 => State::PAGADO,
-                                4 => State::ENVIADO,
-                                5 => State::CANCELADO,
-                                6 => State::ERROR,
+                                1 => OrderStatus::FINALIZADO->value,
+                                2 => OrderStatus::PENDIENTE->value,
+                                3 => OrderStatus::PAGADO->value,
+                                4 => OrderStatus::ENVIADO->value,
+                                5 => OrderStatus::CANCELADO->value,
+                                6 => OrderStatus::ERROR->value,
                             ])
                             ->label('Estado')
                             ->default(false),

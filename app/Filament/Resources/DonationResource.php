@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\DonationType;
+use App\Enums\OrderStatus;
 use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\DonationResource\Pages;
 use App\Filament\Resources\DonationResource\RelationManagers\InvoicesRelationManager;
 use App\Filament\Resources\DonationResource\RelationManagers\PaymentsRelationManager;
 use App\Models\Donation;
-use App\Models\State;
 use App\Services\InvoiceService;
 use Exception;
 use Filament\Forms\Components\Toggle;
@@ -159,11 +160,11 @@ class DonationResource extends Resource
                     ->action(fn (?Donation $record) => $record?->cancel())
                     ->icon('heroicon-o-no-symbol')
                     ->color('danger')
-                    ->visible(fn (?Donation $record) => $record?->type === Donation::RECURRENTE &&
-                        $record?->state?->name === State::ACTIVA),
+                    ->visible(fn (?Donation $record) => $record?->type === DonationType::RECURRENTE->value &&
+                        $record?->state?->name === OrderStatus::ACTIVA->value),
                 DeleteAction::make()
                     ->visible(fn (?Donation $record
-                    ) => $record->state?->name === State::ERROR || $record->state == null),
+                    ) => $record->state?->name === OrderStatus::ERROR->value || $record->state == null),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),
                 Reusable::facturaActions(),
@@ -201,7 +202,8 @@ class DonationResource extends Resource
                         }),
                 ]),
             ])->checkIfRecordIsSelectableUsing(
-                fn (Model $record): bool => $record->state?->name === State::ERROR || $record->state == null,
+                fn (Model $record
+                ): bool => $record->state?->name === OrderStatus::ERROR->value || $record->state == null,
             );
     }
 

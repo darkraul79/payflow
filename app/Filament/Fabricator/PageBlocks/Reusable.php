@@ -2,7 +2,7 @@
 
 namespace App\Filament\Fabricator\PageBlocks;
 
-use App\Models\State;
+use App\Enums\OrderStatus;
 use App\Services\InvoiceService;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Group;
@@ -343,9 +343,9 @@ class Reusable
                  ) {
                      return match ($record->getMorphClass()) {
                          'App\Models\Order' => $record->billing_address() && in_array($record->state?->name, [
-                             State::PAGADO,
-                             State::ENVIADO,
-                             State::FINALIZADO,
+                             OrderStatus::PAGADO->value,
+                             OrderStatus::ENVIADO->value,
+                             OrderStatus::FINALIZADO->value,
                          ]),
                          'App\Models\Donation' => (bool) $record->certificate(),
                          default => false,
@@ -412,14 +412,13 @@ class Reusable
             ) {
                 return match ($record->getMorphClass()) {
                     'App\Models\Order' => $record->billing_address() && in_array($record->state?->name, [
-                        State::PAGADO,
-                        State::ENVIADO,
-                        State::FINALIZADO,
+                        OrderStatus::PAGADO->value,
+                        OrderStatus::ENVIADO->value,
+                        OrderStatus::FINALIZADO->value,
                     ]),
                     'App\Models\Donation' => (bool) $record->certificate(),
                     default => false,
                 };
-
             })
             ->label('Enviar por email')
             ->helperText('¿Deseas enviar la factura por email?')

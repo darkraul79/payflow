@@ -2,51 +2,57 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
 use App\Helpers\RedsysAPI;
 use App\Models\Order;
 use App\Models\Page;
-use App\Models\State;
 
 class CartController extends Controller
 {
-    public array $params;
+    private const string SHOP_SLUG = 'tienda-solidaria';
 
+    /**
+     * Display the shopping cart
+     */
     public function index()
     {
-
-        return view('cart.index',
-            $this->getParams('Cesta')
-        );
+        return view('cart.index', $this->getParams('Cesta'));
     }
 
-    public function getParams(string $title): array
+    /**
+     * Get common parameters for cart pages
+     */
+    private function getParams(string $title): array
     {
         return [
             'page' => Page::factory()->make([
                 'title' => $title,
                 'is_home' => false,
                 'donation' => false,
-                'parent_id' => Page::where('slug', 'tienda-solidaria')->first() ?? null,
+                'parent_id' => Page::where('slug', self::SHOP_SLUG)->first() ?? null,
             ]),
             'static' => true,
         ];
-
     }
 
-    public function form()
+    /**
+     * Show the checkout form
+     */
+    public function create()
     {
         if (! session()->has('cart') || empty(session('cart'))) {
             return redirect()->route('cart');
         }
 
-        return view('cart.form',
-            $this->getParams('Detalles de facturación')
-        );
+        return view('cart.form', $this->getParams('Detalles de facturación'));
     }
 
-    public function pagar_pedido(Order $pedido)
+    /**
+     * Show a payment form for an order
+     */
+    public function show(Order $pedido)
     {
-        if ($pedido->state->name != State::PENDIENTE) {
+        if ($pedido->state->name != OrderStatus::PENDIENTE->value) {
             abort(404);
         }
 

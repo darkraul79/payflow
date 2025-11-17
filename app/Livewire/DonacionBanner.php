@@ -2,10 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Enums\AddressType;
+use App\Enums\DonationFrequency;
+use App\Enums\DonationType;
 use App\Enums\PaymentMethod;
-use App\Http\Classes\PaymentProcess;
-use App\Models\Address;
 use App\Models\Donation;
+use App\Services\PaymentProcess;
 use App\Support\PaymentMethodRepository;
 use Closure;
 use Exception;
@@ -80,7 +82,7 @@ class DonacionBanner extends Component
     public function updatedType(string $value): void
     {
         $paymentMethods = new PaymentMethodRepository;
-        if ($value === Donation::UNICA) {
+        if ($value === DonationType::UNICA->value) {
             $this->frequency = null;
             $this->payments_methods = $paymentMethods->getPaymentsMethods(false)
                 ->map(fn ($method) => $method->toArray())
@@ -92,7 +94,7 @@ class DonacionBanner extends Component
         $this->payments_methods = $paymentMethods->getPaymentsMethods(true)
             ->map(fn ($method) => $method->toArray())
             ->toArray();
-        $this->frequency = $this->frequency ?: Donation::FREQUENCY['MENSUAL'];
+        $this->frequency = $this->frequency ?: DonationFrequency::MENSUAL->value;
     }
 
     public function mount($prefix): void
@@ -168,7 +170,7 @@ class DonacionBanner extends Component
 
         if ($this->needsCertificate) {
             $paymentProcess->modelo->addresses()->create([
-                'type' => Address::CERTIFICATE,
+                'type' => AddressType::CERTIFICATE->value,
                 'name' => $this->certificate['name'],
                 'last_name' => $this->certificate['last_name'],
                 'last_name2' => $this->certificate['last_name2'],
@@ -241,8 +243,8 @@ class DonacionBanner extends Component
                         }
                     },
                 ],
-                'frequency' => 'required_if:type,'.Donation::RECURRENTE,
-                'type' => 'required|in:'.Donation::UNICA.','.Donation::RECURRENTE,
+                'frequency' => 'required_if:type,'.DonationType::RECURRENTE->value,
+                'type' => 'required|in:'.DonationType::UNICA->value.','.DonationType::RECURRENTE->value,
             ],
             2 => [
                 'needsCertificate' => '',
@@ -261,7 +263,7 @@ class DonacionBanner extends Component
                 'payment_method' => [
                     Rule::enum(PaymentMethod::class)
                         ->when(
-                            $this->type === Donation::RECURRENTE,
+                            $this->type === DonationType::RECURRENTE->value,
                             fn ($rule) => $rule->only(PaymentMethod::TARJETA),
                         ),
                     'required', 'string', 'max:255',

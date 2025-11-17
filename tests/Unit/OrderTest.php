@@ -1,12 +1,13 @@
 <?php
 
+use App\Enums\AddressType;
+use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Helpers\RedsysAPI;
 use App\Livewire\FinishOrderComponent;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\State;
 use App\Models\User;
 use App\Notifications\OrderCreated;
 use App\Services\Cart;
@@ -25,7 +26,7 @@ test('puedo crear Pedido por defecto en factory', function () {
 test('al crear pedido se crea por defecto estado Pendiente', function () {
 
     $pedido = Order::factory()->create();
-    expect($pedido->state->name)->toBe(State::PENDIENTE)
+    expect($pedido->state->name)->toBe(OrderStatus::PENDIENTE->value)
         ->and($pedido->states)->toHaveCount(1);
 });
 
@@ -41,7 +42,7 @@ test('puedo asociar dirección de certificado a Pedido en factory', function () 
 
     expect($pedido->certificate())->toBeInstanceOf(Address::class)
         ->and($pedido->addresses)->toHaveCount(2)
-        ->and($pedido->addresses->last()->type)->toBe(Address::CERTIFICATE);
+        ->and($pedido->addresses->last()->type)->toBe(AddressType::CERTIFICATE->value);
 });
 test('puedo crear pedido a través de factory', closure: function () {
 
@@ -61,9 +62,17 @@ test('puedo crear factory con items', function () {
 test('puedo crear factory con diferentes estados', function (string $estado) {
     $order = Order::factory()->{$estado}()->create();
 
+    $expectedStatus = OrderStatus::from(match ($estado) {
+        'pagado' => 'Pagado',
+        'enviado' => 'Enviado',
+        'finalizado' => 'Finalizado',
+        'error' => 'ERROR',
+        'cancelado' => 'Cancelado',
+    });
+
     expect($order->states)->toHaveCount(2)
         ->and($order->state->name)
-        ->toBe(constant(State::class.'::'.strtoupper($estado)));
+        ->toBe($expectedStatus->value);
 
 })->with([
     'pagado',
@@ -75,30 +84,30 @@ test('puedo crear factory con diferentes estados', function (string $estado) {
 
 test('el estado por defecto es pendiente de envío', function () {
     $pedido = Order::factory()->create();
-    expect($pedido->state->name)->toBe(State::PENDIENTE);
+    expect($pedido->state->name)->toBe(OrderStatus::PENDIENTE->value);
 });
 
 test('la dirección por defecto es la de facturación', function () {
     $order = Order::factory()->create();
     expect($order->billing_address())->toBeInstanceOf(Address::class)
-        ->and($order->billing_address()->type)->toBe(Address::BILLING);
+        ->and($order->billing_address()->type)->toBe(AddressType::BILLING->value);
 });
 
 test('puedo crear dirección de envío de factory', function () {
     $order = Order::factory()->withDirecionEnvio()->create();
     expect($order->shipping_address())->toBeInstanceOf(Address::class)
-        ->and($order->shipping_address()->type)->toBe(Address::SHIPPING);
+        ->and($order->shipping_address()->type)->toBe(AddressType::SHIPPING->value);
 });
 
 test('puedo crear direcciones desde modelo', function () {
     $order = Order::factory()->create();
 
     $order->addresses()->create(Address::factory()->make([
-        'type' => Address::SHIPPING,
+        'type' => AddressType::SHIPPING->value,
     ])->except('created_at', 'updated_at'));
 
     expect($order->addresses)->toHaveCount(2)
-        ->and($order->addresses->last()->type)->toBe(Address::SHIPPING);
+        ->and($order->addresses->last()->type)->toBe(AddressType::SHIPPING->value);
 });
 
 test('puedo crear pedido desde componente de livewire', function () {
@@ -187,7 +196,7 @@ test('al crear pedido solo creo un estado pendiente de pago', function () {
 
     $pedido->refresh();
 
-    expect($pedido->state->name)->toBe(State::PAGADO)
+    expect($pedido->state->name)->toBe(OrderStatus::PAGADO->value)
         ->and($pedido->states)->toHaveCount(2);
 });
 

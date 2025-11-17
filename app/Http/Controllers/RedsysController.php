@@ -6,22 +6,59 @@ use App\Events\CreateOrderEvent;
 use App\Events\NewDonationEvent;
 use App\Helpers\RedsysAPI;
 use App\Models\Order;
-use App\Models\Page;
 use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
-use Response;
 
 class RedsysController extends Controller
 {
-    public function donationResponse(): RedirectResponse|Response
+    /**
+     * Handle Redsys donation webhook response
+     */
+    public function store(Request $request): RedirectResponse
     {
 
-        $redSys = new RedsysAPI;
+        return match ($request->route('type')) {
+            'donation' => $this->handleDonationResponse($request),
+            'order' => $this->handleOrderResponse($request),
+            'payment' => $this->handlePaymentResponse($request),
+            default => $this->destroy(),
+        };
+    }
 
-        $datos = request('Ds_MerchantParameters');
-        $signatureRecibida = request('Ds_Signature');
+    /**
+     * Handle donation response from Redsys
+     */
+    private function handleDonationResponse(Request $request): RedirectResponse
+    {
+        $redSys = new RedsysAPI;
+        [$decodec, $firma] = $this->validateRedsysRequest($request, $redSys);
+
+        $donacion = Payment::where('number', $decodec['Ds_Order'])->firstOrFail()->payable;
+
+        if ($this->isSuccessfulPayment($redSys, $firma, $decodec)) {
+            $donacion->payed($decodec);
+        } else {
+            $error = $this->getPaymentError($firma, $decodec);
+            $donacion->error_pago($decodec, $error);
+        }
+
+        NewDonationEvent::dispatch($donacion);
+
+        return redirect()->route('donacion.finalizada', [
+            'donacion' => $donacion->number,
+        ])->with('model', class_basename($donacion));
+    }
+
+    /**
+     * Validate and decode Redsys request parameters
+     */
+    private function validateRedsysRequest(Request $request, RedsysAPI $redSys): array
+    {
+        $datos = $request->input('Ds_MerchantParameters');
+        $signatureRecibida = $request->input('Ds_Signature');
 
         if (empty($datos) || empty($signatureRecibida)) {
             abort(404, 'Datos de Redsys no recibidos');
@@ -30,36 +67,67 @@ class RedsysController extends Controller
         $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
         $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
 
-        $donacion = Payment::where('number', $decodec['Ds_Order'])->firstOrFail()->payable;
-
-        if ($redSys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
-
-            $donacion->payed($decodec);
-
-        } else {
-            $error = hash_equals($firma, $signatureRecibida)
-                ? estado_redsys($decodec['Ds_Response'])
-                : 'Firma no válida';
-            $donacion->error_pago($decodec, $error);
-
-        }
-
-        NewDonationEvent::dispatch($donacion);
-
-        return redirect()->route('donacion.finalizada', [
-            'donacion' => $donacion->number,
-        ])->with('model', class_basename($donacion));
-
+        return [$decodec, $firma];
     }
 
-    public function pagoResponse($response): RedirectResponse|Response
+    /**
+     * Check if payment was successful
+     */
+    private function isSuccessfulPayment(RedsysAPI $redSys, string $firma, array $decodec): bool
     {
+        $signatureRecibida = request('Ds_Signature');
 
-        $response = json_decode($response, true);
+        return $redSys->checkSignature($firma, $signatureRecibida)
+            && intval($decodec['Ds_Response']) <= 99;
+    }
+
+    /**
+     * Get payment error message
+     */
+    private function getPaymentError(string $firma, array $decodec, ?string $signatureRecibida = null): string
+    {
+        $signatureRecibida = $signatureRecibida ?? request('Ds_Signature');
+
+        return hash_equals($firma, $signatureRecibida)
+            ? estado_redsys($decodec['Ds_Response'])
+            : 'Firma no válida';
+    }
+
+    /**
+     * Handle order response from Redsys
+     */
+    private function handleOrderResponse(Request $request): RedirectResponse
+    {
+        Session::forget('cart');
+        $redSys = new RedsysAPI;
+        [$decodec, $firma] = $this->validateRedsysRequest($request, $redSys);
+
+        $pedido = Order::where('number', $decodec['Ds_Order'])->firstOrFail();
+
+        CreateOrderEvent::dispatch($pedido);
+
+        if ($this->isSuccessfulPayment($redSys, $firma, $decodec)) {
+            $pedido->payed($decodec);
+        } else {
+            $error = $this->getPaymentError($firma, $decodec);
+            $pedido->error($error, $decodec);
+        }
+
+        return redirect()->route('pedido.finalizado', [
+            'pedido' => $pedido->number,
+        ])->with('model', class_basename($pedido));
+    }
+
+    /**
+     * Handle payment response from Redsys (alternative flow)
+     */
+    private function handlePaymentResponse(Request $request): RedirectResponse
+    {
+        $response = json_decode($request->input('response'), true);
         $redSys = new RedsysAPI;
 
-        $datos = $response->Ds_MerchantParameters;
-        $signatureRecibida = $response->Ds_Signature;
+        $datos = $response['Ds_MerchantParameters'];
+        $signatureRecibida = $response['Ds_Signature'];
 
         if (empty($datos) || empty($signatureRecibida)) {
             abort(404, 'Datos de Redsys no recibidos');
@@ -73,16 +141,12 @@ class RedsysController extends Controller
         $info = $decodec;
 
         if ($redSys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
-
             $cantidad = convertPriceFromRedsys($decodec['Ds_Amount']);
-
         } else {
-            $error = hash_equals($firma, $signatureRecibida)
-                ? estado_redsys($decodec['Ds_Response'])
-                : 'Firma no válida';
+            $error = $this->getPaymentError($firma, $decodec, $signatureRecibida);
             $info['error'] = $error;
-
         }
+
         $pago->update([
             'info' => $info,
             'amount' => $cantidad,
@@ -91,63 +155,18 @@ class RedsysController extends Controller
         return redirect()->route('donacion.finalizada', [
             'donacion' => $pago->number,
         ]);
-
     }
 
-    public function responseOrder(): RedirectResponse
+    public function destroy(): RedirectResponse
     {
-        Session::forget('cart');
-        $redSys = new RedsysAPI;
-
-        $datos = request('Ds_MerchantParameters');
-        $signatureRecibida = request('Ds_Signature');
-
-        if (empty($datos) || empty($signatureRecibida)) {
-            abort(404, 'Datos de Redsys no recibidos');
-        }
-
-        $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
-        $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
-        $pedido = Order::where('number', $decodec['Ds_Order'])->firstOrFail();
-
-        CreateOrderEvent::dispatch($pedido);
-
-        if ($redSys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
-            $pedido->payed($decodec);
-        } else {
-            $error = hash_equals($firma, $signatureRecibida)
-                ? estado_redsys($decodec['Ds_Response'])
-                : 'Firma no válida';
-            $pedido->error($error, $decodec);
-
-        }
-
-        return redirect()->route('pedido.finalizado', [
-            'pedido' => $pedido->number,
-        ])->with('model', class_basename($pedido));
-
-    }
-
-    public function getParams(string $title): array
-    {
-        return [
-            'page' => Page::factory()->make([
-                'title' => $title,
-                'is_home' => false,
-                'donation' => false,
-                'parent_id' => Page::where('slug', 'tienda-solidaria')->first() ?? null,
-            ]),
-            'static' => true,
-        ];
-
+        return redirect()->abort(404, 'Tipo de respuesta no válido');
     }
 
     /**
-     * Muestra la vista de resultado del pedido.
+     * Show payment result page
      */
-    public function result($number): View|RedirectResponse
+    public function show(string $number): View|RedirectResponse
     {
-
         $pago = Payment::where('number', $number)->firstOrFail();
         $modelo = $pago->payable;
 

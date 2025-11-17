@@ -2,15 +2,17 @@
 
 namespace App\Mail;
 
+use App\Enums\DonationType;
 use App\Models\Donation;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Str;
 
-class DonationNewMail extends Mailable
+class DonationNewMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -40,7 +42,7 @@ class DonationNewMail extends Mailable
     public function getView(): string
     {
         $new = $this->payed ? 'new' : 'error';
-        $type = $this->donation->type === Donation::RECURRENTE ? 'recurrente' : 'unica';
+        $type = $this->donation->type === DonationType::RECURRENTE->value ? 'recurrente' : 'unica';
 
         return 'emails.donation-'.$new.'-'.$type;
 
@@ -57,13 +59,13 @@ class DonationNewMail extends Mailable
     {
         if ($this->payed) {
             return match ($this->donation->type) {
-                Donation::RECURRENTE => '¡Gracias por unirte como socio/amigo! 🌊',
+                DonationType::RECURRENTE->value => '¡Gracias por unirte como socio/amigo! 🌊',
                 default => '¡Gracias por tu donación solidaria! 💛',
             };
         }
 
         return match ($this->donation->type) {
-            Donation::RECURRENTE => 'Problema con tu alta como socio/amigo',
+            DonationType::RECURRENTE->value => 'Problema con tu alta como socio/amigo',
             default => 'Problema con tu donación',
         };
     }

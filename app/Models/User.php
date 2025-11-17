@@ -16,8 +16,8 @@ use Illuminate\Support\Str;
  */
 class User extends authenticatable implements filamentuser
 {
-    /** @use hasfactory<userfactory> */
-    use hasfactory, notifiable;
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, Notifiable;
 
     /**
      * the attributes that are mass assignable.

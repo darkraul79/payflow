@@ -7,43 +7,58 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\Proyect;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FrontEndController extends Controller
 {
-    public function index()
+    /**
+     * Display the home page
+     */
+    public function index(): View
     {
-
         $page = Page::with(['children.parent', 'parent.children'])->first();
 
         return view('home', compact('page'));
-
     }
 
-    public function activities($slug)
+    /**
+     * Display a specific resource by slug
+     */
+    public function show(Request $request, string $slug): View
     {
-        $page = Activity::where('slug', $slug)->first();
+        $type = $request->route('type');
 
-        return view('activities.show', compact('page'));
+        [$page, $view] = $this->getPageAndView($type, $slug);
+
+        return view($view, compact('page'));
     }
 
-    public function proyects($slug)
+    /**
+     * Get the page model and view based on type
+     */
+    private function getPageAndView(string $type, string $slug): array
     {
-        $page = Proyect::where('slug', $slug)->first();
 
-        return view('activities.show', compact('page'));
-    }
-
-    public function news($slug)
-    {
-        $page = News::where('slug', $slug)->first();
-
-        return view('activities.show', compact('page'));
-    }
-
-    public function products($slug)
-    {
-        $page = Product::where('slug', $slug)->first();
-
-        return view('products.show', compact('page'));
+        return match ($type) {
+            'activity' => [
+                Activity::where('slug', $slug)->firstOrFail(),
+                'activities.show',
+            ],
+            'proyect' => [
+                Proyect::where('slug', $slug)->firstOrFail(),
+                'activities.show',
+            ],
+            'news' => [
+                News::where('slug', $slug)->firstOrFail(),
+                'activities.show',
+            ],
+            'product' => [
+                Product::where('slug', $slug)->firstOrFail(),
+                'products.show',
+            ],
+            default => throw new NotFoundHttpException('Resource type not found'),
+        };
     }
 }

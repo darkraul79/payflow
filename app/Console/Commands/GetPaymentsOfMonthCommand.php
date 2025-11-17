@@ -5,9 +5,10 @@ namespace App\Console\Commands;
 use App\Jobs\ProcessDonationPaymentJob;
 use App\Models\Donation;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Facades\Log;
 
-class GetPaymentsOfMonth extends Command
+class GetPaymentsOfMonthCommand extends Command implements PromptsForMissingInput
 {
     /**
      * The name and signature of the console command.

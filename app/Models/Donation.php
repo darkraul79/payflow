@@ -4,6 +4,9 @@
 
 namespace App\Models;
 
+use App\Enums\DonationFrequency;
+use App\Enums\DonationType;
+use App\Enums\OrderStatus;
 use App\Helpers\RedsysAPI;
 use App\Models\Traits\HasAddresses;
 use App\Models\Traits\HasPayments;
@@ -26,6 +29,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @method addresses()
  *
  * @property mixed $payments_sum_amount
+ * @property mixed $totalRedsys
  *
  * @mixin IdeHelperDonation
  */
@@ -33,10 +37,19 @@ class Donation extends Model implements HasMedia
 {
     use HasAddresses, HasFactory, HasPayments, HasStates, InteractsWithMedia, SoftDeletes;
 
+    /**
+     * @deprecated Use DonationType enum instead
+     */
     public const string UNICA = 'Simple';
 
+    /**
+     * @deprecated Use DonationType enum instead
+     */
     public const string RECURRENTE = 'Recurrente';
 
+    /**
+     * @deprecated Use DonationFrequency enum instead
+     */
     public const array FREQUENCY = [
         'MENSUAL' => 'Mensual',
         'TRIMESTRAL' => 'Trimestral',
@@ -60,6 +73,14 @@ class Donation extends Model implements HasMedia
         'payments',
     ];
 
+    /**
+     * Obtiene el enum DonationFrequency desde el string
+     */
+    public function frequency(): ?DonationFrequency
+    {
+        return $this->frequency ? DonationFrequency::tryFrom($this->frequency) : null;
+    }
+
     public function totalRedsys(): Attribute
     {
         return Attribute::make(
@@ -72,7 +93,7 @@ class Donation extends Model implements HasMedia
      */
     public function getResultView(): string
     {
-        if ($this->state->name === State::ERROR) {
+        if ($this->state->name === OrderStatus::ERROR->value) {
             return 'donation.error';
         } else {
             return 'donation.success';
@@ -106,9 +127,9 @@ class Donation extends Model implements HasMedia
     {
 
         $this->update([
-            'identifier' => $this->type == Donation::RECURRENTE ? $redSysResponse['Ds_Merchant_Identifier'] : null,
+            'identifier' => $this->type == DonationType::RECURRENTE->value ? $redSysResponse['Ds_Merchant_Identifier'] : null,
             'info' => $redSysResponse,
-            'next_payment' => $this->type === Donation::RECURRENTE ? $this->updateNextPaymentDate() : null,
+            'next_payment' => $this->type === DonationType::RECURRENTE->value ? $this->updateNextPaymentDate() : null,
         ]);
 
         $this->payments->where('number', $redSysResponse['Ds_Order'])->firstOrFail()->update(
@@ -119,19 +140,19 @@ class Donation extends Model implements HasMedia
             ]);
 
         // Si no existe el estado ACEPTADO ni CANCELADO, creo estado ACTIVA
-        if ($this->type === Donation::RECURRENTE) {
-            if (! $this->states()->where('name', State::CANCELADO)->exists() &&
-                ! $this->states()->where('name', State::ACTIVA)->exists()) {
+        if ($this->type === DonationType::RECURRENTE->value) {
+            if (! $this->states()->where('name', OrderStatus::CANCELADO->value)->exists() &&
+                ! $this->states()->where('name', OrderStatus::ACTIVA->value)->exists()) {
 
                 $this->states()->create([
-                    'name' => State::ACTIVA,
+                    'name' => OrderStatus::ACTIVA->value,
                 ]);
 
             }
         } else {
-            if (! $this->states()->where('name', State::PAGADO)->exists()) {
+            if (! $this->states()->where('name', OrderStatus::PAGADO->value)->exists()) {
                 $this->states()->create([
-                    'name' => State::PAGADO,
+                    'name' => OrderStatus::PAGADO->value,
                 ]);
 
             }
@@ -145,13 +166,13 @@ class Donation extends Model implements HasMedia
         $this->touch();
         $updated_at = $this->updated_at;
         $date = match ($this->frequency) {
-            self::FREQUENCY['MENSUAL'] => Carbon::parse($updated_at)->addMonth()->day(5),
-            self::FREQUENCY['TRIMESTRAL'] => Carbon::parse($updated_at)
+            DonationFrequency::MENSUAL->value => Carbon::parse($updated_at)->addMonth()->day(5),
+            DonationFrequency::TRIMESTRAL->value => Carbon::parse($updated_at)
                 ->addMonths(3 - (Carbon::parse($updated_at)->month - 1) % 3)
                 ->startOfMonth()
 //                ->addMonths(2)
                 ->day(5),
-            self::FREQUENCY['ANUAL'] => Carbon::parse($updated_at)->addYear()->day(5),
+            DonationFrequency::ANUAL->value => Carbon::parse($updated_at)->addYear()->day(5),
             default => null,
         };
         $this->update([
@@ -164,8 +185,8 @@ class Donation extends Model implements HasMedia
     public function iconType(): string
     {
         return match ($this->type) {
-            self::UNICA => 'bi-credit-card',
-            self::RECURRENTE => 'heroicon-o-arrow-path',
+            DonationType::UNICA->value => 'bi-credit-card',
+            DonationType::RECURRENTE->value => 'heroicon-o-arrow-path',
             default => 'bi-cash-stack',
         };
     }
@@ -176,7 +197,7 @@ class Donation extends Model implements HasMedia
     public function colorType(): string
     {
         return match ($this->type) {
-            self::RECURRENTE => 'purple',
+            DonationType::RECURRENTE->value => 'purple',
             default => 'primary',
         };
     }
@@ -187,9 +208,9 @@ class Donation extends Model implements HasMedia
     public function colorFrequency(): string
     {
         return match ($this->frequency) {
-            self::FREQUENCY['MENSUAL'] => 'Purple',
-            self::FREQUENCY['TRIMESTRAL'] => 'lime',
-            self::FREQUENCY['ANUAL'] => 'rose',
+            DonationFrequency::MENSUAL->value => 'Purple',
+            DonationFrequency::TRIMESTRAL->value => 'lime',
+            DonationFrequency::ANUAL->value => 'rose',
             default => 'primary',
         };
     }
@@ -201,7 +222,7 @@ class Donation extends Model implements HasMedia
 
     public function recurrentPay()
     {
-        if ($this->state->name == State::ACTIVA) {
+        if ($this->state->name == OrderStatus::ACTIVA->value) {
             return $this->processPay();
         }
         abort(403, 'La donación ya NO está activa y no se puede volver a pagar');
@@ -263,10 +284,10 @@ class Donation extends Model implements HasMedia
     public function error_pago($redSysResponse, $mensaje = null): void
     {
         $estado = [
-            'name' => State::ERROR,
+            'name' => OrderStatus::ERROR->value,
         ];
         $this->update([
-            'next_payment' => $this->type === Donation::RECURRENTE ? $this->updateNextPaymentDate() : null,
+            'next_payment' => $this->type === DonationType::RECURRENTE->value ? $this->updateNextPaymentDate() : null,
         ]);
 
         if (! $this->states()->where($estado)->exists()) {
@@ -285,7 +306,7 @@ class Donation extends Model implements HasMedia
     public function cancel(): void
     {
         $this->states()->create([
-            'name' => State::CANCELADO,
+            'name' => OrderStatus::CANCELADO->value,
         ]);
         $this->update([
             'next_payment' => null,
@@ -300,14 +321,21 @@ class Donation extends Model implements HasMedia
     }
 
     /**
-     *  Devuelve los estados disponibles de un pedido, sin contar los ya asignados.
+     *  Devuelve los estados disponibles de una donación, sin contar los ya asignados.
      */
     public function available_states(): array
     {
+        $allowedStates = [
+            OrderStatus::PAGADO->value,
+            OrderStatus::ERROR->value,
+            OrderStatus::ACEPTADO->value,
+            OrderStatus::ACTIVA->value,
+            OrderStatus::CANCELADO->value,
+        ];
 
-        $estados = collect(self::getStates());
-
-        return $estados->only(['PAGADO', 'ERROR', 'ACEPTADO', 'ACTIVA', 'CANCELADO'])->toArray();
+        return collect(self::getStates())
+            ->filter(fn ($label, $key) => in_array($label, $allowedStates))
+            ->toArray();
     }
 
     public function getNextPayDateFormated(): string
@@ -328,7 +356,7 @@ class Donation extends Model implements HasMedia
 
     public function isRecurrente(): bool
     {
-        return $this->type == self::RECURRENTE;
+        return $this->type == DonationType::RECURRENTE->value;
     }
 
     /**
@@ -395,7 +423,7 @@ class Donation extends Model implements HasMedia
     protected function recurrents(Builder $query): void
     {
 
-        $query->where('type', self::RECURRENTE);
+        $query->where('type', DonationType::RECURRENTE->value);
 
     }
 }

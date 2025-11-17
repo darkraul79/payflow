@@ -2,6 +2,7 @@
 
 /** @noinspection PhpUndefinedMethodInspection */
 
+use App\Enums\OrderStatus;
 use App\Models\State;
 
 test('puedo crear estados en diferentes modelos', function ($modelo) {
@@ -26,10 +27,10 @@ test('el metodo state devuelve el último estado del modelo', function ($modelo)
     }
     $this->travel(1)->days();
     $model->states()->create([
-        'name' => State::FINALIZADO,
+        'name' => OrderStatus::FINALIZADO->value,
     ]);
 
-    expect($model->state->name)->toBe(State::FINALIZADO)
+    expect($model->state->name)->toBe(OrderStatus::FINALIZADO->value)
         ->and($model->states)->toHaveCount(2);
 
 })->with([

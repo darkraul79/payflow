@@ -263,6 +263,8 @@ test('calculo bien los impuestos en el proceso del carrito', function () {
         'product' => $producto,
     ])->call('addToCart', $producto);
 
+    sleep(1);
+
     livewire(PageCartComponent::class)
         ->set('shipping_method', $metodoEnvio->id)
         ->assertSeeTextInOrder(['incluye 1,74', 'de impuestos'])

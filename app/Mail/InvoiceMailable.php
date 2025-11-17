@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\Order;
 use App\Services\InvoiceService;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Attachment;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -15,7 +16,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
-class InvoiceMailable extends Mailable
+class InvoiceMailable extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -46,7 +47,7 @@ class InvoiceMailable extends Mailable
         // Ensure the PDF exists; try to regenerate if missing
         try {
             $disk = Storage::disk('public');
-            $path = (string) ($this->invoice->storage_path ?? '');
+            $path = $this->invoice->storage_path ?? '';
 
             if ($path === '' || ! $disk->exists($path)) {
                 // Try regenerating using the related model and existing series/number
@@ -64,7 +65,7 @@ class InvoiceMailable extends Mailable
 
                 // Reload path and re-check
                 $this->invoice->refresh();
-                $path = (string) ($this->invoice->storage_path ?? '');
+                $path = $this->invoice->storage_path ?? '';
             }
 
             if ($path !== '' && $disk->exists($path)) {
@@ -74,11 +75,11 @@ class InvoiceMailable extends Mailable
                         ->withMime('application/pdf'),
                 ];
             }
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             // Continue without attachment; avoid hard failures
         }
 
-        // If we reach here, skip attachments to avoid TypeError/null body
+        // If we reach here, skip attachments to avoid the TypeError / null body
         return [];
     }
 }

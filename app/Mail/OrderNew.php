@@ -4,15 +4,17 @@ namespace App\Mail;
 
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class OrderNew extends Mailable
+class OrderNew extends Mailable implements ShouldQueue
 {
-    use SerializesModels;
+    use Queueable, SerializesModels;
 
     private Order $order;
 

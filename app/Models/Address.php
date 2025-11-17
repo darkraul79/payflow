@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AddressType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,12 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 class Address extends Model
 {
     use HasFactory;
-
-    public const string BILLING = 'Facturación';
-
-    public const string SHIPPING = 'Envío';
-
-    public const string CERTIFICATE = 'Certificado';
 
     protected $fillable = [
         'type',
@@ -33,6 +28,14 @@ class Address extends Model
         'phone',
         'notes',
     ];
+
+    /**
+     * Obtiene el enum AddressType correspondiente al tipo actual
+     */
+    public function addressType(): ?AddressType
+    {
+        return AddressType::tryFrom($this->type);
+    }
 
     public function getFullNameAttribute(): string
     {

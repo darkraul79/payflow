@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AddressType;
 use App\Models\Address;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
@@ -13,7 +14,7 @@ class AddressFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => Address::BILLING,
+            'type' => AddressType::BILLING->value,
             'name' => $this->faker->name(),
             'last_name' => $this->faker->lastName(),
             'last_name2' => $this->faker->lastName(),
@@ -36,7 +37,7 @@ class AddressFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'type' => Address::CERTIFICATE,
+                'type' => AddressType::CERTIFICATE->value,
             ];
         });
     }

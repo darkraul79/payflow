@@ -1,8 +1,10 @@
 <?php
 
-use App\Http\Classes\PaymentProcess;
+use App\Enums\DonationFrequency;
+use App\Enums\DonationType;
 use App\Models\Donation;
 use App\Models\Order;
+use App\Services\PaymentProcess;
 
 it('crea un pago inicial y genera datos Redsys para pedido (pago directo)', function () {
     $pp = new PaymentProcess(Order::class, [
@@ -50,8 +52,8 @@ it('crea un pago inicial y genera datos Redsys para donación única (pago direc
 it('crea un pago inicial y genera datos Redsys para donación recurrente (alta)', function () {
     $pp = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('15,00'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
 
     $modelo = $pp->modelo;

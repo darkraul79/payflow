@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Classes;
+namespace App\Services;
 
+use App\Enums\DonationType;
+use App\Enums\OrderStatus;
 use App\Helpers\RedsysAPI;
 use App\Models\Donation;
 use App\Models\Order;
-use App\Models\State;
 
 class PaymentProcess
 {
@@ -76,7 +77,7 @@ class PaymentProcess
     public function createState(): void
     {
         $this->modelo->states()->create([
-            'name' => State::PENDIENTE,
+            'name' => OrderStatus::PENDIENTE->value,
         ]);
     }
 
@@ -85,9 +86,9 @@ class PaymentProcess
         $redsys = new RedsysAPI;
         $data = collect();
 
-        if ($this->modelo instanceof Order || ($this->modelo instanceof Donation && $this->modelo->type === Donation::UNICA)) {
+        if ($this->modelo instanceof Order || ($this->modelo instanceof Donation && $this->modelo->type === DonationType::UNICA->value)) {
             $data = collect($redsys->getFormDirectPay($this->modelo, $this->payment_method));
-        } elseif ($this->modelo instanceof Donation && $this->modelo->type === Donation::RECURRENTE) {
+        } elseif ($this->modelo instanceof Donation && $this->modelo->type === DonationType::RECURRENTE->value) {
             // Recurrente
             $data = collect($redsys->getFormNewPagoRecurrente($this->modelo));
         }

@@ -6,13 +6,7 @@ use App\Models\Order;
 
 class OrderObserver
 {
-    public function created(Order $order): void
-    {
-        //        CreateOrderEvent::dispatch($order);
-        /*$order->states()->create([
-            'name' => State::PENDIENTE,
-        ]);*/
-    }
+    public function created(Order $order): void {}
 
     public function deleted(Order $order): void {}
 

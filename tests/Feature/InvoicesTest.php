@@ -193,7 +193,7 @@ it('sends email when requested for order', function () {
 
     $this->service->generateForOrder($order, sendEmail: true);
 
-    Mail::assertSent(InvoiceMailable::class);
+    Mail::assertQueued(InvoiceMailable::class);
 });
 
 it('sends email when requested for the donation that has certificate email', function () {
@@ -201,7 +201,7 @@ it('sends email when requested for the donation that has certificate email', fun
 
     $this->service->generateForDonation($donation, sendEmail: true);
 
-    Mail::assertSent(InvoiceMailable::class);
+    Mail::assertQueued(InvoiceMailable::class);
 });
 
 it('does not send email for donation without certificate email', function () {
@@ -209,7 +209,7 @@ it('does not send email for donation without certificate email', function () {
 
     $this->service->generateForDonation($donation, sendEmail: true);
 
-    Mail::assertNothingSent();
+    Mail::assertNothingQueued();
 });
 
 it('sends invoice email for order', function () {
@@ -223,7 +223,7 @@ it('sends invoice email for order', function () {
     $service = app(InvoiceService::class);
     $result = $service->generateForOrder($order, sendEmail: true);
 
-    Mail::assertSent(InvoiceMailable::class, function ($mail) use ($billingAddress) {
+    Mail::assertQueued(InvoiceMailable::class, function ($mail) use ($billingAddress) {
         return $mail->hasTo($billingAddress->email);
     });
 

@@ -1,9 +1,9 @@
 <?php
 
+use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\OrderResource\Pages\ListOrders;
 use App\Models\Order;
-use App\Models\State;
 
 use function Pest\Livewire\livewire;
 
@@ -30,7 +30,7 @@ it('ListOrders muestra registros y permite buscar por estado y ordenar por fecha
     livewire(ListOrders::class)
         ->assertCanSeeTableRecords([$pagado, $enviado, $error])
         // Buscar por nombre del estado (columna searchable: state.name)
-        ->searchTable(State::PAGADO)
+        ->searchTable(OrderStatus::PAGADO->value)
         ->assertCanSeeTableRecords([$pagado])
         ->assertCanNotSeeTableRecords([$enviado, $error])
         // Ordenar por fecha de actualización (columna sortable: updated_at)

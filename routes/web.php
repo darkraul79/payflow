@@ -16,23 +16,34 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [FrontEndController::class, 'index'])->name('home');
 
 Route::get('/tienda-solidaria/cesta', [CartController::class, 'index'])->name('cart');
-Route::get('/tienda-solidaria/cesta/pedido', [CartController::class, 'form'])->name('checkout');
+Route::get('/tienda-solidaria/cesta/pedido', [CartController::class, 'create'])->name('checkout');
 
-Route::any('/pedido/response', [RedsysController::class, 'responseOrder'])->name('pedido.response');
-Route::any('/donacion/response', [RedsysController::class, 'donationResponse'])->name('donation.response');
-Route::any('/pago/response', [RedsysController::class, 'pagoResponse'])->name('pago.response');
-Route::get('/tienda-solidaria/cesta/pedido/{pedido}', [RedsysController::class, 'result'])->name('pedido.finalizado');
-Route::get('/donacion/{donacion}', [RedsysController::class, 'result'])->name('donacion.finalizada');
+Route::any('/pedido/response', [RedsysController::class, 'store'])->defaults('type', 'order')->name('pedido.response');
+Route::any('/donacion/response', [RedsysController::class, 'store'])->defaults('type',
+    'donation')->name('donation.response');
+Route::any('/pago/response', [RedsysController::class, 'store'])->defaults('type', 'payment')->name('pago.response');
+Route::get('/tienda-solidaria/cesta/pedido/{pedido}', [RedsysController::class, 'show'])->name('pedido.finalizado');
+Route::get('/donacion/{donacion}', [RedsysController::class, 'show'])->name('donacion.finalizada');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/invoices/{invoice}', InvoiceController::class)->name('invoices.show');
 });
 
-Route::get(Activity::getStaticUrlPrefix().'/{slug}',
-    [FrontEndController::class, 'activities'])->name('activities.show');
-Route::get(News::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'news'])->name('news.show');
-Route::get(Proyect::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'proyects'])->name('proyects.show');
-Route::get(Product::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'products'])->name('products.show');
+Route::get(Activity::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'show'])
+    ->defaults('type', 'activity')
+    ->name('activities.show');
+
+Route::get(News::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'show'])
+    ->defaults('type', 'news')
+    ->name('news.show');
+
+Route::get(Proyect::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'show'])
+    ->defaults('type', 'proyect')
+    ->name('proyects.show');
+
+Route::get(Product::getStaticUrlPrefix().'/{slug}', [FrontEndController::class, 'show'])
+    ->defaults('type', 'product')
+    ->name('products.show');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])

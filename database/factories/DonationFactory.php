@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\AddressType;
+use App\Enums\DonationType;
+use App\Enums\OrderStatus;
 use App\Models\Address;
 use App\Models\Donation;
 use App\Models\Payment;
@@ -28,7 +31,7 @@ class DonationFactory extends Factory
                 'message' => $this->faker->sentence(),
             ],
 
-            'type' => Donation::UNICA,
+            'type' => DonationType::UNICA->value,
             'payment_method' => 'tarjeta',
             'next_payment' => null, // Default next charge
             'identifier' => null,
@@ -48,7 +51,7 @@ class DonationFactory extends Factory
             ]);
 
             State::factory()->make([
-                'name' => State::ACTIVA,
+                'name' => OrderStatus::ACTIVA->value,
                 'stateable_id_id' => $donacion->id,
                 'stateable_type_type' => Donation::class,
             ]);
@@ -59,7 +62,7 @@ class DonationFactory extends Factory
     {
         return $this->state(function () use ($frequency) {
             return [
-                'type' => DONATION::RECURRENTE,
+                'type' => DonationType::RECURRENTE->value,
                 'identifier' => $this->faker->uuid(),
                 'frequency' => $frequency,
                 'amount' => 4.50,
@@ -71,7 +74,7 @@ class DonationFactory extends Factory
     {
         return $this->afterCreating(function (Donation $donacion) {
             $donacion->states()->create([
-                'name' => State::ACTIVA,
+                'name' => OrderStatus::ACTIVA->value,
                 'message' => 'Pago aceptado',
             ]);
         });
@@ -81,7 +84,7 @@ class DonationFactory extends Factory
     {
         return $this->afterCreating(function (Donation $donacion) {
             $address = Address::factory()->create([
-                'type' => ADDRESS::CERTIFICATE,
+                'type' => AddressType::CERTIFICATE->value,
             ]);
             $donacion->addresses()->attach($address);
         });
@@ -96,18 +99,18 @@ class DonationFactory extends Factory
                 'payable_type' => Donation::class,
                 'amount' => $donacion->amount,
             ]);
-            if ($donacion->type == Donation::RECURRENTE) {
+            if ($donacion->type == DonationType::RECURRENTE->value) {
 
                 $donacion->updateNextPaymentDate();
 
                 $donacion->states()->create([
-                    'name' => State::ACTIVA,
+                    'name' => OrderStatus::ACTIVA->value,
                     'message' => 'Pago aceptado',
                 ]);
 
             } else {
                 $donacion->states()->create([
-                    'name' => State::PAGADO,
+                    'name' => OrderStatus::PAGADO->value,
                     'message' => 'Pago aceptado',
                 ]);
             }

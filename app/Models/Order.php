@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\AddressType;
+use App\Enums\OrderStatus;
 use App\Models\Traits\HasAddresses;
 use App\Models\Traits\HasPayments;
 use App\Models\Traits\HasStates;
@@ -96,17 +98,20 @@ class Order extends Model implements HasMedia
      */
     public function available_states(): array
     {
+        $excludedStates = [
+            OrderStatus::ACTIVA->value,
+            OrderStatus::ACEPTADO->value,
+        ];
 
-        $estados = collect(self::getStates());
-
-        return $estados->except(['ACTIVA', 'ACEPTADO'])->toArray();
-
+        return collect(self::getStates())
+            ->reject(fn ($label, $key) => in_array($label, $excludedStates))
+            ->toArray();
     }
 
     public function error($mensaje, $redSysResponse): void
     {
         $estado = [
-            'name' => State::ERROR,
+            'name' => OrderStatus::ERROR->value,
         ];
 
         if (! $this->states()->where($estado)->exists()) {
@@ -133,11 +138,11 @@ class Order extends Model implements HasMedia
             ]);
 
         // Si no existe el estado PAGADO, lo creo
-        if (! $this->states()->where('name', State::PAGADO)->exists()) {
+        if (! $this->states()->where('name', OrderStatus::PAGADO->value)->exists()) {
             // resto la cantidad al stock de los productos
             $this->subtractStocks();
             $this->states()->create([
-                'name' => State::PAGADO,
+                'name' => OrderStatus::PAGADO->value,
                 'info' => $redSysResponse,
             ]);
 
@@ -171,13 +176,13 @@ class Order extends Model implements HasMedia
     public function billing_address(): Address|Model|null
     {
         // Devuelve la dirección de facturación del pedido
-        return $this->addresses()->where('type', Address::BILLING)->latest()->first();
+        return $this->addresses()->where('type', AddressType::BILLING->value)->latest()->first();
     }
 
     public function shipping_address(): Address|Model|null
     {
         // Devuelve la dirección de facturación del pedido
-        return $this->addresses()->where('type', Address::SHIPPING)->get()->first() ?? null;
+        return $this->addresses()->where('type', AddressType::SHIPPING->value)->get()->first() ?? null;
     }
 
     /**
@@ -185,7 +190,7 @@ class Order extends Model implements HasMedia
      */
     public function getResultView(): string
     {
-        if ($this->state->name === State::ERROR) {
+        if ($this->state->name === OrderStatus::ERROR->value) {
             return 'order.error';
         } else {
             return 'order.success';

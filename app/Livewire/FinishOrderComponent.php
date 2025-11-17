@@ -2,11 +2,11 @@
 
 namespace App\Livewire;
 
-use App\Http\Classes\PaymentProcess;
-use App\Models\Address;
+use App\Enums\AddressType;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\Cart;
+use App\Services\PaymentProcess;
 use App\Support\PaymentMethodRepository;
 use Illuminate\View\View;
 use Livewire\Attributes\Session;
@@ -187,7 +187,7 @@ class FinishOrderComponent extends Component
     public function createAddresses(Order $order): void
     {
         $order->addresses()->create([
-            'type' => Address::BILLING,
+            'type' => AddressType::BILLING->value,
             'name' => $this->billing['name'],
             'last_name' => $this->billing['last_name'],
             'last_name2' => $this->billing['last_name2'],
@@ -203,7 +203,7 @@ class FinishOrderComponent extends Component
 
         if ($this->addSendAddress) {
             $order->addresses()->create([
-                'type' => Address::SHIPPING,
+                'type' => AddressType::SHIPPING->value,
                 'name' => $this->shipping['name'],
                 'last_name' => $this->shipping['last_name'],
                 'last_name2' => $this->shipping['last_name2'],

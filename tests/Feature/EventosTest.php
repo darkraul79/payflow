@@ -1,22 +1,24 @@
 <?php
 
+use App\Enums\AddressType;
+use App\Enums\DonationFrequency;
+use App\Enums\DonationType;
+use App\Enums\OrderStatus;
 use App\Events\CreateOrderEvent;
 use App\Events\NewDonationEvent;
 use App\Events\UpdateOrderStateEvent;
 use App\Filament\Resources\OrderResource\Pages\UpdateOrder;
-use App\Http\Classes\PaymentProcess;
 use App\Listeners\SendEmailsOrderListener;
 use App\Mail\DonationNewMail;
 use App\Mail\OrderNew;
-use App\Models\Address;
 use App\Models\Donation;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
-use App\Models\State;
 use App\Models\User;
 use App\Notifications\DonationCreatedNotification;
 use App\Notifications\OrderCreated;
+use App\Services\PaymentProcess;
 use Database\Seeders\UsersSeeder;
 
 use function Pest\Livewire\livewire;
@@ -84,24 +86,24 @@ test('al crear pedido se manda un email al email de la dirección de facturació
     $pedido = creaPedido();
     $this->get(route('pedido.response', getResponseOrder($pedido, true)));
 
-    Mail::assertSent(OrderNew::class, $pedido->billing_address()->email);
+    Mail::assertQueued(OrderNew::class, $pedido->billing_address()->email);
 });
 
 test('al crear pedido se manda un email al email de la dirección de facturación desde factory ', function () {
 
     Mail::fake();
-    Mail::assertNothingSent();
+    Mail::assertNothingQueued();
 
     $p = Order::factory()->withDireccion()->create();
 
     /** @noinspection PhpPossiblePolymorphicInvocationInspection */
-    Mail::assertSent(OrderNew::class, $p->billing_address()->email);
+    Mail::assertQueued(OrderNew::class, $p->billing_address()->email);
 });
 
 test('al crear pedido si tiene dirección de envío con email diferente pongo en copia ', function () {
 
     Mail::fake();
-    Mail::assertNothingSent();
+    Mail::assertNothingQueued();
 
     Order::factory()->withDirecciones([
         'email' => 'info@raulsebastian.es',
@@ -109,7 +111,7 @@ test('al crear pedido si tiene dirección de envío con email diferente pongo en
         'email' => 'dakraul@gmail.com',
     ])->create();
 
-    Mail::assertSent(OrderNew::class, function (OrderNew $mail) {
+    Mail::assertQueued(OrderNew::class, function (OrderNew $mail) {
         return $mail->hasTo('info@raulsebastian.es') && $mail->hasCc('dakraul@gmail.com');
     });
 });
@@ -117,7 +119,7 @@ test('al crear pedido si tiene dirección de envío con email diferente pongo en
 test('al crear pedido si tiene misma dirección de envío con email diferente sin cc ', function () {
 
     Mail::fake();
-    Mail::assertNothingSent();
+    Mail::assertNothingQueued();
 
     Order::factory()->withDirecciones([
         'email' => 'info@raulsebastian.es',
@@ -125,7 +127,7 @@ test('al crear pedido si tiene misma dirección de envío con email diferente si
         'email' => 'info@raulsebastian.es',
     ])->create();
 
-    Mail::assertSent(OrderNew::class, function (OrderNew $mail) {
+    Mail::assertQueued(OrderNew::class, function (OrderNew $mail) {
         return $mail->hasTo('info@raulsebastian.es') && $mail->cc == [];
     });
 });
@@ -137,15 +139,15 @@ test('al actualizar estado de pedidos se ejecuta UpdateOrderStateEvent', functio
 
     livewire(UpdateOrder::class, [
         'record' => $pedido->id,
-    ])->fillForm(['estado' => 'PAGADO'])
+    ])->fillForm(['estado' => OrderStatus::PAGADO->value])
         ->call('submit');
 
     $pedido->refresh();
 
     Event::assertDispatched(UpdateOrderStateEvent::class);
 
-    expect($pedido->state->name)->toBe(State::PAGADO)
-        ->and($pedido->states->last()->name)->toBe(State::PAGADO);
+    expect($pedido->state->name)->toBe(OrderStatus::PAGADO->value)
+        ->and($pedido->states->last()->name)->toBe(OrderStatus::PAGADO->value);
 
 });
 
@@ -153,8 +155,8 @@ test('al crear donación recurrente se ejecuta evento New Donation', function ()
     Event::fake();
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion = $paymentProcess->modelo;
 
@@ -170,12 +172,12 @@ test('al crear donación recurrente envío email al donante', function ($state, 
     Mail::fake();
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion = $paymentProcess->modelo;
     $donacion->addresses()->create([
-        'type' => Address::CERTIFICATE,
+        'type' => AddressType::CERTIFICATE->value,
         'name' => 'Nombre',
         'last_name' => 'Apellido',
         'last_name2' => 'Apellido2',
@@ -188,11 +190,11 @@ test('al crear donación recurrente envío email al donante', function ($state, 
     ]);
 
     $donacion->refresh();
-    Mail::assertNothingSent();
+    Mail::assertNothingQueued();
 
     $this->get(route('donation.response', getResponseDonation($donacion, $state)));
 
-    Mail::assertSent(DonationNewMail::class, function (DonationNewMail $mail) use ($subject, $text) {
+    Mail::assertQueued(DonationNewMail::class, function (DonationNewMail $mail) use ($subject, $text) {
         return $mail->hasTo('info@raulsebastian.es') &&
             $mail->hasSubject($subject)
             && $mail->assertSeeInText($text);
@@ -220,7 +222,7 @@ test('al crear donación única envío email al donante', function ($state, $sub
     ]);
     $donacion = $paymentProcess->modelo;
     $donacion->addresses()->create([
-        'type' => Address::CERTIFICATE,
+        'type' => AddressType::CERTIFICATE->value,
         'name' => 'Nombre',
         'last_name' => 'Apellido',
         'last_name2' => 'Apellido2',
@@ -233,11 +235,11 @@ test('al crear donación única envío email al donante', function ($state, $sub
     ]);
 
     $donacion->refresh();
-    Mail::assertNothingSent();
+    Mail::assertNothingQueued();
 
     $this->get(route('donation.response', getResponseDonation($donacion, $state)));
 
-    Mail::assertSent(DonationNewMail::class, function (DonationNewMail $mail) use ($subject, $text) {
+    Mail::assertQueued(DonationNewMail::class, function (DonationNewMail $mail) use ($subject, $text) {
 
         return $mail->hasTo('info@raulsebastian.es') &&
             $mail->hasSubject($subject) &&
@@ -263,7 +265,7 @@ test('al crear donación sin dirección no envío email', function ($state, $typ
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
         'type' => $type,
-        'frequency' => $type === Donation::RECURRENTE ? Donation::FREQUENCY['MENSUAL'] : null,
+        'frequency' => $type === DonationType::RECURRENTE->value ? DonationFrequency::MENSUAL->value : null,
     ]);
     $donacion = $paymentProcess->modelo;
 
@@ -276,11 +278,11 @@ test('al crear donación sin dirección no envío email', function ($state, $typ
     ->with([
         [
             'state' => true,
-            'type' => Donation::RECURRENTE,
+            'type' => DonationType::RECURRENTE->value,
         ],
         [
             'state' => false,
-            'type' => Donation::RECURRENTE,
+            'type' => DonationType::RECURRENTE->value,
         ],
         [
             'state' => false,
@@ -297,12 +299,12 @@ test('al crear donación recurrente envía email con datos del importe', functio
     Mail::fake();
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion = $paymentProcess->modelo;
     $donacion->addresses()->create([
-        'type' => Address::CERTIFICATE,
+        'type' => AddressType::CERTIFICATE->value,
         'name' => 'Nombre',
         'last_name' => 'Apellido',
         'last_name2' => 'Apellido2',
@@ -315,11 +317,11 @@ test('al crear donación recurrente envía email con datos del importe', functio
     ]);
 
     $donacion->refresh();
-    Mail::assertNothingSent();
+    Mail::assertNothingQueued();
 
     $this->get(route('donation.response', getResponseDonation($donacion, true)));
 
-    Mail::assertSent(DonationNewMail::class, function (DonationNewMail $mail) {
+    Mail::assertQueued(DonationNewMail::class, function (DonationNewMail $mail) {
 
         return $mail->hasTo('info@raulsebastian.es') &&
             $mail->assertSeeInOrderInText(['mensual', '10,35']) &&

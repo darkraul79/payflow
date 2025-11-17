@@ -13,7 +13,7 @@ class DonationsSeeder extends Seeder
         Donation::factory()->withCertificado()->withPayment()->create();
 
         Donation::factory()->withCertificado()->withPayment()->recurrente(Donation::FREQUENCY['MENSUAL'])->create();
-        Donation::factory()->withCertificado()->withPayment()->recurrente(Donation::FREQUENCY['TRIMESTRAL'])->create();
-        Donation::factory()->withCertificado()->withPayment()->recurrente(Donation::FREQUENCY['ANUAL'])->create();
+        Donation::factory()->withCertificado()->withPayment()->recurrente(DonationFrequency::TRIMESTRAL->value)->create();
+        Donation::factory()->withCertificado()->withPayment()->recurrente(DonationFrequency::ANUAL->value)->create();
     }
 }

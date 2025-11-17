@@ -2,18 +2,21 @@
 
 namespace Tests\Unit;
 
+use App\Enums\AddressType;
+use App\Enums\DonationFrequency;
+use App\Enums\DonationType;
+use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Helpers\RedsysAPI;
-use App\Http\Classes\PaymentProcess;
 use App\Jobs\ProcessDonationPaymentJob;
 use App\Livewire\DonacionBanner;
 use App\Models\Address;
 use App\Models\Donation;
 use App\Models\Page;
 use App\Models\Payment;
-use App\Models\State;
 use App\Models\User;
 use App\Notifications\DonationCreatedNotification;
+use App\Services\PaymentProcess;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
@@ -25,7 +28,7 @@ test('puedo crear donación única por defecto en factory', function () {
 
     $donation = Donation::factory()->create();
     expect($donation->info)->toBeObject()
-        ->and($donation->type)->toBe(Donation::UNICA)
+        ->and($donation->type)->toBe(DonationType::UNICA->value)
         ->and($donation->identifier)->toBeNull();
 });
 
@@ -33,7 +36,7 @@ test('puedo crear donación recurrente por defecto en factory', function () {
 
     $donation = Donation::factory()->recurrente()->create();
     expect($donation->info)->toBeObject()
-        ->and($donation->type)->toBe(Donation::RECURRENTE)
+        ->and($donation->type)->toBe(DonationType::RECURRENTE->value)
         ->and($donation->identifier)->not->toBeNull();
 });
 
@@ -41,7 +44,7 @@ test('puedo crear donación única con muchos pagos en factory', function () {
 
     $donation = Donation::factory()->hasPayments(3)->create();
     expect($donation->info)->toBeObject()
-        ->and($donation->type)->toBe(Donation::UNICA)
+        ->and($donation->type)->toBe(DonationType::UNICA->value)
         ->and($donation->identifier)->toBeNull()
         ->and($donation->payments)->toHaveCount(3);
 });
@@ -50,7 +53,7 @@ test('puedo crear donación recurrente con muchos pagos en factory', function ()
 
     $donation = Donation::factory()->hasPayments(3)->recurrente()->create();
     expect($donation->info)->toBeObject()
-        ->and($donation->type)->toBe(Donation::RECURRENTE)
+        ->and($donation->type)->toBe(DonationType::RECURRENTE->value)
         ->and($donation->identifier)->not->toBeNull()
         ->and($donation->payments)->toHaveCount(3);
 });
@@ -60,43 +63,45 @@ test('puedo asociar dirección de certificado a donación en factory', function 
 
     expect($donation->addresses->first())->toBeInstanceOf(Address::class)
         ->and($donation->addresses)->toHaveCount(1)
-        ->and($donation->addresses->first()->type)->toBe(Address::CERTIFICATE)
+        ->and($donation->addresses->first()->type)->toBe(AddressType::CERTIFICATE->value)
         ->and($donation->address)->toBeInstanceOf(Address::class)
-        ->and($donation->address->type)->toBe(Address::CERTIFICATE);
+        ->and($donation->address->type)->toBe(AddressType::CERTIFICATE->value);
 });
 
 test('estados donacion', function () {
     $donation = Donation::factory()->withCertificado()->create();
 
     $estados = $donation->available_states();
-    expect($estados)->toBeArray()
-        ->and($estados)->not()->toHaveKeys([
-            'ENVIADO',
-            'FINALIZADO',
 
-        ])->and($estados)->toHaveKeys([
-            'PAGADO',
-            'ERROR',
-            'CANCELADO',
-            'ACTIVA',
-        ]);
+    expect($estados)->toBeArray()
+        ->and($estados)->not()->toContain(
+            OrderStatus::ENVIADO->value,
+            OrderStatus::FINALIZADO->value
+        )
+        ->and($estados)->toContain(
+            OrderStatus::PAGADO->value,
+            OrderStatus::ERROR->value,
+            OrderStatus::CANCELADO->value,
+            OrderStatus::ACTIVA->value,
+        );
 });
 
 test('puedo obtner todas las frecuencias de pago', function () {
+    $frequencies = DonationFrequency::toArray();
 
-    expect(Donation::FREQUENCY)->toBeArray()
-        ->and(Donation::FREQUENCY)->toHaveKeys(['MENSUAL', 'TRIMESTRAL', 'ANUAL'])
-        ->and(Donation::FREQUENCY['MENSUAL'])->toBe('Mensual')
-        ->and(Donation::FREQUENCY['TRIMESTRAL'])->toBe('Trimestral')
-        ->and(Donation::FREQUENCY['ANUAL'])->toBe('Anual');
+    expect($frequencies)->toBeArray()
+        ->and($frequencies)->toHaveKeys(['MENSUAL', 'TRIMESTRAL', 'ANUAL'])
+        ->and($frequencies['MENSUAL'])->toBe('Mensual')
+        ->and($frequencies['TRIMESTRAL'])->toBe('Trimestral')
+        ->and($frequencies['ANUAL'])->toBe('Anual');
 });
 
 test('puedo crear donacion recurrente', function () {
 
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion = $paymentProcess->modelo;
 
@@ -109,7 +114,7 @@ test('puedo crear donacion recurrente', function () {
     ]))->assertSee('Gracias');
     $donacion->refresh();
 
-    expect($donacion->state->name)->toBe(State::ACTIVA)
+    expect($donacion->state->name)->toBe(OrderStatus::ACTIVA->value)
         ->and($donacion->payments->first()->amount)->toBe(10.35);
 
 });
@@ -118,7 +123,7 @@ test('puedo crear donacion unica', function () {
 
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::UNICA,
+        'type' => DonationType::UNICA->value,
         'frequency' => null,
     ]);
     $donacion = $paymentProcess->modelo;
@@ -132,7 +137,7 @@ test('puedo crear donacion unica', function () {
     ]))->assertSee('Gracias');
     $donacion->refresh();
 
-    expect($donacion->state->name)->toBe(State::PAGADO)
+    expect($donacion->state->name)->toBe(OrderStatus::PAGADO->value)
         ->and($donacion->payments->first()->amount)->toBe(10.35);
 
 });
@@ -141,8 +146,8 @@ test('NO puedo crear pago a donacion cancelada', function () {
 
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion = $paymentProcess->modelo;
 
@@ -155,7 +160,7 @@ test('NO puedo crear pago a donacion cancelada', function () {
         HttpException::class,
         'La donación ya NO está activa y no se puede volver a pagar'
     )
-        ->and($donacion->state->name)->toBe(State::CANCELADO);
+        ->and($donacion->state->name)->toBe(OrderStatus::CANCELADO->value);
 
 });
 
@@ -163,8 +168,8 @@ test('puedo crear pago a KO donacion recurrente', function () {
 
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion = $paymentProcess->modelo;
 
@@ -173,7 +178,7 @@ test('puedo crear pago a KO donacion recurrente', function () {
 
     $pagoRecurrente = $donacion->recurrentPay();
 
-    expect($donacion->state->name)->toBe(State::ACTIVA)
+    expect($donacion->state->name)->toBe(OrderStatus::ACTIVA->value)
         ->and($pagoRecurrente->amount)->toBe(10.35)
         ->and($pagoRecurrente->info->Ds_Response)->toBe('0000');
 
@@ -188,7 +193,7 @@ test('puedo hacer donacion con certificado DonacionBanner', function () {
 
     livewire(DonacionBanner::class, ['prefix' => 'donacion'])
         ->set('amount', 10.35)
-        ->set('type', Donation::UNICA)
+        ->set('type', DonationType::UNICA->value)
         ->set('needsCertificate', true)
         ->set('certificate.name', 'Nombre')
         ->set('certificate.last_name', 'Apellido')
@@ -220,7 +225,7 @@ test('no permite donaciones menores a 1', function () {
 test('valido campos de certificado', function () {
 
     livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('type', Donation::UNICA)
+        ->set('type', DonationType::UNICA->value)
         ->set('amount', '10')
         ->call('toStep', 3)
         ->call('submit')->assertHasErrors([
@@ -252,9 +257,9 @@ test('puedo actualizar la fecha de siguiente cobro según la frecuencia', functi
 
     expect($donacion->next_payment)->toBe($date);
 })->with([
-    [Donation::FREQUENCY['MENSUAL'], '2025-07-05'],
-    [Donation::FREQUENCY['TRIMESTRAL'], '2025-07-05'],
-    [Donation::FREQUENCY['ANUAL'], '2026-06-05'],
+    [DonationFrequency::MENSUAL->value, '2025-07-05'],
+    [DonationFrequency::TRIMESTRAL->value, '2025-07-05'],
+    [DonationFrequency::ANUAL->value, '2026-06-05'],
 ]);
 
 // KO en donación recurrente: marca ERROR y reprograma siguiente cobro al día 5 del mes siguiente
@@ -263,11 +268,11 @@ it('processPay KO en donación recurrente marca ERROR y reprograma next_payment'
 
     // Donación recurrente mensual
     $donacion = Donation::factory()->recurrente()->create([
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
 
     // Situamos la donación en estado ACTIVA (como tras una alta correcta)
-    $donacion->states()->create(['name' => State::ACTIVA]);
+    $donacion->states()->create(['name' => OrderStatus::ACTIVA->value]);
 
     // Simulamos respuesta Redsys KO del cobro recurrente
     $info = [
@@ -279,22 +284,22 @@ it('processPay KO en donación recurrente marca ERROR y reprograma next_payment'
 
     $donacion->refresh();
 
-    expect($donacion->state->name)->toBe(State::ERROR)
+    expect($donacion->state->name)->toBe(OrderStatus::ERROR->value)
         // La lógica actual reprograma el siguiente cobro también en KO
         ->and($donacion->next_payment)->toBe('2025-07-05');
 
 })->with([
-    [Donation::FREQUENCY['MENSUAL'], '2025-07-05'],
-    [Donation::FREQUENCY['TRIMESTRAL'], '2025-07-05'],
-    [Donation::FREQUENCY['ANUAL'], '2026-06-05'],
+    [DonationFrequency::MENSUAL->value, '2025-07-05'],
+    [DonationFrequency::TRIMESTRAL->value, '2025-07-05'],
+    [DonationFrequency::ANUAL->value, '2026-06-05'],
 ]);
 
 test('puedo procesar job ProcessDonationPaymentJob', function () {
 
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion = $paymentProcess->modelo;
     $this->get(route('donation.response', getResponseDonation($donacion, true)));
@@ -310,7 +315,7 @@ test('puedo procesar job ProcessDonationPaymentJob', function () {
     expect($donacion->payments)->toHaveCount(2)
         ->and($donacion->payments->last()->amount)->toBe(10.35)
         ->and($donacion->payments->last()->created_at->format('Y-m-d'))->toBe($tomorrow)
-        ->and($donacion->state->name)->toBe(State::ACTIVA);
+        ->and($donacion->state->name)->toBe(OrderStatus::ACTIVA->value);
 
 });
 
@@ -327,11 +332,11 @@ test('cada vez que abro ventana de donación se resetea el componente', function
     $page = visit(['/']);
     $page->click('@DonacionButtonModal')
         ->click('Hazte Socio')
-        ->assertRadioSelected('type', Donation::RECURRENTE)
+        ->assertRadioSelected('type', DonationType::RECURRENTE->value)
         ->type('amount', '10,35')
         ->click('@DonacionButtonModalClose')
         ->click('@DonacionButtonModal')
-        ->assertRadioNotSelected('type', Donation::RECURRENTE)
+        ->assertRadioNotSelected('type', DonationType::RECURRENTE->value)
         ->assertValue('amount', 0);
 
 });
@@ -345,18 +350,18 @@ test('actualizo correctamente la fecha de próximo cobro', function ($tipo) {
     $donacion->updateNextPaymentDate();
 
     $fechas = [
-        Donation::FREQUENCY['MENSUAL'] => '2025-07-05',
-        Donation::FREQUENCY['TRIMESTRAL'] => '2025-07-05',
-        Donation::FREQUENCY['ANUAL'] => '2026-06-05',
+        DonationFrequency::MENSUAL->value => '2025-07-05',
+        DonationFrequency::TRIMESTRAL->value => '2025-07-05',
+        DonationFrequency::ANUAL->value => '2026-06-05',
     ];
 
     expect($donacion->next_payment)->toBe($fechas[$tipo]);
 
 })
     ->with([
-        Donation::FREQUENCY['MENSUAL'],
-        Donation::FREQUENCY['TRIMESTRAL'],
-        Donation::FREQUENCY['ANUAL'],
+        DonationFrequency::MENSUAL->value,
+        DonationFrequency::TRIMESTRAL->value,
+        DonationFrequency::ANUAL->value,
     ]);
 
 test('obtengo los jobs correctamente los pagos del mes', function () {
@@ -365,16 +370,16 @@ test('obtengo los jobs correctamente los pagos del mes', function () {
     $this->travelTo('2025-06-11');
 
     $donacion = Donation::factory()->recurrente()->activa()->create([
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion->updateNextPaymentDate();
 
     $donacionCancelada = Donation::factory()->recurrente()->activa()->create([
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacionCancelada->updateNextPaymentDate();
     $donacionCancelada->states()->create([
-        'name' => State::CANCELADO,
+        'name' => OrderStatus::CANCELADO->value,
     ]);
 
     Queue::assertNothingPushed();
@@ -402,17 +407,17 @@ test('obtengo correctamente las donaciones con pagos', function ($tipo) {
     ]);
     $donacionCancelada->updateNextPaymentDate();
     $donacionCancelada->states()->create([
-        'name' => State::CANCELADO,
+        'name' => OrderStatus::CANCELADO->value,
     ]);
 
     $fecha = match ($tipo) {
-        Donation::FREQUENCY['MENSUAL'] => Carbon::now()->addMonth()->day(5),
-        Donation::FREQUENCY['TRIMESTRAL'] => Carbon::now()
+        DonationFrequency::MENSUAL->value => Carbon::now()->addMonth()->day(5),
+        DonationFrequency::TRIMESTRAL->value => Carbon::now()
             ->addMonths(3 - (Carbon::now()->month - 1) % 3)
             ->startOfMonth()
             ->addMonths(2)
             ->day(5),
-        Donation::FREQUENCY['ANUAL'] => Carbon::now()->addYear()->day(5),
+        DonationFrequency::ANUAL->value => Carbon::now()->addYear()->day(5),
         default => null,
     };
 
@@ -423,16 +428,16 @@ test('obtengo correctamente las donaciones con pagos', function ($tipo) {
         ->and($donacionesPendientesCobro->first()->id)->not()->toBe($donacionCancelada->id);
 })
     ->with([
-        Donation::FREQUENCY['MENSUAL'],
-        Donation::FREQUENCY['TRIMESTRAL'],
-        Donation::FREQUENCY['ANUAL'],
+        DonationFrequency::MENSUAL->value,
+        DonationFrequency::TRIMESTRAL->value,
+        DonationFrequency::ANUAL->value,
     ]);
 
 test('cuando realizo donación actualiza correctamente la fecha de proximo cobro', function () {
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion = $paymentProcess->modelo;
     $this->get(route('donation.response', getResponseDonation($donacion, true)));
@@ -444,7 +449,7 @@ test('cuando realizo donación actualiza correctamente la fecha de proximo cobro
 
 test('compruebo que donacion recurrente anual no se repiten los cobros', function () {
     $donacion = Donation::factory()->recurrente()->activa()->create([
-        'frequency' => Donation::FREQUENCY['ANUAL'],
+        'frequency' => DonationFrequency::ANUAL->value,
     ]);
     $donacion->updateNextPaymentDate();
 
@@ -466,7 +471,7 @@ test('compruebo que donacion recurrente mensual no se repiten los cobros', funct
     $this->travelTo('2025-07-05');
 
     $donacion = Donation::factory()->recurrente()->activa()->create([
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion->updateNextPaymentDate();
 
@@ -488,7 +493,7 @@ test('compruebo que donacion recurrente trimestral no se repiten los cobros', fu
     $this->travelTo('2025-01-01');
 
     $donacion = Donation::factory()->recurrente()->activa()->create([
-        'frequency' => Donation::FREQUENCY['TRIMESTRAL'],
+        'frequency' => DonationFrequency::TRIMESTRAL->value,
     ]);
     $donacion->updateNextPaymentDate();
 
@@ -516,8 +521,8 @@ test('al procesar donacion envío email a todos los usuarios administradores', f
 
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::RECURRENTE,
-        'frequency' => Donation::FREQUENCY['MENSUAL'],
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
     ]);
     $donacion = $paymentProcess->modelo;
 
@@ -543,7 +548,7 @@ test('al procesar donacion envío email a todos los usuarios administradores', f
 ]);
 
 it('Donation::payed simple crea estado PAGADO una sola vez', function () {
-    $donacion = Donation::factory()->create(['type' => Donation::UNICA]);
+    $donacion = Donation::factory()->create(['type' => DonationType::UNICA->value]);
     Payment::factory()->create([
         'payable_type' => Donation::class,
         'payable_id' => $donacion->id,
@@ -557,7 +562,7 @@ it('Donation::payed simple crea estado PAGADO una sola vez', function () {
     $donacion->payed($decode);
 
     $donacion->refresh();
-    expect($donacion->states()->where('name', State::PAGADO)->count())->toBe(1);
+    expect($donacion->states()->where('name', OrderStatus::PAGADO->value)->count())->toBe(1);
 });
 
 it('Donation::payed recurrente setea identifier/next_payment y crea ACTIVA una vez', function () {
@@ -580,14 +585,14 @@ it('Donation::payed recurrente setea identifier/next_payment y crea ACTIVA una v
     $donacion->refresh();
     expect($donacion->identifier)->toBe('abc123')
         ->and($donacion->next_payment)->not()->toBeNull()
-        ->and($donacion->states()->where('name', State::ACTIVA)->count())->toBe(1);
+        ->and($donacion->states()->where('name', OrderStatus::ACTIVA->value)->count())->toBe(1);
 });
 
 test('puedo crear factory con donacion recurrente', function () {
-    $donacion = Donation::factory()->withCertificado()->withPayment()->recurrente(Donation::FREQUENCY['MENSUAL'])->create();
+    $donacion = Donation::factory()->withCertificado()->withPayment()->recurrente(DonationFrequency::MENSUAL->value)->create();
 
-    expect($donacion->type)->toBe(Donation::RECURRENTE)
-        ->and($donacion->frequency)->toBe(Donation::FREQUENCY['MENSUAL'])
+    expect($donacion->type)->toBe(DonationType::RECURRENTE->value)
+        ->and($donacion->frequency)->toBe(DonationFrequency::MENSUAL->value)
         ->and($donacion->certificate())->toBeInstanceOf(Address::class);
 });
 
@@ -619,7 +624,7 @@ test('puedo crear factory de pago por bizum', function () {
 
 test('si no selecciono certificado no veo paso 3(formulario certificados)', function () {
     livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('type', Donation::UNICA)
+        ->set('type', DonationType::UNICA->value)
         ->set('amount', 10)
         ->call('toStep', 2)
         ->assertSee('¿Necesitas un certificado de donaciones?')
@@ -631,7 +636,7 @@ test('si no selecciono certificado no veo paso 3(formulario certificados)', func
 
 test('puedo ver los 4 pasos en la donación', function () {
     livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('type', Donation::UNICA)
+        ->set('type', DonationType::UNICA->value)
         ->set('amount', 10.50)
         ->call('toStep', 2)
         ->assertSee('¿Necesitas un certificado de donaciones?')
@@ -655,7 +660,7 @@ test('puedo ver los 4 pasos en la donación', function () {
 
 test('al actualizar tipo recurrente no existe método de pago Bizum', function () {
     $component = livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('type', Donation::RECURRENTE);
+        ->set('type', DonationType::RECURRENTE->value);
 
     $methods = $component->get('payments_methods');
     $codes = collect($methods)->pluck('code');
@@ -666,7 +671,7 @@ test('al actualizar tipo recurrente no existe método de pago Bizum', function (
 
 test('al actualizar tipo si no es recurrente devuelvo todos los métodos de pago', function () {
     $component = livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('type', Donation::UNICA);
+        ->set('type', DonationType::UNICA->value);
 
     $methods = $component->get('payments_methods');
     $codes = collect($methods)->pluck('code');
@@ -677,7 +682,7 @@ test('al actualizar tipo si no es recurrente devuelvo todos los métodos de pago
 
 test('si selecciono bizum agrego campo z a formulario redsys', function () {
     $comp = livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('type', Donation::UNICA)
+        ->set('type', DonationType::UNICA->value)
         ->set('amount', 10)
         ->call('toStep', 2)
         ->assertSee('¿Necesitas un certificado de donaciones?')
@@ -695,7 +700,7 @@ test('si selecciono bizum agrego campo z a formulario redsys', function () {
 
 test('si selecciono tarjeta no existe campo z en formulario redsys', function () {
     $comp = livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('type', Donation::UNICA)
+        ->set('type', DonationType::UNICA->value)
         ->set('amount', 10)
         ->call('toStep', 2)
         ->assertSee('¿Necesitas un certificado de donaciones?')
@@ -713,7 +718,7 @@ test('si selecciono tarjeta no existe campo z en formulario redsys', function ()
 
 test('compruebo validación metodos de pago donación recurrente', function () {
     livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('type', Donation::RECURRENTE)
+        ->set('type', DonationType::RECURRENTE->value)
         ->set('amount', 10)
         ->call('toStep', 2)
         ->assertSee('¿Necesitas un certificado de donaciones?')
@@ -733,7 +738,7 @@ test('compruebo validación metodos de pago donación recurrente', function () {
 });
 test('compruebo validación metodos de pago donación unica', function () {
     livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('type', Donation::UNICA)
+        ->set('type', DonationType::UNICA->value)
         ->set('amount', 10)
         ->call('toStep', 2)
         ->assertSee('¿Necesitas un certificado de donaciones?')
@@ -754,7 +759,7 @@ test('compruebo validación metodos de pago donación unica', function () {
 
 test('puedo moverme entre pasos de la donación', function () {
     livewire(DonacionBanner::class, ['prefix' => 'donacion'])
-        ->set('type', Donation::UNICA)
+        ->set('type', DonationType::UNICA->value)
         ->set('amount', 10)
         ->call('toStep', 2)
         ->assertSee('¿Necesitas un certificado de donaciones?')

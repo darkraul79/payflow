@@ -11,6 +11,7 @@
 |
 */
 
+use App\Enums\DonationType;
 use App\Helpers\RedsysAPI;
 use App\Livewire\CardProduct;
 use App\Livewire\FinishOrderComponent;
@@ -20,9 +21,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\User;
-use App\Providers\Filament\AdminPanelProvider;
 use Carbon\Carbon;
-use Filament\Facades\Filament;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
@@ -31,13 +30,12 @@ pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature', 'Unit');
 
-arch()->preset()->laravel()
-    ->ignoring(AdminPanelProvider::class);
-
-beforeEach(function (): void {
-    // Ensure Filament actions run within the correct panel during tests
-    Filament::setCurrentPanel(Filament::getPanel('admin'));
-});
+arch('globals')
+    ->preset()
+    ->laravel()
+    ->ignoring([
+        'App\Providers\Filament\AdminPanelProvider',
+    ]);
 
 function isCi(): bool
 {
@@ -279,7 +277,7 @@ function getMerchanParamsOrder(Order $order, $ok = false): string
 function getResponseDonation(Donation $donacion, $ok = false): array
 {
     $redSys = new RedsysAPI;
-    if ($donacion->type === Donation::RECURRENTE) {
+    if ($donacion->type === DonationType::RECURRENTE->value) {
         $merchantParams = getMerchanParamsDonationReccurente($donacion, $ok);
     } else {
 
