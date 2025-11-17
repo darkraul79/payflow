@@ -27,7 +27,7 @@ if (! function_exists('hasQuotes')) {
 
 if (! function_exists('hasTitleSection')) {
     /**
-     * Returns true if the content has title
+     * Returns true if the content has a title
      */
     function hasTitleSection(string $type): bool
     {
@@ -38,7 +38,7 @@ if (! function_exists('hasTitleSection')) {
 
 if (! function_exists('hasActivityTitle')) {
     /**
-     * Returns true if the content has title
+     * Returns true if the content has a title
      */
     function hasActivityTitle(string $type): bool
     {
@@ -48,7 +48,7 @@ if (! function_exists('hasActivityTitle')) {
 }
 
 if (! function_exists('getTypeContent')) {
-    function getTypeContent($class)
+    function getTypeContent($class): string
     {
         return class_basename($class);
     }
@@ -56,6 +56,7 @@ if (! function_exists('getTypeContent')) {
 if (! function_exists('convertPrice')) {
     function convertPrice($price, $items_number = 1): string
     {
+        $price = convertPriceNumber($price);
         if (! $items_number) {
             $price = 0;
         }
@@ -102,11 +103,17 @@ if (! function_exists('calculoImpuestos')) {
 if (! function_exists('getProvincias')) {
     function getProvincias(): array
     {
-        return ['Alava', 'Albacete', 'Alicante', 'Almería', 'Asturias', 'Avila', 'Badajoz', 'Barcelona', 'Burgos', 'Cáceres',
-            'Cádiz', 'Cantabria', 'Castellón', 'Ciudad Real', 'Córdoba', 'La Coruña', 'Cuenca', 'Gerona', 'Granada', 'Guadalajara',
-            'Guipúzcoa', 'Huelva', 'Huesca', 'Islas Baleares', 'Jaén', 'León', 'Lérida', 'Lugo', 'Madrid', 'Málaga', 'Murcia', 'Navarra',
-            'Orense', 'Palencia', 'Las Palmas', 'Pontevedra', 'La Rioja', 'Salamanca', 'Segovia', 'Sevilla', 'Soria', 'Tarragona',
-            'Santa Cruz de Tenerife', 'Teruel', 'Toledo', 'Valencia', 'Valladolid', 'Vizcaya', 'Zamora', 'Zaragoza'];
+        return [
+            'Alava', 'Albacete', 'Alicante', 'Almería', 'Asturias', 'Avila', 'Badajoz', 'Barcelona', 'Burgos',
+            'Cáceres',
+            'Cádiz', 'Cantabria', 'Castellón', 'Ciudad Real', 'Córdoba', 'La Coruña', 'Cuenca', 'Gerona', 'Granada',
+            'Guadalajara',
+            'Guipúzcoa', 'Huelva', 'Huesca', 'Islas Baleares', 'Jaén', 'León', 'Lérida', 'Lugo', 'Madrid', 'Málaga',
+            'Murcia', 'Navarra',
+            'Orense', 'Palencia', 'Las Palmas', 'Pontevedra', 'La Rioja', 'Salamanca', 'Segovia', 'Sevilla', 'Soria',
+            'Tarragona',
+            'Santa Cruz de Tenerife', 'Teruel', 'Toledo', 'Valencia', 'Valladolid', 'Vizcaya', 'Zamora', 'Zaragoza',
+        ];
     }
 
 }
@@ -185,7 +192,7 @@ if (! function_exists('getTitlePageSEO')) {
      */
     function getTitlePageSEO($content): string
     {
-        if (isset($content->title) && ! empty($content->title)) {
+        if (! empty($content->title)) {
             $titulo_seo = $content->title.' - '.config('app.name');
         } else {
             $titulo_seo = config('app.name');
