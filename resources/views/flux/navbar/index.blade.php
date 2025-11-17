@@ -5,7 +5,7 @@
 
 @php
     $classes = Flux::classes()
-        ->add('flex items-center py-3 mx-4!')
+        ->add('flex items-center py-3 mx-4! lg:mx-auto!')
         ->add($scrollable ? ['overflow-x-auto overflow-y-hidden'] : [])
         ;
 @endphp

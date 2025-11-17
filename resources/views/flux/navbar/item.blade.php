@@ -28,7 +28,7 @@
     $iconClasses = Flux::classes($square ? 'size-6' : 'size-5');
 
     $classes = Flux::classes()
-        ->add('h-8 px-1.5! flex items-center rounded-lg')
+        ->add('h-8 px-1.5! lg:px-2.5! flex items-center rounded-lg')
         ->add('relative') // This is here for the "active" bar at the bottom to be positioned correctly...
         ->add('text-azul-sea font-light data-current:font-semibold')
         // Styles for when this link is the "current" one...
