@@ -38,6 +38,7 @@ class UpdateOrder extends Page implements HasForms
     public function mount(int|string $record): void
     {
         $this->record = $this->resolveRecord($record);
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $this->pedido = Order::find($record);
     }
 

@@ -19,6 +19,7 @@ class OrderFactory extends Factory
 
     public function definition(): array
     {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $shippingMethod = ShippingMethod::inRandomOrder()->first();
 
         if (! $shippingMethod) {
@@ -210,9 +211,11 @@ class OrderFactory extends Factory
 
         return $this->afterCreating(function (Order $pedido) {
 
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             if (Product::count() == 0) {
                 Product::factory()->create();
             }
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             $product = Product::inRandomOrder()->first();
             $sutotalOrder = $product->price;
             $pedido->items()->create([

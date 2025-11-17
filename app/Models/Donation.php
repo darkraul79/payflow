@@ -100,8 +100,10 @@ class Donation extends Model implements HasMedia
         }
     }
 
+    /** @noinspection PhpDynamicAsStaticMethodCallInspection */
     public function getStaticViewParams(): array
     {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         return [
             'page' => Page::factory()->make([
                 'title' => 'Donación',

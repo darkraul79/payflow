@@ -21,9 +21,11 @@ class CartController extends Controller
 
     /**
      * Get common parameters for cart pages
-     */
+     *
+     * @noinspection PhpDynamicAsStaticMethodCallInspection*/
     private function getParams(string $title): array
     {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         return [
             'page' => Page::factory()->make([
                 'title' => $title,

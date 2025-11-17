@@ -25,6 +25,7 @@ class SponsorsSeeder extends Seeder
         ];
 
         foreach ($array as $sponsor) {
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             $sponsorModel = Sponsor::create([
                 'name' => $sponsor['name'],
                 'url' => $sponsor['url'],

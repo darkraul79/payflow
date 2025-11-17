@@ -33,13 +33,15 @@ class GetPaymentsOfMonthCommand extends Command implements PromptsForMissingInpu
 
     /**
      * Execute the console command.
-     */
+     *
+     * @noinspection PhpDynamicAsStaticMethodCallInspection*/
     public function handle(): void
     {
 
         Log::info($this->initMessage);
         $this->info($this->initMessage);
 
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $donaciones = Donation::nextPaymentsDonations()->get();
 
         foreach ($donaciones as $donacion) {

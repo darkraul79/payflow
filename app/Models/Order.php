@@ -79,6 +79,7 @@ class Order extends Model implements HasMedia
     public function statesWithStateInitial(): Collection
     {
 
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         return $this->states
             ->prepend(State::make([
 
@@ -199,6 +200,7 @@ class Order extends Model implements HasMedia
 
     public function getStaticViewParams(): array
     {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         return [
             'page' => Page::factory()->make([
                 'title' => 'Pedido',

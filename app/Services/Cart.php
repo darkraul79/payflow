@@ -11,11 +11,13 @@ class Cart
 {
     private static array $cart = [];
 
+    /** @noinspection PhpDynamicAsStaticMethodCallInspection */
     public static function addItem(Product $product, $quantity = 1): void
     {
         self::init();
 
         if (isset(self::$cart['items'][$product->id])) {
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             if (Product::find($product->id)->stock < self::$cart['items'][$product->id]['quantity'] + $quantity) {
                 return;
             }
@@ -71,11 +73,13 @@ class Cart
         self::save();
     }
 
+    /** @noinspection PhpDynamicAsStaticMethodCallInspection */
     public static function updateCart(): void
     {
         self::init();
 
         foreach (self::getItems() as $id => $item) {
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             $product = Product::find($id);
             self::updateProductSubtotal($product);
             self::$cart['items'][$id]['img'] = self::getImage($product);
@@ -180,10 +184,12 @@ class Cart
         return 0;
     }
 
+    /** @noinspection PhpDynamicAsStaticMethodCallInspection */
     public static function resfreshCart(): void
     {
         foreach (self::getItems() as $idProduct => $item) {
 
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             $product = Product::find($idProduct);
             self::$cart['items'][$idProduct]['name'] = $product->name;
             self::$cart['items'][$idProduct]['price'] = $product->getPrice();

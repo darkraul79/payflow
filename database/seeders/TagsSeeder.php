@@ -17,6 +17,7 @@ class TagsSeeder extends Seeder
         ];
 
         foreach ($tags as $tag) {
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             Tag::create([
                 'name' => $tag,
             ]);

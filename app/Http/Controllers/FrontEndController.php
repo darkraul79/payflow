@@ -37,6 +37,8 @@ class FrontEndController extends Controller
 
     /**
      * Get the page model and view based on type
+     *
+     * @noinspection PhpDynamicAsStaticMethodCallInspection
      */
     private function getPageAndView(string $type, string $slug): array
     {

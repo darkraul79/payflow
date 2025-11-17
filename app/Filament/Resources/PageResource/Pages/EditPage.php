@@ -24,12 +24,14 @@ class EditPage extends EditRecord
         return config('filament-fabricator.page-resource') ?? static::$resource;
     }
 
+    /** @noinspection PhpDynamicAsStaticMethodCallInspection */
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         $blockquotes = $data['blockquotes'] ?? null;
         $record->update(collect($data)->except(['blockquotes'])->toArray());
 
         // Sync
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         Page::find($record->id)->blockquotes()->sync($blockquotes);
 
         return $record;

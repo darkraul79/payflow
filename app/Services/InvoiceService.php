@@ -37,7 +37,6 @@ class InvoiceService
 
         $shippingCost = (float) $order->shipping_cost;
         $shippingMethod = $order->shipping;
-        $vatRate = $order->vatRate();
 
         $vatRate = (float) $order->vatRate();
         $vatAmount = (float) $order->calculateTaxes(true);

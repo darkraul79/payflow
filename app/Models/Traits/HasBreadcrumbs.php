@@ -92,6 +92,7 @@ trait HasBreadcrumbs
         $parents = collect();
 
         foreach (self::$parentsSlugs as $parentSlug) {
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             $parents->push(Page::query()->where('slug', $parentSlug)->first() ?? Page::make(['slug' => $parentSlug]));
         }
 

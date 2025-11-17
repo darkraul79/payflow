@@ -9,7 +9,7 @@ use Livewire\Component;
 
 class CartButtonComponent extends Component
 {
-    public $quantity = 0;
+    public int $quantity = 0;
 
     public function mount(): void
     {

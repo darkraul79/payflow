@@ -122,6 +122,7 @@ if (! function_exists('generateOrderNumber')) {
 
     function generateOrderNumber(): string
     {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         do {
             $orderNumber = Str::upper(Str::random(8));
         } while (Order::where('number', $orderNumber)->exists());
@@ -166,6 +167,7 @@ if (! function_exists('generateDonationNumber')) {
     function generateDonationNumber(): string
     {
 
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         do {
             $orderNumber = Str::upper(Str::random(8));
         } while (Donation::where('number', $orderNumber)->exists());

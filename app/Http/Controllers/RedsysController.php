@@ -36,6 +36,7 @@ class RedsysController extends Controller
         $redSys = new RedsysAPI;
         [$decodec, $firma] = $this->validateRedsysRequest($request, $redSys);
 
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $donacion = Payment::where('number', $decodec['Ds_Order'])->firstOrFail()->payable;
 
         if ($this->isSuccessfulPayment($redSys, $firma, $decodec)) {
@@ -102,6 +103,7 @@ class RedsysController extends Controller
         $redSys = new RedsysAPI;
         [$decodec, $firma] = $this->validateRedsysRequest($request, $redSys);
 
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $pedido = Order::where('number', $decodec['Ds_Order'])->firstOrFail();
 
         CreateOrderEvent::dispatch($pedido);
@@ -136,6 +138,7 @@ class RedsysController extends Controller
         $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
         $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
 
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $pago = Payment::where('number', $decodec['Ds_Order'])->firstOrFail();
         $cantidad = 0;
         $info = $decodec;
@@ -164,9 +167,11 @@ class RedsysController extends Controller
 
     /**
      * Show payment result page
-     */
+     *
+     * @noinspection PhpDynamicAsStaticMethodCallInspection*/
     public function show(string $number): View|RedirectResponse
     {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $pago = Payment::where('number', $number)->firstOrFail();
         $modelo = $pago->payable;
 

@@ -64,7 +64,7 @@ class DonacionBanner extends Component
 
     public bool $isValid = false;
 
-    public $payments_methods = [];
+    public array $payments_methods = [];
 
     public function render(): View
     {

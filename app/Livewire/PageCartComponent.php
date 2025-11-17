@@ -43,6 +43,7 @@ class PageCartComponent extends Component
     {
 
         $this->items = Cart::getItems();
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $this->itemsProducts = Product::whereIn('id', array_keys($this->items))->with('media')->get();
         $this->shipping_method = Cart::getShippingMethod();
         $this->envio = Cart::getShippingMethodCost();
@@ -142,6 +143,7 @@ class PageCartComponent extends Component
 
     public function updatedShippingMethod($value): void
     {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $metodo = ShippingMethod::find($value);
         $this->envio = $metodo ? $metodo->price : 0;
         $this->shipping_method = $value;

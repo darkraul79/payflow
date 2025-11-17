@@ -167,8 +167,10 @@ class FinishOrderComponent extends Component
         }
     }
 
+    /** @noinspection PhpDynamicAsStaticMethodCallInspection */
     public function orderCreate()
     {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $order = Order::create([
             'number' => generateOrderNumber(),
             'shipping' => $this->cart['shipping_method']['name'],
@@ -219,9 +221,11 @@ class FinishOrderComponent extends Component
         }
     }
 
+    /** @noinspection PhpDynamicAsStaticMethodCallInspection */
     public function addItemsToOrder(Order $order): void
     {
         foreach ($this->cart['items'] as $idItem => $item) {
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             $order->items()->create([
                 'product_id' => $idItem,
                 'quantity' => $item['quantity'],

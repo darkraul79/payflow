@@ -31,6 +31,7 @@ class SendNewDonationEmailListener
             }
         } else {
             // Si no sólo notifico a mi cuenta de correo
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             User::where('email',
                 'info@raulsebastian.es')->first()?->notify(new DonationCreatedNotification($event->donation));
         }

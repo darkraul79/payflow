@@ -26,8 +26,8 @@ class ActivitiesCalendar extends LivewireCalendar
 
     }
 
-    public function onEventClick($url)
+    public function onEventClick($eventId): void
     {
-        $this->redirect($url);
+        $this->redirect($eventId);
     }
 }

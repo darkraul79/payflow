@@ -39,6 +39,7 @@ class PaymentProcess
     private function createModel(): void
     {
         if ($this->modelo instanceof Order && ! isset($this->data['id'])) {
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             $this->modelo = Order::create([
                 'amount' => convertPriceNumber($this->data['amount']),
                 'number' => generateOrderNumber(),
@@ -48,9 +49,11 @@ class PaymentProcess
                 'payment_method' => $this->data['payment_method'],
             ]);
         } elseif ($this->modelo instanceof Order && isset($this->data['id'])) {
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             $this->modelo = Order::find($this->data['id']);
 
         } elseif ($this->modelo instanceof Donation) {
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             $this->modelo = Donation::create([
                 'amount' => convertPriceNumber($this->data['amount']),
                 'number' => generateDonationNumber(),

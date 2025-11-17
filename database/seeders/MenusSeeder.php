@@ -16,11 +16,13 @@ class MenusSeeder extends Seeder
             'footer2' => 'Enlaces de ayuda',
         ];
         foreach ($menus as $location => $menu) {
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             $m = Menu::create([
                 'name' => $menu,
                 'is_visible' => true,
             ]);
-            $l = MenuLocation::create([
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
+            MenuLocation::create([
                 'menu_id' => $m->id,
                 'location' => $location,
             ]);

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\AddressType;
+use App\Enums\DonationFrequency;
 use App\Enums\DonationType;
 use App\Enums\OrderStatus;
 use App\Models\Address;
@@ -58,7 +59,7 @@ class DonationFactory extends Factory
         });
     }
 
-    public function recurrente($frequency = Donation::FREQUENCY['MENSUAL']): Factory
+    public function recurrente($frequency = DonationFrequency::MENSUAL->value): Factory
     {
         return $this->state(function () use ($frequency) {
             return [

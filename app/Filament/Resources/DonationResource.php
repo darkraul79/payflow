@@ -51,6 +51,8 @@ class DonationResource extends Resource
 
     /**
      * @throws Exception
+     *
+     * @noinspection PhpDynamicAsStaticMethodCallInspection
      */
     public static function table(Table $table): Table
     {
@@ -126,6 +128,7 @@ class DonationResource extends Resource
                     ->label('Estado')
                     ->multiple()
                     ->options(function () {
+                        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
                         $op = Donation::make()->available_states();
                         unset($op['ACEPTADO']);
 
