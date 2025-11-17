@@ -15,12 +15,12 @@
     "src": "public/images/elena.jpeg"
   },
   "resources/css/app.css": {
-    "file": "assets/app-C_yL3JW8.css",
+    "file": "assets/app-Ns75L7Gy.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-DPhycGzQ.css",
+    "file": "assets/theme-BAZ7vIqu.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },
@@ -40,7 +40,7 @@
     "isEntry": true
   },
   "resources/css/theme.css": {
-    "file": "assets/theme-r_Vdnmiu.css",
+    "file": "assets/theme-CFHHSMkV.css",
     "src": "resources/css/theme.css",
     "isEntry": true
   },

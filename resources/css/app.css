@@ -283,6 +283,14 @@
     }
 }
 
+nav {
+    ui-dropdown {
+        button {
+            @apply cursor-pointer
+        }
+    }
+}
+
 .product-gallery {
     @apply flex flex-row-reverse gap-3;
 
@@ -397,3 +405,4 @@
     }
 
 }
+

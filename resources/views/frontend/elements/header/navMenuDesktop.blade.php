@@ -39,10 +39,10 @@
     <button
         @click="$dispatch('openmodaldonation')"
         href="#"
-        class="bg-amarillo text-azul-mist hover:bg-azul-mist hover:text-amarillo flex h-full min-h-20 w-full cursor-pointer items-center justify-center gap-2 p-2 text-center font-semibold lg:my-0 lg:w-[261px]"
+        class="bg-amarillo  text-azul-mist group hover:bg-azul-mist hover:text-amarillo flex h-full min-h-20 w-full cursor-pointer items-center justify-center gap-2 p-2 text-center font-semibold lg:my-0 lg:w-[261px]"
         data-test="DonacionButtonModal"
     >
-        <flux:icon.heart variant="solid" class="size-4" />
+        <flux:icon.heart variant="solid" class="size-4 group-hover:animate-hearbeat  " />
         Haz una donación
     </button>
 </div>

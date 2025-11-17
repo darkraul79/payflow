@@ -108,6 +108,21 @@
     --boton-primary-text-hover: white;
 
     --max-width: 1440px;
+
+    --animate-hearbeat: heartbeat 1s infinite;
+
+    @keyframes heartbeat {
+        0% {
+            transform: scale(1);
+        }
+        10% {
+            transform: scale(1.25);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
 }
 
 @theme {

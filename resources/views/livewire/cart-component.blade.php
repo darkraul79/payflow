@@ -16,18 +16,21 @@
             stroke-linecap="round"
             stroke-linejoin="round"
             fill="none"
+            class="group-hover:fill-amarillo group-hover:stroke-azul-gray"
         />
         <path
             d="M17.0357 7.01087C17.0357 5.44799 16.4149 3.94912 15.3097 2.84399C14.2046 1.73887 12.7057 1.11802 11.1429 1.11802C9.57997 1.11802 8.0811 1.73887 6.97598 2.84399C5.87085 3.94912 5.25 5.44799 5.25 7.01087"
             stroke-linecap="round"
             stroke-linejoin="round"
             fill="none"
+            class="group-hover:stroke-azul-gray"
         />
         <path
             d="M16.0513 13.3274C15.147 12.6224 13.6428 12.1814 11.9185 13.2779C9.65559 14.7164 9.14416 19.4654 14.3628 23.4704L14.3643 23.4716C15.3576 24.2343 15.8532 24.6149 16.7156 24.6149C17.5773 24.6149 18.0729 24.2349 19.0659 23.4735L19.0699 23.4704C24.2871 19.4654 23.7757 14.7179 21.5128 13.2779C19.7885 12.1814 18.2842 12.6224 17.3799 13.3274C17.0099 13.6154 16.8242 13.7594 16.7156 13.7594C16.6071 13.7594 16.4213 13.6154 16.0513 13.3274Z"
             stroke-linecap="round"
             stroke-linejoin="round"
             fill="none"
+            class="group-hover:fill-azul-wave group-hover:stroke-azul-gray"
         />
     </svg>
     @if ($quantity > 0)
