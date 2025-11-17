@@ -227,7 +227,7 @@ class DonationResource extends Resource
     {
         return [
             'index' => Pages\Listdonations::route('/'),
-            'view' => Pages\Viewdonation::route('/{record}'),
+            'view' => Pages\ViewDonation::route('/{record}'),
         ];
     }
 
