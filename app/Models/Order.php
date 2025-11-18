@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -122,6 +123,19 @@ class Order extends Model implements HasMedia
 
             $this->states()->create($estado);
 
+            // Log estructurado para observabilidad
+            Log::warning('Transición de estado de pedido a ERROR', [
+                'order_id' => $this->id,
+                'order_number' => $this->number,
+                'previous_state' => $this->state->name ?? 'unknown',
+                'new_state' => OrderStatus::ERROR->value,
+                'error_message' => $mensaje ?? 'Error al procesar el pedido',
+                'ds_response' => $redSysResponse['Ds_Response'] ?? null,
+                'ds_order' => $redSysResponse['Ds_Order'] ?? null,
+                'amount' => $this->amount,
+                'timestamp' => now()->toIso8601String(),
+            ]);
+
         }
 
         $this->refresh();
@@ -140,11 +154,28 @@ class Order extends Model implements HasMedia
 
         // Si no existe el estado PAGADO, lo creo
         if (! $this->states()->where('name', OrderStatus::PAGADO->value)->exists()) {
+            $previousState = $this->state->name ?? 'unknown';
+
             // resto la cantidad al stock de los productos
             $this->subtractStocks();
             $this->states()->create([
                 'name' => OrderStatus::PAGADO->value,
                 'info' => $redSysResponse,
+            ]);
+
+            // Log estructurado para observabilidad
+            Log::info('Transición de estado de pedido a PAGADO', [
+                'order_id' => $this->id,
+                'order_number' => $this->number,
+                'previous_state' => $previousState,
+                'new_state' => OrderStatus::PAGADO->value,
+                'amount' => convert_amount_from_redsys($redSysResponse['Ds_Amount']),
+                'ds_order' => $redSysResponse['Ds_Order'] ?? null,
+                'ds_response' => $redSysResponse['Ds_Response'] ?? null,
+                'ds_authorisation_code' => $redSysResponse['Ds_AuthorisationCode'] ?? null,
+                'payment_method' => $this->payment_method,
+                'items_count' => $this->items->count(),
+                'timestamp' => now()->toIso8601String(),
             ]);
 
         }

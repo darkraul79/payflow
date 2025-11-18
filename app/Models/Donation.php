@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
 use Spatie\MediaLibrary\HasMedia;
@@ -123,23 +124,48 @@ class Donation extends Model implements HasMedia
 
             ]);
 
+        $previousState = $this->state->name ?? 'unknown';
+        $newState = null;
+
         // Si no existe el estado ACEPTADO ni CANCELADO, creo estado ACTIVA
         if ($this->type === DonationType::RECURRENTE->value) {
             if (! $this->states()->where('name', OrderStatus::CANCELADO->value)->exists() &&
                 ! $this->states()->where('name', OrderStatus::ACTIVA->value)->exists()) {
 
+                $newState = OrderStatus::ACTIVA->value;
                 $this->states()->create([
-                    'name' => OrderStatus::ACTIVA->value,
+                    'name' => $newState,
                 ]);
 
             }
         } else {
             if (! $this->states()->where('name', OrderStatus::PAGADO->value)->exists()) {
+                $newState = OrderStatus::PAGADO->value;
                 $this->states()->create([
-                    'name' => OrderStatus::PAGADO->value,
+                    'name' => $newState,
                 ]);
 
             }
+        }
+
+        // Log estructurado para observabilidad (solo si hubo transición)
+        if ($newState) {
+            Log::info('Transición de estado de donación a '.$newState, [
+                'donation_id' => $this->id,
+                'donation_number' => $this->number,
+                'donation_type' => $this->type,
+                'frequency' => $this->frequency ?? null,
+                'previous_state' => $previousState,
+                'new_state' => $newState,
+                'amount' => convert_amount_from_redsys($redSysResponse['Ds_Amount']),
+                'ds_order' => $redSysResponse['Ds_Order'] ?? null,
+                'ds_response' => $redSysResponse['Ds_Response'] ?? null,
+                'ds_authorisation_code' => $redSysResponse['Ds_AuthorisationCode'] ?? null,
+                'has_identifier' => ! empty($redSysResponse['Ds_Merchant_Identifier'] ?? null),
+                'next_payment' => $this->next_payment,
+                'payment_method' => $this->payment_method,
+                'timestamp' => now()->toIso8601String(),
+            ]);
         }
 
         $this->refresh();
@@ -314,6 +340,23 @@ class Donation extends Model implements HasMedia
 
             $this->states()->create($estado);
 
+            // Log estructurado para observabilidad
+            Log::warning('Transición de estado de donación a ERROR', [
+                'donation_id' => $this->id,
+                'donation_number' => $this->number,
+                'donation_type' => $this->type,
+                'frequency' => $this->frequency ?? null,
+                'previous_state' => $this->state->name ?? 'unknown',
+                'new_state' => OrderStatus::ERROR->value,
+                'error_message' => $mensaje ?? 'Error al procesar el pedido',
+                'ds_response' => $redSysResponse['Ds_Response'] ?? null,
+                'ds_order' => $redSysResponse['Ds_Order'] ?? null,
+                'amount' => $this->amount,
+                'next_payment_rescheduled' => $this->next_payment,
+                'payment_method' => $this->payment_method,
+                'timestamp' => now()->toIso8601String(),
+            ]);
+
         }
 
         $this->refresh();
@@ -322,11 +365,26 @@ class Donation extends Model implements HasMedia
 
     public function cancel(): void
     {
+        $previousState = $this->state->name ?? 'unknown';
+
         $this->states()->create([
             'name' => OrderStatus::CANCELADO->value,
         ]);
         $this->update([
             'next_payment' => null,
+        ]);
+
+        // Log estructurado para observabilidad
+        Log::info('Transición de estado de donación a CANCELADO', [
+            'donation_id' => $this->id,
+            'donation_number' => $this->number,
+            'donation_type' => $this->type,
+            'frequency' => $this->frequency ?? null,
+            'previous_state' => $previousState,
+            'new_state' => OrderStatus::CANCELADO->value,
+            'amount' => $this->amount,
+            'had_next_payment' => ! is_null($this->getOriginal('next_payment')),
+            'timestamp' => now()->toIso8601String(),
         ]);
     }
 

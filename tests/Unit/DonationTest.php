@@ -21,6 +21,7 @@ use App\Services\PaymentProcess;
 use Carbon\Carbon;
 use Darkraul79\Payflow\Gateways\RedsysGateway;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -150,6 +151,8 @@ test('puedo crear donacion unica', function () {
 
 test('NO puedo crear pago a donacion cancelada', function () {
 
+    app()->instance(RedsysGateway::class, new FakeRedsysGateway(ok: true));
+
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
         'type' => DonationType::RECURRENTE->value,
@@ -160,13 +163,20 @@ test('NO puedo crear pago a donacion cancelada', function () {
     $this->get(route('donation.response', getResponseDonation($donacion, true)));
     $donacion->refresh();
 
-    $donacion->cancel();
+    // Verificar que está en estado ACTIVA antes de cancelar
+    expect($donacion->state->name)->toBe(OrderStatus::ACTIVA->value);
 
-    expect(fn () => $donacion->recurrentPay())->toThrow(
-        HttpException::class,
-        'La donación ya NO está activa y no se puede volver a pagar'
-    )
-        ->and($donacion->state->name)->toBe(OrderStatus::CANCELADO->value);
+    $donacion->cancel();
+    $donacion->refresh();
+
+    // Verificar que está en estado CANCELADO después de cancelar
+    expect($donacion->state->name)->toBe(OrderStatus::CANCELADO->value)
+        ->and(fn () => $donacion->recurrentPay())->toThrow(
+            HttpException::class,
+            'La donación ya NO está activa y no se puede volver a pagar'
+        );
+
+    // Ahora intentar el pago recurrente debe fallar
 
 });
 
@@ -1089,7 +1099,7 @@ test('donacion recurrente sin Ds_Merchant_Identifier se procesa correctamente', 
     $donacion->refresh();
     expect($donacion->state->name)->toBe(OrderStatus::ACTIVA->value)
         ->and($donacion->identifier)->toBeNull() // Identifier es null cuando no viene en respuesta
-        ->and($donacion->next_payment)->not->toBeNull()
+        ->and($donacion->next_payment)->not()->toBeNull()
         ->and($donacion->payments->first()->amount)->toBe(10.00);
 });
 
@@ -1158,7 +1168,7 @@ test('carga masiva: puede procesar 50 donaciones recurrentes simultáneas sin er
     $donaciones->each(function ($donacion) {
         $donacion->refresh();
         expect($donacion->state->name)->toBe(OrderStatus::ACTIVA->value)
-            ->and($donacion->next_payment)->not->toBeNull()
+            ->and($donacion->next_payment)->not()->toBeNull()
             ->and($donacion->payments->first()->amount)->toBeGreaterThan(0);
     });
 })->group('performance');
@@ -1348,3 +1358,156 @@ test('carga masiva: tiempos de procesamiento son consistentes', function () {
     // El tiempo máximo no debe ser más de 3x el promedio (detecta picos anormales)
     expect($tiempoMaximo)->toBeLessThan($tiempoPromedio * 3);
 })->group('performance');
+
+// === TESTS DE OBSERVABILIDAD: LOGS ESTRUCTURADOS ===
+
+test('observabilidad: transición a PAGADO genera log estructurado en donation única', function () {
+    Log::spy();
+
+    $pp = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('25,00'),
+        'type' => DonationType::UNICA->value,
+    ]);
+    $donacion = $pp->modelo;
+
+    $callback = getResponseDonation($donacion, true);
+    $this->post(route('donation.response'), $callback);
+
+    Log::shouldHaveReceived('info')
+        ->once()
+        ->withArgs(function ($message, $context) use ($donacion) {
+            return str_contains($message, 'Transición de estado de donación')
+                && $context['donation_id'] === $donacion->id
+                && $context['donation_number'] === $donacion->number
+                && $context['new_state'] === OrderStatus::PAGADO->value
+                && isset($context['timestamp'])
+                && isset($context['amount']);
+        });
+})->group('observability');
+
+test('observabilidad: transición a ACTIVA genera log estructurado en donation recurrente', function () {
+    Log::spy();
+
+    $pp = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('30,00'),
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
+    ]);
+    $donacion = $pp->modelo;
+
+    $callback = getResponseDonation($donacion, true);
+    $this->post(route('donation.response'), $callback);
+
+    Log::shouldHaveReceived('info')
+        ->once()
+        ->withArgs(function ($message, $context) use ($donacion) {
+            return str_contains($message, 'Transición de estado de donación')
+                && $context['donation_id'] === $donacion->id
+                && $context['donation_type'] === DonationType::RECURRENTE->value
+                && $context['new_state'] === OrderStatus::ACTIVA->value
+                && isset($context['frequency'])
+                && isset($context['next_payment'])
+                && isset($context['timestamp']);
+        });
+})->group('observability');
+
+test('observabilidad: transición a ERROR genera log warning en donation', function () {
+    Log::spy();
+
+    $pp = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('15,00'),
+        'type' => DonationType::UNICA->value,
+    ]);
+    $donacion = $pp->modelo;
+
+    $callbackKo = getResponseDonation($donacion, false);
+    $this->post(route('donation.response'), $callbackKo);
+
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->withArgs(function ($message, $context) use ($donacion) {
+            return str_contains($message, 'Transición de estado de donación a ERROR')
+                && $context['donation_id'] === $donacion->id
+                && $context['new_state'] === OrderStatus::ERROR->value
+                && isset($context['error_message'])
+                && isset($context['ds_response'])
+                && isset($context['timestamp']);
+        });
+})->group('observability');
+
+test('observabilidad: cancelación donation genera log estructurado', function () {
+    Log::spy();
+
+    $donacion = Donation::factory()->recurrente()->activa()->create();
+
+    $donacion->cancel();
+
+    Log::shouldHaveReceived('info')
+        ->once()
+        ->withArgs(function ($message, $context) use ($donacion) {
+            return str_contains($message, 'Transición de estado de donación a CANCELADO')
+                && $context['donation_id'] === $donacion->id
+                && $context['new_state'] === OrderStatus::CANCELADO->value
+                && $context['previous_state'] === OrderStatus::ACTIVA->value
+                && isset($context['had_next_payment'])
+                && isset($context['timestamp']);
+        });
+})->group('observability');
+
+test('observabilidad: idempotencia NO genera logs duplicados', function () {
+    Log::spy();
+
+    $pp = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('20,00'),
+        'type' => DonationType::UNICA->value,
+    ]);
+    $donacion = $pp->modelo;
+
+    $callback = getResponseDonation($donacion, true);
+
+    // Primera llamada: debe generar log
+    $this->post(route('donation.response'), $callback);
+
+    // Segunda llamada (idempotente): No debe generar log
+    $this->post(route('donation.response'), $callback);
+
+    // Solo debe haber UN log de transición
+    Log::shouldHaveReceived('info')
+        ->once()
+        ->withArgs(function ($message) {
+            return str_contains($message, 'Transición de estado de donación');
+        });
+})->group('observability');
+
+test('observabilidad: log contiene todos los campos requeridos para donation', function () {
+    Log::spy();
+
+    $pp = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('45,00'),
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::TRIMESTRAL->value,
+    ]);
+    $donacion = $pp->modelo;
+
+    $callback = getResponseDonation($donacion, true);
+    $this->post(route('donation.response'), $callback);
+
+    Log::shouldHaveReceived('info')
+        ->once()
+        ->withArgs(function ($message, $context) {
+            $requiredFields = [
+                'donation_id', 'donation_number', 'donation_type', 'frequency',
+                'previous_state', 'new_state', 'amount', 'ds_order', 'ds_response',
+                'ds_authorisation_code', 'has_identifier', 'next_payment',
+                'payment_method', 'timestamp',
+            ];
+
+            foreach ($requiredFields as $field) {
+                if (! array_key_exists($field, $context)) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+})->group('observability');
