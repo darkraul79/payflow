@@ -12,10 +12,12 @@ test('confirmo pedido cambia a pagado después de llegar a ok', function () {
 
     $this->travel(10)->seconds();
 
-    getResponseOrder($pedido, true);
+    $response = getResponseOrder($pedido);
 
-    $this->get(route('pedido.response', getResponseOrder($pedido, true)))
+    $this->get(route('pedido.response', $response))
         ->assertRedirect(route('pedido.finalizado', $pedido->number));
+
+    $pedido->refresh();
     expect($pedido->state->name)->toBe(OrderStatus::PAGADO->value);
 
 });
@@ -32,22 +34,29 @@ it('donation.response está exento de CSRF', function () {
 });
 
 it('donationResponse: firma inválida marca error y redirige a ko', function () {
-    $donacion = Donation::factory()->withPayment()->create(); // asumiendo relación hasOne
+    $donacion = Donation::factory()->withPayment()->create();
 
-    $params = getMerchanParamasOrder($donacion->totalRedsys, $donacion->number);
+    // Construir parámetros válidos
+    $params = buildRedsysParams(
+        amount: convert_amount_to_redsys($donacion->amount),
+        order: $donacion->number,
+        response: '0000'
+    );
 
-    // Firma incorrecta a propósito (cambia key o altera parámetros)
+    $merchantParams = base64_encode(json_encode($params, JSON_UNESCAPED_SLASHES));
+
+    // Firma incorrecta a propósito
     $firmaMala = 'invalid-signature';
 
     $this->post(route('donation.response'), [
-        'Ds_MerchantParameters' => $params,
+        'Ds_MerchantParameters' => $merchantParams,
         'Ds_Signature' => $firmaMala,
         'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
     ])->assertRedirect(route('donacion.finalizada', $donacion->number));
 
     $donacion->refresh();
 
-    expect($donacion->state->name)->toBe(OrderStatus::ERROR->value) // OrderStatus::ERROR->value
+    expect($donacion->state->name)->toBe(OrderStatus::ERROR->value)
         ->and($donacion->state->info['Error'])
         ->toBe('Firma no válida');
 });
