@@ -5,7 +5,8 @@ use App\Filament\Resources\ProductResource\Pages\EditProduct;
 use App\Livewire\CardProduct;
 use App\Livewire\ProductAddCart;
 use App\Models\Product;
-use App\Services\Cart;
+use App\Services\CartNormalizer;
+use Darkraul79\Cartify\Facades\Cart as Cartify;
 
 use function Pest\Livewire\livewire;
 
@@ -67,11 +68,11 @@ test('no puedo agregar productos sin stock a carrito', function () {
         'product' => $producto,
     ])
         ->call('addToCart')
-        ->assertDispatched('showAlert', type: 'warning', title: 'No se puede agregar al carrito', message: 'No hay suficiente stock')
+        ->assertDispatched('showAlert', type: 'warning', title: 'No se puede agregar al carrito',
+            message: 'No hay suficiente stock')
         ->assertNotDispatched('updatedCart');
 
-    expect(Cart::getItems())->toHaveCount(1);
-
+    expect(CartNormalizer::items())->toHaveCount(1);
 });
 
 test('no puedo agregar más cantidad de productos mayor que el stock en la tarjeta de producto ', function () {
@@ -85,11 +86,12 @@ test('no puedo agregar más cantidad de productos mayor que el stock en la tarje
     livewire(CardProduct::class, [
         'product' => $producto,
     ])->call('addToCart', $producto)
-        ->assertDispatched('showAlert', type: 'error', title: 'No se puede agregar el producto', message: 'No hay suficiente stock')
+        ->assertDispatched('showAlert', type: 'error', title: 'No se puede agregar el producto',
+            message: 'No hay suficiente stock')
         ->assertNotDispatched('updatedCart');
 
-    expect(Cart::getQuantityProduct($producto->id))->toBe(1);
-
+    $cantidad = Cartify::get($producto->id)['quantity'] ?? 0;
+    expect($cantidad)->toBe(1);
 });
 
 test('si el producto está en oferta puedo ver el badge porcentaje en listado de productos', function () {

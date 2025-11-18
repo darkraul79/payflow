@@ -4,6 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Product;
 use App\Models\ShippingMethod;
+use App\Services\CartNormalizer;
+use App\Services\ShippingSession;
 use Darkraul79\Cartify\Facades\Cart;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -40,49 +42,41 @@ class PageCartComponent extends Component
 
     public function refreshCart(): void
     {
-        $rawItems = Cart::content()->toArray();
-        // Transformar para asegurar compatibilidad de claves legacy
-        $this->items = collect($rawItems)->map(function ($item) {
-            $subtotal = $item['price'] * $item['quantity'];
-            $item['subtotal'] = $subtotal;
-            $item['subtotal_formated'] = convertPrice($subtotal);
-            // Asegurar price_formated si no existe en options
-            if (! isset($item['price_formated'])) {
-                $item['price_formated'] = convertPrice($item['price']);
-            }
-            // Mover image desde options si aplica
-            if (! isset($item['image']) && isset($item['options']['image'])) {
-                $item['image'] = $item['options']['image'];
-            }
-
-            return $item;
-        })->toArray();
+        $this->items = CartNormalizer::items();
         $itemIds = array_keys($this->items);
-
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $this->itemsProducts = Product::whereIn('id', $itemIds)->with('media')->get();
-
-        // Recuperar shipping method de session
-        $this->shipping_method = session('cart_shipping_method_id');
-        $this->envio = session('cart_shipping_cost', 0);
-
+        $this->shipping_method = ShippingSession::id();
+        $this->envio = ShippingSession::cost();
         $this->updateTotals();
     }
 
     public function updateTotals(): void
     {
-        // Usar subtotal real sin impuestos del paquete
-        $this->subtotal = Cart::subtotal();
-        $this->total = $this->subtotal + $this->envio;
-        $this->taxes = calculoImpuestos($this->total);
+        $totals = CartNormalizer::totals();
+        $this->subtotal = $totals['subtotal'];
+        $this->envio = $totals['shipping_cost'];
+        $this->total = $totals['total'];
+        $this->taxes = $totals['taxes'];
+
+        // Usar dot notation para no sobrescribir cart.items
         session([
-            'cart_totals' => [
-                'subtotal' => $this->subtotal,
-                'taxes' => $this->taxes,
-                'total' => $this->total,
-                'shipping_cost' => $this->envio,
-            ],
+            'cart.shipping_method.id' => ShippingSession::id(),
+            'cart.shipping_method.price' => ShippingSession::cost(),
+            'cart.total_shipping' => ShippingSession::cost(),
+            'cart.totals.subtotal' => $this->subtotal,
+            'cart.totals.taxes' => $this->taxes,
+            'cart.totals.total' => $this->total,
+            'cart.totals.shipping_cost' => $this->envio,
         ]);
+
+        session([
+            'cart_totals.subtotal' => $this->subtotal,
+            'cart_totals.taxes' => $this->taxes,
+            'cart_totals.total' => $this->total,
+            'cart_totals.shipping_cost' => $this->envio,
+        ]);
+
         $this->dispatch('updatedCart');
         $this->isValid();
     }
@@ -136,13 +130,27 @@ class PageCartComponent extends Component
     private function updateCart(): void
     {
         session([
-            'cart_totals' => [
-                'subtotal' => $this->subtotal,
-                'taxes' => $this->taxes,
-                'total' => $this->total,
-                'shipping_cost' => $this->envio,
-            ],
+            'cart_totals.subtotal' => $this->subtotal,
+            'cart_totals.taxes' => $this->taxes,
+            'cart_totals.total' => $this->total,
+            'cart_totals.shipping_cost' => $this->envio,
         ]);
+    }
+
+    public function updatedShippingMethod($value): void
+    {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
+        $metodo = ShippingMethod::find($value);
+        $this->envio = $metodo ? $metodo->price : 0;
+        $this->shipping_method = $value;
+
+        if ($metodo) {
+            ShippingSession::set($metodo);
+        } else {
+            ShippingSession::clear();
+        }
+
+        $this->updateTotals();
     }
 
     public function clearCart(): void
@@ -157,26 +165,15 @@ class PageCartComponent extends Component
         $this->envio = 0;
 
         Cart::clear();
-        session()->forget(['cart_shipping_method_id', 'cart_shipping_cost', 'cart_totals']);
-
-        $this->dispatch('updatedCart');
-    }
-
-    public function updatedShippingMethod($value): void
-    {
-        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-        $metodo = ShippingMethod::find($value);
-        $this->envio = $metodo ? $metodo->price : 0;
-        $this->shipping_method = $value;
-
-        // Guardar método de envío en session
-        session([
-            'cart_shipping_method_id' => $metodo->id,
-            'cart_shipping_cost' => $metodo->price,
-            'cart_shipping_name' => $metodo->name,
+        ShippingSession::clear();
+        session()->forget([
+            'cart.shipping_method',
+            'cart.total_shipping',
+            'cart.totals',
+            'cart_totals',
         ]);
 
-        $this->updateTotals();
+        $this->dispatch('updatedCart');
     }
 
     protected function rules(): array

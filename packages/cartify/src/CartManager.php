@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Session;
 
 class CartManager
 {
-    protected string $sessionKey = 'cart';
+    protected string $sessionKey = 'cart.items';
 
     protected ?string $instanceName = null;
 
@@ -143,7 +143,19 @@ class CartManager
      */
     public function subtotal(): float
     {
-        return $this->content()->sum(fn ($item) => $item['price'] * $item['quantity']);
+        return $this->itemsOnly()->sum(fn ($item) => ($item['price'] ?? 0) * ($item['quantity'] ?? 0));
+    }
+
+    /**
+     * Retorna solo los items válidos (con price y quantity) filtrando metadatos.
+     */
+    protected function itemsOnly(): Collection
+    {
+        return $this->content()->filter(function ($item) {
+            return is_array($item)
+                && array_key_exists('price', $item)
+                && array_key_exists('quantity', $item);
+        });
     }
 
     /**
@@ -169,7 +181,7 @@ class CartManager
      */
     public function count(): int
     {
-        return $this->content()->sum('quantity');
+        return $this->itemsOnly()->sum('quantity');
     }
 
     /**
@@ -177,7 +189,7 @@ class CartManager
      */
     public function search(callable $callback): Collection
     {
-        return $this->content()->filter($callback);
+        return $this->itemsOnly()->filter($callback);
     }
 
     /**
@@ -188,7 +200,7 @@ class CartManager
         $userId = $userId ?? auth()->id();
 
         if ($userId) {
-            Session::put("cart.stored.{$userId}", $this->content()->toArray());
+            Session::put("{$this->sessionKey}.stored.{$userId}", $this->content()->toArray());
         }
     }
 
@@ -199,9 +211,9 @@ class CartManager
     {
         $userId = $userId ?? auth()->id();
 
-        if ($userId && Session::has("cart.stored.{$userId}")) {
-            Session::put($this->getSessionKey(), Session::get("cart.stored.{$userId}"));
-            Session::forget("cart.stored.{$userId}");
+        if ($userId && Session::has("{$this->sessionKey}.stored.{$userId}")) {
+            Session::put($this->getSessionKey(), Session::get("{$this->sessionKey}.stored.{$userId}"));
+            Session::forget("{$this->sessionKey}.stored.{$userId}");
         }
     }
 
@@ -212,8 +224,8 @@ class CartManager
     {
         $userId = $userId ?? auth()->id();
 
-        if ($userId && Session::has("cart.stored.{$userId}")) {
-            $storedCart = collect(Session::get("cart.stored.{$userId}"));
+        if ($userId && Session::has("{$this->sessionKey}.stored.{$userId}")) {
+            $storedCart = collect(Session::get("{$this->sessionKey}.stored.{$userId}"));
             $currentCart = $this->content();
 
             foreach ($storedCart as $id => $item) {
@@ -225,7 +237,7 @@ class CartManager
             }
 
             Session::put($this->getSessionKey(), $currentCart->toArray());
-            Session::forget("cart.stored.{$userId}");
+            Session::forget("{$this->sessionKey}.stored.{$userId}");
         }
     }
 }

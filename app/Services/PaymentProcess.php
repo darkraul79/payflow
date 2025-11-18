@@ -6,6 +6,7 @@ use App\Enums\DonationType;
 use App\Enums\OrderStatus;
 use App\Models\Donation;
 use App\Models\Order;
+use App\Support\Payment\PaymentData;
 use Darkraul79\Payflow\Gateways\RedsysGateway;
 
 class PaymentProcess
@@ -18,11 +19,14 @@ class PaymentProcess
 
     private array $data;
 
-    public function __construct($clase, array $data = [])
+    /**
+     * @param  class-string<Order|Donation>  $clase
+     */
+    public function __construct($clase, array|PaymentData $data = [])
     {
         $this->modelo = new $clase;
-        $this->data = $data;
-        $this->payment_method = $data['payment_method'] ?? 'tarjeta';
+        $this->data = $data instanceof PaymentData ? $data->toArray() : $data;
+        $this->payment_method = $this->data['payment_method'] ?? 'tarjeta';
         $this->createModel();
         $this->createPayment();
     }
@@ -69,36 +73,11 @@ class PaymentProcess
 
     /**
      * Genera los datos del formulario Redsys usando RedsysGateway (Payflow).
-     * Compatibilidad mantenida: Ds_MerchantParameters, Ds_Signature, Ds_SignatureVersion, Raw, form_url.
-     * Para primera donación recurrente se inicia COF (cof_ini=S, cof_type=R) sin identifier.
      */
     public function getFormRedSysData(): array
     {
         $gateway = app(RedsysGateway::class);
-
-        $isDonation = $this->modelo instanceof Donation;
-        $isRecurringDonation = $isDonation && $this->modelo->type === DonationType::RECURRENTE->value;
-
-        $urlOk = $isDonation ? route('donation.response') : route('pedido.response');
-        $urlKo = $urlOk;
-        // Solo añadir URL de notificación fuera de local/testing para evitar callbacks falsos
-        $urlNotification = (! app()->isLocal() && ! app()->environment('testing')) ? $urlOk : null;
-
-        $options = [
-            'url_ok' => $urlOk,
-            'url_ko' => $urlKo,
-            'payment_method' => $this->payment_method,
-        ];
-        if ($urlNotification) {
-            $options['url_notification'] = $urlNotification;
-        }
-
-        if ($isRecurringDonation) {
-            $options['recurring'] = [
-                'cof_ini' => 'S',
-                'cof_type' => 'R',
-            ];
-        }
+        $options = $this->buildGatewayOptions();
 
         $payload = $gateway->createPayment(
             (float) $this->modelo->amount,
@@ -117,5 +96,32 @@ class PaymentProcess
         $this->redSysAttributes = (array) $mapped['Raw'];
 
         return $mapped;
+    }
+
+    private function buildGatewayOptions(): array
+    {
+        $isDonation = $this->modelo instanceof Donation;
+        $isRecurringDonation = $isDonation && $this->modelo->type === DonationType::RECURRENTE->value;
+
+        $urlOk = $isDonation ? route('donation.response') : route('pedido.response');
+        $urlKo = $urlOk;
+        $urlNotification = (! app()->isLocal() && ! app()->environment('testing')) ? $urlOk : null;
+
+        $options = [
+            'url_ok' => $urlOk,
+            'url_ko' => $urlKo,
+            'payment_method' => $this->payment_method,
+        ];
+        if ($urlNotification) {
+            $options['url_notification'] = $urlNotification;
+        }
+        if ($isRecurringDonation) {
+            $options['recurring'] = [
+                'cof_ini' => 'S',
+                'cof_type' => 'R',
+            ];
+        }
+
+        return $options;
     }
 }

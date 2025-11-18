@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\Page;
+use Darkraul79\Cartify\Facades\Cart;
 use Darkraul79\Payflow\Facades\Gateway;
 
 class CartController extends Controller
@@ -43,7 +44,8 @@ class CartController extends Controller
      */
     public function create()
     {
-        if (! session()->has('cart') || empty(session('cart'))) {
+        // Usar Cart facade y verificar presencia de items y totales
+        if (Cart::isEmpty() || ! session()->has('cart.totals.subtotal')) {
             return redirect()->route('cart');
         }
 

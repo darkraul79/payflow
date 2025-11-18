@@ -8,7 +8,8 @@ use App\Livewire\ProductAddCart;
 use App\Livewire\QuantityButtons;
 use App\Models\Product;
 use App\Models\ShippingMethod;
-use App\Services\Cart;
+use App\Services\CartNormalizer;
+use Darkraul79\Cartify\Facades\Cart as Cartify;
 
 use function Pest\Livewire\livewire;
 
@@ -26,13 +27,13 @@ test('suma correctamente el número de artículos', function () {
         ->set(['quantity' => 2])
         ->call('addToCart', $producto);
 
-    expect(Cart::getTotalQuantity())->toBe(2);
+    expect(Cartify::count())->toBe(2);
     livewire(ProductAddCart::class, [
         'product' => $producto2,
     ])
         ->set(['quantity' => 3])
         ->call('addToCart', $producto2);
-    expect(Cart::getTotalQuantity())->toBe(5);
+    expect(Cartify::count())->toBe(5);
 
 });
 
@@ -47,8 +48,8 @@ test('puedo añadir producto a carrito desde la página de productos', function 
     ])
         ->call('addToCart', $producto);
 
-    expect(Cart::getTotalQuantity())->toBe(1)
-        ->and(Cart::getItems())->toHaveCount(1);
+    expect(Cartify::count())->toBe(1)
+        ->and(CartNormalizer::items())->toHaveCount(1);
 });
 
 test('puedo acceder a la cesta', function () {
@@ -96,8 +97,8 @@ test('el usuario puede vaciar la cesta', function () {
         ->call('addToCart', $producto);
     livewire(PageCartComponent::class)
         ->call('clearCart');
-    expect(Cart::getTotalQuantity())->toBe(0)
-        ->and(Cart::getItems())->toHaveCount(0);
+    expect(Cartify::count())->toBe(0)
+        ->and(CartNormalizer::items())->toHaveCount(0);
 });
 test('si vació cesta no aparece en el icono superior', function () {
     $producto = Product::factory()->create();
@@ -221,7 +222,7 @@ test('puedo eliminar productos de la página de carrito', function () {
         ->assertSeeText($producto2->name)
         ->assertDispatched('updatedCart');
 
-    expect(isset(Cart::getItems()[$productoBorrar->id]))->toBeFalse();
+    expect(isset(CartNormalizer::items()[$productoBorrar->id]))->toBeFalse();
 });
 
 test('no puedo agregar más cantidad de productos mayor que el stock', function () {
@@ -238,7 +239,8 @@ test('no puedo agregar más cantidad de productos mayor que el stock', function 
     ])->call('updateQuantity', 2)
         ->assertSet('errorMessage', 'No hay suficiente stock (1 max)');
 
-    expect(Cart::getQuantityProduct($producto->id))->toBe(1);
+    $cantidad = Cartify::get($producto->id)['quantity'] ?? 0;
+    expect($cantidad)->toBe(1);
 });
 
 test('si no hay productos en carrito no muestro totales', function () {

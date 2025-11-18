@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
-use App\Services\Cart;
+use Darkraul79\Cartify\Facades\Cart as Cartify;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -141,15 +141,24 @@ class ContentPaginated extends Component
      */
     public function addToCart(Product $product): void
     {
-        $cantidadActual = Cart::getQuantityProduct($product->id);
-        if (($cantidadActual + 1) > $product->stock) {
+        $currentQty = Cartify::get($product->id)['quantity'] ?? 0;
+        if (($currentQty + 1) > $product->stock) {
             $this->dispatch('showAlert', type: 'error', title: 'No se puede agregar el producto',
                 message: 'No hay suficiente stock');
 
             return;
         }
 
-        Cart::addItem($product);
+        Cartify::add(
+            id: $product->id,
+            name: $product->name,
+            quantity: 1,
+            price: $product->getPrice(),
+            options: [
+                'image' => $product->getFirstMediaUrl('product_images', 'thumb'),
+                'price_formated' => $product->getFormatedPriceWithDiscount(),
+            ]
+        );
         $this->dispatch('updatedCart');
         $this->dispatch('showAlert', type: 'success', title: 'Producto agregado',
             message: 'El producto ha sido agregado al carrito.');

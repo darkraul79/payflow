@@ -9,7 +9,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Notifications\OrderCreated;
-use App\Services\Cart;
+use App\Services\CartNormalizer;
+use Darkraul79\Cartify\Facades\Cart as Cartify;
 use Illuminate\Support\Facades\Notification;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -125,13 +126,10 @@ test('puedo crear pedido desde componente de livewire', function () {
 test('vacio cesta después de crear pedido', function () {
 
     creaPedido();
-
-    expect(Cart::getItems())->toBeArray()
-        ->and(Cart::getItems())->toHaveCount(0);
-
+    expect(Cartify::count())->toBe(0)
+        ->and(CartNormalizer::items())->toHaveCount(0);
     $this->get(route('cart'))
         ->assertSee('No hay productos en el carrito');
-
 });
 
 test('puedo obtener las imagenes de los productos del pedido', function () {

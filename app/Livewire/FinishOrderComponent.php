@@ -5,7 +5,9 @@ namespace App\Livewire;
 use App\Enums\AddressType;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\CartNormalizer;
 use App\Services\PaymentProcess;
+use App\Services\ShippingSession;
 use App\Support\PaymentMethodRepository;
 use Darkraul79\Cartify\Facades\Cart;
 use Illuminate\View\View;
@@ -116,41 +118,25 @@ class FinishOrderComponent extends Component
         }
 
         // Verificar que el carrito no esté vacío y tenga método de envío
-        if (Cart::isEmpty() || ! session('cart_shipping_method_id')) {
+        if (Cart::isEmpty() || ! ShippingSession::has()) {
             $this->redirectRoute('cart');
         }
 
-        // Construir estructura compatible con código existente
-        $rawItems = Cart::content()->toArray();
-        $normalizedItems = collect($rawItems)->map(function ($item) {
-            if (! isset($item['price_formated'])) {
-                $item['price_formated'] = convertPrice($item['price']);
-            }
-            if (! isset($item['subtotal'])) {
-                $item['subtotal'] = $item['price'] * $item['quantity'];
-            }
-            if (! isset($item['subtotal_formated'])) {
-                $item['subtotal_formated'] = convertPrice($item['subtotal']);
-            }
-            if (! isset($item['image']) && isset($item['options']['image'])) {
-                $item['image'] = $item['options']['image'];
-            }
-
-            return $item;
-        })->toArray();
+        $normalizedItems = CartNormalizer::items();
+        $totals = [
+            'subtotal' => session('cart.totals.subtotal', 0.0),
+            'taxes' => session('cart.totals.taxes', 0.0),
+            'total' => session('cart.totals.total', 0.0),
+            'shipping_cost' => session('cart.totals.shipping_cost', ShippingSession::cost()),
+        ];
 
         $this->cart = [
             'items' => $normalizedItems,
-            'totals' => session('cart_totals', [
-                'subtotal' => 0,
-                'taxes' => 0,
-                'total' => 0,
-                'shipping_cost' => 0,
-            ]),
+            'totals' => $totals,
             'shipping_method' => [
-                'id' => session('cart_shipping_method_id'),
-                'name' => session('cart_shipping_name', ''),
-                'price' => session('cart_shipping_cost', 0),
+                'id' => ShippingSession::id(),
+                'name' => ShippingSession::name(),
+                'price' => ShippingSession::cost(),
             ],
         ];
 
@@ -164,7 +150,13 @@ class FinishOrderComponent extends Component
 
         $order = $this->orderCreate();
         Cart::clear();
-        session()->forget(['cart_shipping_method_id', 'cart_shipping_cost', 'cart_shipping_name', 'cart_totals']);
+        ShippingSession::clear();
+        session()->forget([
+            'cart.shipping_method',
+            'cart.total_shipping',
+            'cart.totals',
+            'cart_totals',
+        ]);
 
         $order->refresh();
 
