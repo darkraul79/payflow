@@ -10,6 +10,8 @@
   <a href="https://packagist.org/packages/darkraul79/cartify"><img src="https://img.shields.io/packagist/l/darkraul79/cartify" alt="License"></a>
 </p>
 
+> ⚠️ **Alpha Version (0.1.x)** - This package is in early development. APIs may change. Use with caution in production.
+
 ---
 
 ## Features

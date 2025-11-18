@@ -2,10 +2,11 @@
 
 All notable changes to `payflow` will be documented in this file.
 
-## [1.0.0] - 2025-01-18
+## [0.1.0] - 2025-01-18
 
 ### Added
 
+- Initial alpha release
 - Initial release
 - Unified payment gateway interface
 - **Redsys gateway fully implemented**

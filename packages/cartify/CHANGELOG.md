@@ -2,10 +2,11 @@
 
 All notable changes to `cartify` will be documented in this file.
 
-## [1.0.0] - 2025-01-18
+## [0.1.0] - 2025-01-18
 
 ### Added
 
+- Initial alpha release
 - Initial release
 - Shopping cart management with session storage
 - Multiple cart instances support

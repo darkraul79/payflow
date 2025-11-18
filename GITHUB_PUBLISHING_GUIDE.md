@@ -43,7 +43,7 @@ git init
 git add .
 
 # Primer commit
-git commit -m "Initial release v1.0.0
+git commit -m "Initial alpha release v0.1.0
 
 - Shopping cart management
 - Multiple cart instances
@@ -56,7 +56,7 @@ git commit -m "Initial release v1.0.0
 git branch -M main
 
 # Conectar con GitHub
-git remote add origin https://github.com/raulsdev/cartify.git
+git remote add origin https://github.com/darkraul79/cartify.git
 
 # Subir código
 git push -u origin main
@@ -89,7 +89,7 @@ git init
 git add .
 
 # Primer commit
-git commit -m "Initial release v1.0.0
+git commit -m "Initial alpha release v0.1.0
 
 - Unified payment gateway interface
 - Redsys fully implemented (Bizum, recurring payments)
@@ -102,7 +102,7 @@ git commit -m "Initial release v1.0.0
 git branch -M main
 
 # Conectar con GitHub
-git remote add origin https://github.com/raulsdev/payflow.git
+git remote add origin https://github.com/darkraul79/payflow.git
 
 # Subir código
 git push -u origin main
@@ -114,18 +114,21 @@ git push -u origin main
 
 ### 3.1 Release para Cartify
 
-1. Ve a https://github.com/raulsdev/cartify
+1. Ve a https://github.com/darkraul79/cartify
 2. Click en "Releases" (barra lateral derecha)
 3. Click "Create a new release"
 4. Configuración:
-    - **Tag:** `v1.0.0`
+    - **Tag:** `v0.1.0`
     - **Target:** `main`
-    - **Release title:** `v1.0.0 - Initial Release`
+    - **Release title:** `v0.1.0 - Initial Alpha Release`
+    - **Pre-release:** ✅ Marcar como "This is a pre-release"
     - **Description:**
       ```markdown
-      ## 🎉 Initial Release
+      ## 🎉 Initial Alpha Release
       
       Cartify is a flexible and powerful shopping cart package for Laravel.
+      
+      ⚠️ **Alpha Version** - This is an early development version. APIs may change.
       
       ### Features
       - ✅ Shopping cart management with session storage
@@ -139,29 +142,39 @@ git push -u origin main
       ### Installation
       
       ```bash
-      composer require raulsdev/cartify
+      composer require darkraul79/cartify:^0.1
       ```
 
       ### Documentation
 
-      See [README.md](https://github.com/raulsdev/cartify/blob/main/README.md) for complete documentation.
+      See [README.md](https://github.com/darkraul79/cartify/blob/main/README.md) for complete documentation.
+
+      ### Roadmap to 1.0
+        - [ ] More comprehensive tests
+        - [ ] Feature tests
+        - [ ] Additional cart features
+        - [ ] Performance optimizations
       ```
-5. Click "Publish release"
+5. ✅ **Importante:** Marcar "Set as a pre-release"
+6. Click "Publish release"
 
 ### 3.2 Release para Payflow
 
-1. Ve a https://github.com/raulsdev/payflow
+1. Ve a https://github.com/darkraul79/payflow
 2. Click en "Releases"
 3. Click "Create a new release"
 4. Configuración:
-    - **Tag:** `v1.0.0`
+    - **Tag:** `v0.1.0`
     - **Target:** `main`
-    - **Release title:** `v1.0.0 - Initial Release`
+    - **Release title:** `v0.1.0 - Initial Alpha Release`
+    - **Pre-release:** ✅ Marcar como "This is a pre-release"
     - **Description:**
       ```markdown
-      ## 🎉 Initial Release
+      ## 🎉 Initial Alpha Release
       
       Payflow is a flexible multi-gateway payment package for Laravel.
+      
+      ⚠️ **Alpha Version** - This is an early development version. APIs may change.
       
       ### Features
       - ✅ Unified API for multiple payment gateways
@@ -181,14 +194,21 @@ git push -u origin main
       ### Installation
       
       ```bash
-      composer require raulsdev/payflow
+      composer require darkraul79/payflow:^0.1
       ```
 
       ### Documentation
 
-      See [README.md](https://github.com/raulsdev/payflow/blob/main/README.md) for complete documentation.
+      See [README.md](https://github.com/darkraul79/payflow/blob/main/README.md) for complete documentation.
+
+      ### Roadmap to 1.0
+        - [ ] Complete Stripe implementation
+        - [ ] Complete PayPal implementation
+        - [ ] More comprehensive tests
+        - [ ] Enhanced refund management
       ```
-5. Click "Publish release"
+5. ✅ **Importante:** Marcar "Set as a pre-release"
+6. Click "Publish release"
 
 ---
 

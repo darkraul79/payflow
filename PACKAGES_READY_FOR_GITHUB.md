@@ -373,10 +373,10 @@ cd packages/payflow && git status
 
 # Crear commits
 git add .
-git commit -m "Initial release v1.0.0"
+git commit -m "Initial alpha release v0.1.0"
 
 # Push a GitHub (después de crear repos)
-git remote add origin https://github.com/raulsdev/cartify.git
+git remote add origin https://github.com/darkraul79/cartify.git
 git push -u origin main
 ```
 
