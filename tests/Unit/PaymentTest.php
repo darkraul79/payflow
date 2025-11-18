@@ -140,3 +140,32 @@ it('getPaymentsMethods devuelve todo por defecto y filtra cuando includeRecurrin
         expect($item->method->supportsRecurring())->toBeTrue();
     });
 });
+
+test('puedo seleccionar gateway por configuración (stripe) y por método withX()', function () {
+    // Forzar stripe por defecto
+    config(['payflow.default' => 'stripe']);
+
+    // Usar PaymentProcess con gateway resuelto por manager (no inyectamos nada)
+    $pp = new App\Services\PaymentProcess(App\Models\Donation::class, [
+        'amount' => '10,00',
+        'type' => App\Enums\DonationType::UNICA->value,
+    ]);
+
+    $data = $pp->getFormRedSysData();
+
+    // StripeGateway::createPayment devuelve un array con 'gateway' => 'stripe'
+    // y getPaymentUrl() => 'https://checkout.stripe.com'. PaymentProcess mapea form_url si viene.
+    // Aquí al menos comprobamos que no falla y mapea estructura base.
+    expect($data)->toHaveKeys(['Ds_MerchantParameters', 'Ds_Signature', 'Ds_SignatureVersion', 'form_url']);
+
+    // También podemos usar el facade para forzar un gateway explícito
+    $manager = app('gateway');
+    $stripe = $manager->withStripe();
+    expect($stripe->getName())->toBe('stripe');
+
+    $redsys = $manager->withRedsys();
+    expect($redsys->getName())->toBe('redsys');
+
+    // Restaurar default a redsys para no afectar otros tests
+    config(['payflow.default' => 'redsys']);
+})->group('gateways');

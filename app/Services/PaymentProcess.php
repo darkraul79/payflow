@@ -7,7 +7,9 @@ use App\Enums\OrderStatus;
 use App\Models\Donation;
 use App\Models\Order;
 use App\Support\Payment\PaymentData;
+use Darkraul79\Payflow\Contracts\GatewayInterface;
 use Darkraul79\Payflow\Gateways\RedsysGateway;
+use Darkraul79\Payflow\Gateways\StripeGateway;
 
 class PaymentProcess
 {
@@ -20,17 +22,28 @@ class PaymentProcess
 
     private array $data;
 
-    private RedsysGateway $gateway;
+    private GatewayInterface $gateway;
 
     /**
      * @param  class-string<Order|Donation>  $clase
      */
-    public function __construct(string $clase, array|PaymentData $data = [], ?RedsysGateway $gateway = null)
+    public function __construct(string $clase, array|PaymentData $data = [], ?GatewayInterface $gateway = null)
     {
         $this->modelo = new $clase;
         $this->data = $data instanceof PaymentData ? $data->toArray() : $data;
         $this->payment_method = $this->data['payment_method'] ?? 'tarjeta';
-        $this->gateway = $gateway ?? app(RedsysGateway::class);
+
+        if ($gateway instanceof GatewayInterface) {
+            $this->gateway = $gateway;
+        } elseif ((config('payflow.default', 'redsys') === 'redsys')) {
+            $this->gateway = app(RedsysGateway::class);
+        } else {
+            $default = config('payflow.default', 'redsys');
+            $this->gateway = match ($default) {
+                'stripe' => app(StripeGateway::class),
+                default => app(RedsysGateway::class),
+            };
+        }
 
         $this->createModel();
         $this->createInitialPayment();

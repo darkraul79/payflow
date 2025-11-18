@@ -6,9 +6,9 @@ use Darkraul79\Payflow\Contracts\GatewayInterface;
 
 class StripeGateway implements GatewayInterface
 {
-    protected string $apiKey;
+    protected ?string $apiKey;
 
-    protected string $webhookSecret;
+    protected ?string $webhookSecret;
 
     public function __construct()
     {
