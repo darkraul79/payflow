@@ -27,14 +27,20 @@ storage/media-library/
 .DS_Store
 */.DS_Store
 
+# MCP y configuraciones de IA (pueden contener información sensible)
 /.mcp.json
 /.claude/
 /.junie/
+
+# IDE helpers
 /.phpstorm.meta.php
-
 /_ide_helper.php
-
 /_ide_helper_models.php
 
-
-/.claude/DONATION_FREQUENCY_ENUM.md
+# IMPORTANTE: El directorio /docs/ NO está en .gitignore
+# La documentación técnica es segura y DEBE estar en el repositorio
+# Solo asegúrate de NO incluir en docs/:
+#   - Credenciales reales
+#   - API keys de producción
+#   - Información confidencial de clientes
+#   - Archivos .env con valores reales
