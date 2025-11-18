@@ -152,12 +152,12 @@ function getResponseDonation(Donation $donacion, bool $state = true): array
 /**
  * Genera una respuesta completa de Redsys para un pedido
  */
-function getResponseOrder(Order $order): array
+function getResponseOrder(Order $order, bool $ok = true): array
 {
     $params = buildRedsysParams(
         amount: convert_amount_to_redsys($order->amount),
         order: $order->number,
-        response: '0000'
+        response: $ok ? '0000' : '9928'
     );
 
     $params['Ds_ProcessedPayMethod'] = '78';

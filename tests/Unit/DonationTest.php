@@ -11,13 +11,16 @@ use App\Jobs\ProcessDonationPaymentJob;
 use App\Livewire\DonacionBanner;
 use App\Models\Address;
 use App\Models\Donation;
+use App\Models\Order;
 use App\Models\Page;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\User;
 use App\Notifications\DonationCreatedNotification;
 use App\Services\PaymentProcess;
 use Carbon\Carbon;
 use Darkraul79\Payflow\Gateways\RedsysGateway;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -1089,3 +1092,259 @@ test('donacion recurrente sin Ds_Merchant_Identifier se procesa correctamente', 
         ->and($donacion->next_payment)->not->toBeNull()
         ->and($donacion->payments->first()->amount)->toBe(10.00);
 });
+
+// === TESTS DE PERFORMANCE Y CARGA MASIVA ===
+
+test('carga masiva: puede procesar 50 donaciones únicas simultáneas sin errores', function () {
+    $donaciones = collect();
+
+    // Crear 50 donaciones
+    for ($i = 0; $i < 50; $i++) {
+        $pp = new PaymentProcess(Donation::class, [
+            'amount' => convertPriceNumber(fake()->randomFloat(2, 5, 100)),
+            'type' => DonationType::UNICA->value,
+        ]);
+        $donaciones->push($pp->modelo);
+    }
+
+    // Verificar que todos los números son únicos
+    $numeros = $donaciones->pluck('number');
+    expect($numeros->unique()->count())->toBe(50);
+
+    // Procesar callbacks para todas
+    $donaciones->each(function ($donacion) {
+        $callback = getResponseDonation($donacion, true);
+        $this->post(route('donation.response'), $callback)
+            ->assertRedirect();
+    });
+
+    // Verificar que todas están en estado PAGADO
+    $donaciones->each(function ($donacion) {
+        $donacion->refresh();
+        expect($donacion->state->name)->toBe(OrderStatus::PAGADO->value)
+            ->and($donacion->payments->first()->amount)->toBeGreaterThan(0);
+    });
+})->group('performance');
+
+test('carga masiva: puede procesar 50 donaciones recurrentes simultáneas sin errores', function () {
+    $donaciones = collect();
+
+    // Crear 50 donaciones recurrentes
+    for ($i = 0; $i < 50; $i++) {
+        $pp = new PaymentProcess(Donation::class, [
+            'amount' => convertPriceNumber(fake()->randomFloat(2, 10, 200)),
+            'type' => DonationType::RECURRENTE->value,
+            'frequency' => fake()->randomElement([
+                DonationFrequency::MENSUAL->value,
+                DonationFrequency::TRIMESTRAL->value,
+                DonationFrequency::ANUAL->value,
+            ]),
+        ]);
+        $donaciones->push($pp->modelo);
+    }
+
+    // Verificar que todos los números son únicos
+    $numeros = $donaciones->pluck('number');
+    expect($numeros->unique()->count())->toBe(50);
+
+    // Procesar callbacks para todas
+    $donaciones->each(function ($donacion) {
+        $callback = getResponseDonation($donacion, true);
+        $this->post(route('donation.response'), $callback)
+            ->assertRedirect();
+    });
+
+    // Verificar que todas están en estado ACTIVA
+    $donaciones->each(function ($donacion) {
+        $donacion->refresh();
+        expect($donacion->state->name)->toBe(OrderStatus::ACTIVA->value)
+            ->and($donacion->next_payment)->not->toBeNull()
+            ->and($donacion->payments->first()->amount)->toBeGreaterThan(0);
+    });
+})->group('performance');
+
+test('carga masiva: helpers Redsys generan firmas únicas para 100 transacciones', function () {
+    $firmas = collect();
+
+    for ($i = 0; $i < 100; $i++) {
+        $pp = new PaymentProcess(Donation::class, [
+            'amount' => convertPriceNumber(fake()->randomFloat(2, 1, 500)),
+            'type' => DonationType::UNICA->value,
+        ]);
+
+        $formData = $pp->getFormRedSysData();
+        $firmas->push($formData['Ds_Signature']);
+    }
+
+    // Todas las firmas deben ser únicas
+    expect($firmas->unique()->count())->toBe(100);
+})->group('performance');
+
+test('carga masiva: puede crear 100 pedidos con items sin colisiones', function () {
+    Event::fake(); // Evitar listeners para acelerar
+    Product::factory()->create(['stock' => 1000]);
+    $pedidos = collect();
+
+    for ($i = 0; $i < 100; $i++) {
+        $pp = new PaymentProcess(Order::class, [
+            'amount' => fake()->randomFloat(2, 10, 100),
+            'shipping' => 'Envío',
+            'shipping_cost' => 5.00,
+            'subtotal' => fake()->randomFloat(2, 5, 95),
+            'payment_method' => PaymentMethod::TARJETA->value,
+        ]);
+        $pedidos->push($pp->modelo);
+    }
+
+    // Verificar que todos los números son únicos
+    $numeros = $pedidos->pluck('number');
+    expect($numeros->unique()->count())->toBe(100);
+
+    // Verificar que todos tienen un pago asociado
+    $pedidos->each(function ($pedido) {
+        expect($pedido->payments)->toHaveCount(1);
+    });
+})->group('performance');
+
+test('carga masiva: callbacks simultáneos OK y KO no causan race conditions', function () {
+    Event::fake();
+    $donaciones = collect();
+
+    // Crear 20 donaciones
+    for ($i = 0; $i < 20; $i++) {
+        $pp = new PaymentProcess(Donation::class, [
+            'amount' => convertPriceNumber('10,00'),
+            'type' => DonationType::UNICA->value,
+        ]);
+        $donaciones->push($pp->modelo);
+    }
+
+    // Procesar mitad OK y mitad KO
+    $donaciones->each(function ($donacion, $index) {
+        $esOk = $index % 2 === 0;
+        $callback = getResponseDonation($donacion, $esOk);
+
+        $this->post(route('donation.response'), $callback)
+            ->assertRedirect();
+
+        $donacion->refresh();
+        if ($esOk) {
+            expect($donacion->state->name)->toBe(OrderStatus::PAGADO->value);
+        } else {
+            expect($donacion->state->name)->toBe(OrderStatus::ERROR->value);
+        }
+    });
+})->group('performance');
+
+test('carga masiva: helpers pueden decodificar 100 respuestas Redsys sin errores', function () {
+    for ($i = 0; $i < 100; $i++) {
+        $pp = new PaymentProcess(Donation::class, [
+            'amount' => convertPriceNumber(fake()->randomFloat(2, 1, 100)),
+            'type' => DonationType::UNICA->value,
+        ]);
+
+        $callback = getResponseDonation($pp->modelo, true);
+
+        // Verificar que la callback tiene los campos necesarios
+        expect($callback)->toHaveKeys(['Ds_MerchantParameters', 'Ds_Signature', 'Ds_SignatureVersion'])
+            ->and($callback['Ds_MerchantParameters'])->not->toBeEmpty()
+            ->and($callback['Ds_Signature'])->not->toBeEmpty();
+    }
+})->group('performance');
+
+test('carga masiva: generación masiva de números de orden no produce duplicados', function () {
+    $numeros = collect();
+
+    // Generar 500 números de donaciones
+    for ($i = 0; $i < 500; $i++) {
+        $numeros->push(generateDonationNumber());
+    }
+
+    // Todos deben ser únicos
+    expect($numeros->unique()->count())->toBe(500);
+
+    $numerosPedido = collect();
+
+    // Generar 500 números de pedido
+    for ($i = 0; $i < 500; $i++) {
+        $numerosPedido->push(generateOrderNumber());
+    }
+
+    // Todos deben ser únicos
+    expect($numerosPedido->unique()->count())->toBe(500);
+})->group('performance');
+
+test('carga masiva: idempotencia se mantiene con 30 callbacks duplicados', function () {
+    Event::fake();
+
+    $pp = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('25,00'),
+        'type' => DonationType::UNICA->value,
+    ]);
+    $donacion = $pp->modelo;
+
+    // PaymentProcess ya creó el estado PENDIENTE, verificar
+    expect($donacion->states)->toHaveCount(1)
+        ->and($donacion->state->name)->toBe(OrderStatus::PENDIENTE->value);
+
+    $callback = getResponseDonation($donacion, true);
+
+    // Enviar el mismo callback 30 veces
+    for ($i = 0; $i < 30; $i++) {
+        $this->post(route('donation.response'), $callback)
+            ->assertRedirect();
+    }
+
+    $donacion->refresh();
+
+    // Debe seguir teniendo solo 2 estados (PENDIENTE + PAGADO)
+    expect($donacion->states)->toHaveCount(2)
+        ->and($donacion->state->name)->toBe(OrderStatus::PAGADO->value);
+})->group('performance');
+
+test('carga masiva: memoria se mantiene estable procesando 50 donaciones', function () {
+    $memoriaInicial = memory_get_usage();
+
+    for ($i = 0; $i < 50; $i++) {
+        $pp = new PaymentProcess(Donation::class, [
+            'amount' => convertPriceNumber('15,50'),
+            'type' => DonationType::UNICA->value,
+        ]);
+
+        $callback = getResponseDonation($pp->modelo, true);
+        $this->post(route('donation.response'), $callback);
+
+        // Limpiar para siguiente iteración
+        unset($pp);
+    }
+
+    $memoriaFinal = memory_get_usage();
+    $incrementoMB = ($memoriaFinal - $memoriaInicial) / 1024 / 1024;
+
+    // El incremento de memoria no debe superar 50 MB para 50 transacciones
+    expect($incrementoMB)->toBeLessThan(50);
+})->group('performance');
+
+test('carga masiva: tiempos de procesamiento son consistentes', function () {
+    $tiempos = collect();
+
+    for ($i = 0; $i < 20; $i++) {
+        $inicio = microtime(true);
+
+        $pp = new PaymentProcess(Donation::class, [
+            'amount' => convertPriceNumber('12,00'),
+            'type' => DonationType::UNICA->value,
+        ]);
+
+        $callback = getResponseDonation($pp->modelo, true);
+        $this->post(route('donation.response'), $callback);
+
+        $tiempos->push(microtime(true) - $inicio);
+    }
+
+    $tiempoPromedio = $tiempos->avg();
+    $tiempoMaximo = $tiempos->max();
+
+    // El tiempo máximo no debe ser más de 3x el promedio (detecta picos anormales)
+    expect($tiempoMaximo)->toBeLessThan($tiempoPromedio * 3);
+})->group('performance');

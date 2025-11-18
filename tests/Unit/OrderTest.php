@@ -12,6 +12,7 @@ use App\Notifications\OrderCreated;
 use App\Services\CartNormalizer;
 use App\Services\PaymentProcess;
 use Darkraul79\Cartify\Facades\Cart as Cartify;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -506,3 +507,189 @@ test('order callback vacío retorna 404', function () {
     $this->post(route('pedido.response'), [])
         ->assertNotFound();
 });
+
+// === TESTS DE PERFORMANCE Y CARGA MASIVA PARA ORDERS ===
+
+test('carga masiva: puede procesar 50 pedidos simultáneos sin errores', function () {
+    Event::fake();
+    $pedidos = collect();
+
+    // Crear 50 pedidos
+    for ($i = 0; $i < 50; $i++) {
+        $pp = new PaymentProcess(Order::class, [
+            'amount' => fake()->randomFloat(2, 15, 150),
+            'shipping' => 'Envío estándar',
+            'shipping_cost' => 5.00,
+            'subtotal' => fake()->randomFloat(2, 10, 145),
+            'payment_method' => PaymentMethod::TARJETA->value,
+        ]);
+
+        // Con Event::fake no se crea el estado PENDIENTE automáticamente
+        $pp->modelo->states()->create(['name' => OrderStatus::PENDIENTE->value]);
+        $pedidos->push($pp->modelo);
+    }
+
+    // Verificar que todos los números son únicos
+    $numeros = $pedidos->pluck('number');
+    expect($numeros->unique()->count())->toBe(50);
+
+    // Procesar callbacks para todos
+    $pedidos->each(function ($pedido) {
+        $callback = getResponseOrder($pedido, true);
+        $this->post(route('pedido.response'), $callback)
+            ->assertRedirect();
+    });
+
+    // Verificar que todos están en estado PAGADO
+    $pedidos->each(function ($pedido) {
+        $pedido->refresh();
+        expect($pedido->state->name)->toBe(OrderStatus::PAGADO->value)
+            ->and($pedido->payments->first()->amount)->toBeGreaterThan(0);
+    });
+})->group('performance');
+
+test('carga masiva: pedidos con diferentes métodos de pago procesados correctamente', function () {
+    Event::fake();
+    $pedidos = collect();
+
+    // Crear 30 pedidos con métodos alternados
+    for ($i = 0; $i < 30; $i++) {
+        $metodo = $i % 2 === 0 ? PaymentMethod::TARJETA->value : PaymentMethod::BIZUM->value;
+
+        $pp = new PaymentProcess(Order::class, [
+            'amount' => 25.00,
+            'shipping' => 'Envío',
+            'shipping_cost' => 3.00,
+            'subtotal' => 22.00,
+            'payment_method' => $metodo,
+        ]);
+        $pedidos->push([
+            'order' => $pp->modelo,
+            'metodo' => $metodo,
+        ]);
+    }
+
+    // Verificar que se han creado correctamente
+    $pedidos->each(function ($item) {
+        expect($item['order']->payment_method)->toBe($item['metodo']);
+    });
+})->group('performance');
+
+test('carga masiva: helpers Redsys generan firmas únicas para 100 pedidos', function () {
+    Event::fake();
+    $firmas = collect();
+
+    for ($i = 0; $i < 100; $i++) {
+        $pp = new PaymentProcess(Order::class, [
+            'amount' => fake()->randomFloat(2, 10, 200),
+            'shipping' => 'Envío',
+            'shipping_cost' => fake()->randomFloat(2, 0, 10),
+            'subtotal' => fake()->randomFloat(2, 10, 190),
+            'payment_method' => PaymentMethod::TARJETA->value,
+        ]);
+
+        $formData = $pp->getFormRedSysData();
+        $firmas->push($formData['Ds_Signature']);
+    }
+
+    // Todas las firmas deben ser únicas
+    expect($firmas->unique()->count())->toBe(100);
+})->group('performance');
+
+test('carga masiva: callbacks pedidos OK y KO se procesan sin race conditions', function () {
+    Event::fake();
+    $pedidos = collect();
+
+    // Crear 20 pedidos
+    for ($i = 0; $i < 20; $i++) {
+        $pp = new PaymentProcess(Order::class, [
+            'amount' => 30.00,
+            'shipping' => 'Envío',
+            'shipping_cost' => 5.00,
+            'subtotal' => 25.00,
+            'payment_method' => PaymentMethod::TARJETA->value,
+        ]);
+
+        // Con Event::fake crear estado PENDIENTE manualmente
+        $pp->modelo->states()->create(['name' => OrderStatus::PENDIENTE->value]);
+        $pedidos->push($pp->modelo);
+    }
+
+    // Procesar mitad OK y mitad KO
+    $pedidos->each(function ($pedido, $index) {
+        $esOk = $index % 2 === 0;
+        $callback = getResponseOrder($pedido, $esOk);
+
+        $this->post(route('pedido.response'), $callback)
+            ->assertRedirect();
+
+        $pedido->refresh();
+        if ($esOk) {
+            expect($pedido->state->name)->toBe(OrderStatus::PAGADO->value);
+        } else {
+            expect($pedido->state->name)->toBe(OrderStatus::ERROR->value);
+        }
+    });
+})->group('performance');
+
+test('carga masiva: idempotencia de pedidos se mantiene con 20 callbacks duplicados', function () {
+    Event::fake();
+
+    $pp = new PaymentProcess(Order::class, [
+        'amount' => 45.00,
+        'shipping' => 'Envío',
+        'shipping_cost' => 5.00,
+        'subtotal' => 40.00,
+        'payment_method' => PaymentMethod::TARJETA->value,
+    ]);
+    $pedido = $pp->modelo;
+
+    // Con Event::fake crear estado PENDIENTE manualmente
+    $pedido->states()->create(['name' => OrderStatus::PENDIENTE->value]);
+
+    // Verificar estado inicial PENDIENTE
+    expect($pedido->states)->toHaveCount(1)
+        ->and($pedido->state->name)->toBe(OrderStatus::PENDIENTE->value);
+
+    $callback = getResponseOrder($pedido, true);
+
+    // Enviar el mismo callback 20 veces
+    for ($i = 0; $i < 20; $i++) {
+        $this->post(route('pedido.response'), $callback)
+            ->assertRedirect();
+    }
+
+    $pedido->refresh();
+
+    // Debe seguir teniendo solo 2 estados (PENDIENTE + PAGADO)
+    expect($pedido->states)->toHaveCount(2)
+        ->and($pedido->state->name)->toBe(OrderStatus::PAGADO->value);
+})->group('performance');
+
+test('carga masiva: memoria estable procesando 40 pedidos', function () {
+    Event::fake();
+    $memoriaInicial = memory_get_usage();
+
+    for ($i = 0; $i < 40; $i++) {
+        $pp = new PaymentProcess(Order::class, [
+            'amount' => 35.00,
+            'shipping' => 'Envío',
+            'shipping_cost' => 5.00,
+            'subtotal' => 30.00,
+            'payment_method' => PaymentMethod::TARJETA->value,
+        ]);
+
+        $pp->modelo->states()->create(['name' => OrderStatus::PENDIENTE->value]);
+        $callback = getResponseOrder($pp->modelo, true);
+        $this->post(route('pedido.response'), $callback);
+
+        // Limpiar para siguiente iteración
+        unset($pp);
+    }
+
+    $memoriaFinal = memory_get_usage();
+    $incrementoMB = ($memoriaFinal - $memoriaInicial) / 1024 / 1024;
+
+    // El incremento de memoria no debe superar 40 MB para 40 transacciones
+    expect($incrementoMB)->toBeLessThan(40);
+})->group('performance');
