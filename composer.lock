@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fd1cffcb3f4007b48f46d0ec63136ca2",
+    "content-hash": "0037fdf6ea5a1a0770a4760a8eb82403",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -611,6 +611,148 @@
                 }
             ],
             "time": "2025-02-21T08:52:11+00:00"
+        },
+        {
+            "name": "darkraul79/cartify",
+            "version": "dev-packages",
+            "dist": {
+                "type": "path",
+                "url": "./packages/cartify",
+                "reference": "c059e66ec777c65bd1503684d34f89f8debb8307"
+            },
+            "require": {
+                "illuminate/contracts": "^12.0",
+                "illuminate/database": "^12.0",
+                "illuminate/support": "^12.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^9.0",
+                "pestphp/pest": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Darkraul79\\Cartify\\CartifyServiceProvider"
+                    ],
+                    "aliases": {
+                        "Cart": "Darkraul79\\Cartify\\Facades\\Cart"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Darkraul79\\Cartify\\": "src/"
+                },
+                "files": [
+                    "src/Helpers/helpers.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Darkraul79\\Cartify\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/pest"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Raul Sebastian",
+                    "email": "darkraul79@gmail.com"
+                }
+            ],
+            "description": "A flexible and powerful shopping cart package for Laravel applications",
+            "keywords": [
+                "cart",
+                "cartify",
+                "checkout",
+                "e-commerce",
+                "laravel",
+                "orders",
+                "shopping-cart"
+            ],
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "darkraul79/payflow",
+            "version": "dev-packages",
+            "dist": {
+                "type": "path",
+                "url": "./packages/payflow",
+                "reference": "ded2f4e02ca8c29b9c2ed6028af6c6bf60f5de4a"
+            },
+            "require": {
+                "illuminate/contracts": "^12.0",
+                "illuminate/support": "^12.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^9.0",
+                "pestphp/pest": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Darkraul79\\Payflow\\PayflowServiceProvider"
+                    ],
+                    "aliases": {
+                        "Gateway": "Darkraul79\\Payflow\\Facades\\Gateway"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Darkraul79\\Payflow\\": "src/"
+                },
+                "files": [
+                    "src/Helpers/helpers.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Darkraul79\\Payflow\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/pest"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Raul Sebastian",
+                    "email": "darkraul79@gmail.com"
+                }
+            ],
+            "description": "A flexible multi-gateway payment package for Laravel (Redsys, Stripe, PayPal, etc.)",
+            "keywords": [
+                "gateway",
+                "laravel",
+                "payflow",
+                "payment",
+                "payment-gateway",
+                "paypal",
+                "redsys",
+                "stripe"
+            ],
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "datlechin/filament-menu-builder",
@@ -14724,7 +14866,10 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "darkraul79/cartify": 20,
+        "darkraul79/payflow": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
