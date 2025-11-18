@@ -5,9 +5,9 @@ namespace App\Livewire;
 use App\Enums\AddressType;
 use App\Models\Order;
 use App\Models\Product;
-use App\Services\Cart;
 use App\Services\PaymentProcess;
 use App\Support\PaymentMethodRepository;
+use Darkraul79\Cartify\Facades\Cart;
 use Illuminate\View\View;
 use Livewire\Attributes\Session;
 use Livewire\Component;
@@ -57,7 +57,6 @@ class FinishOrderComponent extends Component
 
     public array $rulesGlobal = [
         'payment_method' => 'required',
-
     ];
 
     public array $rulesBilling = [
@@ -72,7 +71,6 @@ class FinishOrderComponent extends Component
         'billing.province' => 'required',
         'billing.email' => 'required|email|max:255',
         'billing.phone' => 'nullable|string|max:20',
-
     ];
 
     public array $rulesShipping = [
@@ -117,11 +115,44 @@ class FinishOrderComponent extends Component
             ];
         }
 
-        if (! Cart::canCheckout()) {
+        // Verificar que el carrito no esté vacío y tenga método de envío
+        if (Cart::isEmpty() || ! session('cart_shipping_method_id')) {
             $this->redirectRoute('cart');
         }
 
-        $this->cart = session()->get('cart');
+        // Construir estructura compatible con código existente
+        $rawItems = Cart::content()->toArray();
+        $normalizedItems = collect($rawItems)->map(function ($item) {
+            if (! isset($item['price_formated'])) {
+                $item['price_formated'] = convertPrice($item['price']);
+            }
+            if (! isset($item['subtotal'])) {
+                $item['subtotal'] = $item['price'] * $item['quantity'];
+            }
+            if (! isset($item['subtotal_formated'])) {
+                $item['subtotal_formated'] = convertPrice($item['subtotal']);
+            }
+            if (! isset($item['image']) && isset($item['options']['image'])) {
+                $item['image'] = $item['options']['image'];
+            }
+
+            return $item;
+        })->toArray();
+
+        $this->cart = [
+            'items' => $normalizedItems,
+            'totals' => session('cart_totals', [
+                'subtotal' => 0,
+                'taxes' => 0,
+                'total' => 0,
+                'shipping_cost' => 0,
+            ]),
+            'shipping_method' => [
+                'id' => session('cart_shipping_method_id'),
+                'name' => session('cart_shipping_name', ''),
+                'price' => session('cart_shipping_cost', 0),
+            ],
+        ];
 
         $this->payments_methods = (new PaymentMethodRepository)->getPaymentsMethods(false)->toArray();
     }
@@ -132,7 +163,8 @@ class FinishOrderComponent extends Component
         $this->validate();
 
         $order = $this->orderCreate();
-        Cart::clearCart();
+        Cart::clear();
+        session()->forget(['cart_shipping_method_id', 'cart_shipping_cost', 'cart_shipping_name', 'cart_totals']);
 
         $order->refresh();
 
@@ -163,7 +195,6 @@ class FinishOrderComponent extends Component
             $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling, $this->rulesShipping);
         } else {
             $this->rules = array_merge($this->rules, $this->rulesGlobal, $this->rulesBilling);
-
         }
     }
 
@@ -232,7 +263,6 @@ class FinishOrderComponent extends Component
                 'subtotal' => $item['subtotal'],
                 'data' => Product::find($idItem)->toArray(),
             ]);
-
         }
     }
 

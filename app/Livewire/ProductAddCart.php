@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
-use App\Services\Cart;
+use Darkraul79\Cartify\Facades\Cart;
 use Illuminate\View\View;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -25,7 +25,6 @@ class ProductAddCart extends Component
     public function updateQuantity(int $quantity): void
     {
         $this->quantity = $quantity;
-
     }
 
     public function addToCart(): void
@@ -33,21 +32,29 @@ class ProductAddCart extends Component
         if ($this->checkStock()) {
             $this->dispatch('showAlert', type: 'warning', title: 'No se puede agregar al carrito',
                 message: 'No hay suficiente stock');
-
         } else {
-            Cart::addItem($this->product, $this->quantity);
+            Cart::add(
+                id: $this->product->id,
+                name: $this->product->name,
+                quantity: $this->quantity,
+                price: $this->product->getPrice(),
+                options: [
+                    'image' => $this->product->getFirstMediaUrl('product_images', 'thumb'),
+                    'price_formated' => $this->product->getFormatedPriceWithDiscount(),
+                ]
+            );
 
             $this->dispatch('updatedCart');
             $this->dispatch('showAlert', type: 'success', title: 'Producto agregado',
                 message: 'El producto ha sido agregado al carrito.');
         }
-
     }
 
     public function checkStock(): bool
     {
-        if ((Cart::getQuantityProduct($this->product->id) + $this->quantity) <= $this->product->stock) {
+        $currentQty = Cart::has($this->product->id) ? Cart::get($this->product->id)['quantity'] : 0;
 
+        if (($currentQty + $this->quantity) <= $this->product->stock) {
             return false;
         }
 
@@ -56,6 +63,6 @@ class ProductAddCart extends Component
 
     public function resetCart(): void
     {
-        Cart::clearCart();
+        Cart::clear();
     }
 }

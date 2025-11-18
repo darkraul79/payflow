@@ -4,238 +4,121 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Models\ShippingMethod;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
+use Darkraul79\Cartify\Facades\Cart as Cartify;
 
+/**
+ * Adaptador para mantener la API histórica usada en tests mientras se delega
+ * en el paquete Cartify.
+ */
 class Cart
 {
-    private static array $cart = [];
-
-    /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-    public static function addItem(Product $product, $quantity = 1): void
+    /**
+     * Añade un producto usando la API de Cartify acumulando la cantidad.
+     */
+    public static function addItem(Product $product, int $quantity = 1): void
     {
-        self::init();
-
-        if (isset(self::$cart['items'][$product->id])) {
-            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-            if (Product::find($product->id)->stock < self::$cart['items'][$product->id]['quantity'] + $quantity) {
-                return;
-            }
-            self::$cart['items'][$product->id]['quantity'] += $quantity;
-        } else {
-            self::$cart['items'][$product->id] = [
-                'name' => $product->name,
-                'price' => $product->getPrice(),
-                'price_formated' => $product->getFormatedPriceWithDiscount(),
-                'quantity' => $quantity,
-                'image' => self::getImage($product),
-            ];
+        // Verificar stock antes de agregar (comportamiento previo)
+        $current = self::getQuantityProduct($product->id);
+        if ($current + $quantity > $product->stock) {
+            return; // mismo early return que antes
         }
-        self::updateProductSubtotal($product);
 
-        self::save();
+        Cartify::add(
+            id: $product->id,
+            name: $product->name,
+            quantity: $quantity,
+            price: $product->getPrice(),
+            options: [
+                'image' => $product->getFirstMediaUrl('product_images', 'thumb'),
+                'price_formated' => $product->getFormatedPriceWithDiscount(),
+            ]
+        );
     }
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * Cantidad de un producto concreto.
      */
-    public static function init(): void
+    public static function getQuantityProduct(int|string $productId): int
     {
-        self::$cart = session()->get('cart') ?? ['items' => []];
+        $item = Cartify::get($productId);
+
+        return $item['quantity'] ?? 0;
     }
 
-    public static function getImage(Product|array|null $product): ?string
-    {
-        return $product->getFirstMediaUrl('product_images', 'thumb') ?? null;
-    }
-
-    public static function updateProductSubtotal(Product $product): void
-    {
-        self::$cart['items'][$product->id]['subtotal'] = $product->getPrice() * self::$cart['items'][$product->id]['quantity'];
-        self::$cart['items'][$product->id]['subtotal_formated'] = convertPrice(self::$cart['items'][$product->id]['subtotal']);
-    }
-
-    public static function save(): void
-    {
-        session()->put('cart', self::$cart);
-    }
-
-    public static function updateItemQuantity(Product $product, $quantity): void
-    {
-        self::init();
-
-        if (isset(self::$cart['items'][$product->id])) {
-            self::$cart['items'][$product->id]['quantity'] = $quantity;
-            self::updateProductSubtotal($product);
-        }
-
-        self::save();
-    }
-
-    /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-    public static function updateCart(): void
-    {
-        self::init();
-
-        foreach (self::getItems() as $id => $item) {
-            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-            $product = Product::find($id);
-            self::updateProductSubtotal($product);
-            self::$cart['items'][$id]['img'] = self::getImage($product);
-        }
-
-        self::save();
-    }
-
-    public static function getItems(): array
-    {
-        self::init();
-
-        return self::$cart['items'] ?? [];
-    }
-
-    public static function removeItem($productId): void
-    {
-        self::init();
-
-        if (isset(self::$cart['items'][$productId])) {
-            unset(self::$cart['items'][$productId]);
-        }
-        self::save();
-    }
-
-    public static function clearCart(): void
-    {
-        self::$cart = [];
-        self::save();
-    }
-
-    public static function resetCart(): void
-    {
-        session()->forget('cart');
-        self::init();
-    }
-
-    public static function getTotalPrice(): float
-    {
-        self::init();
-
-        $total = 0;
-        foreach (self::getItems() as $item) {
-            $total += $item['price'] * $item['quantity'];
-        }
-
-        return $total;
-    }
-
+    /**
+     * Devuelve cantidad total de artículos (sumatoria de cantidades).
+     */
     public static function getTotalQuantity(): int
     {
-        self::init();
-
-        $totalQuantity = 0;
-        foreach (self::getItems() as $item) {
-            $totalQuantity += $item['quantity'];
-        }
-
-        return $totalQuantity;
+        return Cartify::count();
     }
 
-    public static function setTotals(float $subtotal, float $taxes, float $total, float $shipping_cost): void
+    /**
+     * Devuelve array de items con estructura compatible.
+     */
+    public static function getItems(): array
     {
-        self::init();
+        // Añadir campos calculados para compatibilidad (subtotal / subtotal_formated)
+        return collect(Cartify::content())->map(function ($item) {
+            $subtotal = $item['price'] * $item['quantity'];
+            $item['subtotal'] = $subtotal;
+            $item['subtotal_formated'] = convertPrice($subtotal);
 
-        self::$cart['totals'] = [
-            'shipping_cost' => $shipping_cost,
-            'subtotal' => $subtotal,
-            'taxes' => $taxes,
-            'total' => $total,
-        ];
-
-        self::save();
+            return $item;
+        })->toArray();
     }
 
-    public static function canCheckout(): bool
+    /**
+     * Elimina un producto del carrito.
+     */
+    public static function removeItem(int|string $productId): void
     {
-        self::init();
-
-        if (
-            empty(self::$cart) ||
-            empty(self::$cart['items']) ||
-            empty(self::$cart['totals']['subtotal']) ||
-            empty(self::$cart['totals']['taxes']) ||
-            empty(self::$cart['totals']['total']) ||
-            empty(self::$cart['shipping_method'])
-        ) {
-            return false;
+        if (Cartify::has($productId)) {
+            Cartify::remove($productId);
         }
-
-        return true;
     }
 
-    public static function getQuantityProduct($productId): int
+    /**
+     * Vacía el carrito por completo.
+     */
+    public static function clearCart(): void
     {
-        self::init();
-
-        if (isset(self::$cart['items'][$productId])) {
-            return self::$cart['items'][$productId]['quantity'];
-        }
-
-        return 0;
+        Cartify::clear();
     }
 
-    /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-    public static function resfreshCart(): void
+    /**
+     * Total precio bruto (sin impuestos adicionales externos).
+     */
+    public static function getTotalPrice(): float
     {
-        foreach (self::getItems() as $idProduct => $item) {
-
-            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-            $product = Product::find($idProduct);
-            self::$cart['items'][$idProduct]['name'] = $product->name;
-            self::$cart['items'][$idProduct]['price'] = $product->getPrice();
-            self::$cart['items'][$idProduct]['price_formated'] = $product->getFormatedPriceWithDiscount();
-            self::updateProductSubtotal($product);
-            self::$cart['items'][$idProduct]['img'] = self::getImage($product);
-
-        }
-        self::$cart['totals']['subtotal'] = 0;
-        self::$cart['totals']['taxes'] = 0;
-        self::$cart['totals']['total'] = 0;
-        self::$cart['totals']['shipping_cost'] = 0;
+        return Cartify::subtotal();
     }
 
+    /**
+     * Shipping method ID actual desde sesión (mantener compatibilidad tests).
+     */
+    public static function getShippingMethod(): bool|int
+    {
+        return session('cart_shipping_method_id', false);
+    }
+
+    /**
+     * Shipping method cost actual desde sesión.
+     */
+    public static function getShippingMethodCost(): bool|float
+    {
+        return session('cart_shipping_cost', false);
+    }
+
+    /**
+     * Definir método de envío (para compatibilidad, sigue guardando en sesión)
+     */
     public static function setShippingMethod(ShippingMethod $method): void
     {
-        self::init();
-
-        self::$cart['shipping_method'] = [
-            'id' => $method->id,
-            'price' => $method->price,
-            'name' => $method->name,
-        ];
-
-        self::save();
-    }
-
-    public static function getShippingMethod()
-    {
-        self::init();
-
-        if (isset(self::$cart['shipping_method']['id'])) {
-            return self::$cart['shipping_method']['id'];
-        }
-
-        return false;
-    }
-
-    public static function getShippingMethodCost()
-    {
-        self::init();
-
-        if (isset(self::$cart['shipping_method']['price'])) {
-            return self::$cart['shipping_method']['price'];
-        }
-
-        return false;
+        session([
+            'cart_shipping_method_id' => $method->id,
+            'cart_shipping_cost' => $method->price,
+            'cart_shipping_name' => $method->name,
+        ]);
     }
 }

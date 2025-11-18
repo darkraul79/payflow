@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Services\Cart;
+use Darkraul79\Cartify\Facades\Cart;
 use Illuminate\View\View;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -18,7 +18,7 @@ class CartButtonComponent extends Component
 
     public function updateQuantity(): void
     {
-        $this->quantity = Cart::getTotalQuantity();
+        $this->quantity = Cart::count();
     }
 
     public function render(): View
@@ -36,7 +36,7 @@ class CartButtonComponent extends Component
     {
         $this->dispatch('showAlert', type: 'info', title: 'Carrito vacío',
             message: 'Has eliminado todos los productos del carrito.');
-        Cart::clearCart();
+        Cart::clear();
         $this->updateQuantity();
 
     }

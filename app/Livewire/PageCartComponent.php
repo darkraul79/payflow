@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Product;
 use App\Models\ShippingMethod;
-use App\Services\Cart;
+use Darkraul79\Cartify\Facades\Cart;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\On;
@@ -36,39 +36,59 @@ class PageCartComponent extends Component
         $this->updateTotals();
 
         $this->shipping_methods = ShippingMethod::forAmount($this->subtotal)->get();
-
     }
 
     public function refreshCart(): void
     {
+        $rawItems = Cart::content()->toArray();
+        // Transformar para asegurar compatibilidad de claves legacy
+        $this->items = collect($rawItems)->map(function ($item) {
+            $subtotal = $item['price'] * $item['quantity'];
+            $item['subtotal'] = $subtotal;
+            $item['subtotal_formated'] = convertPrice($subtotal);
+            // Asegurar price_formated si no existe en options
+            if (! isset($item['price_formated'])) {
+                $item['price_formated'] = convertPrice($item['price']);
+            }
+            // Mover image desde options si aplica
+            if (! isset($item['image']) && isset($item['options']['image'])) {
+                $item['image'] = $item['options']['image'];
+            }
 
-        $this->items = Cart::getItems();
+            return $item;
+        })->toArray();
+        $itemIds = array_keys($this->items);
+
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-        $this->itemsProducts = Product::whereIn('id', array_keys($this->items))->with('media')->get();
-        $this->shipping_method = Cart::getShippingMethod();
-        $this->envio = Cart::getShippingMethodCost();
+        $this->itemsProducts = Product::whereIn('id', $itemIds)->with('media')->get();
+
+        // Recuperar shipping method de session
+        $this->shipping_method = session('cart_shipping_method_id');
+        $this->envio = session('cart_shipping_cost', 0);
+
         $this->updateTotals();
     }
 
     public function updateTotals(): void
     {
-        $this->subtotal = Cart::getTotalPrice();
+        // Usar subtotal real sin impuestos del paquete
+        $this->subtotal = Cart::subtotal();
         $this->total = $this->subtotal + $this->envio;
         $this->taxes = calculoImpuestos($this->total);
-        Cart::setTotals(
-            subtotal: $this->subtotal,
-            taxes: $this->taxes,
-            total: $this->total,
-            shipping_cost: $this->envio
-        );
+        session([
+            'cart_totals' => [
+                'subtotal' => $this->subtotal,
+                'taxes' => $this->taxes,
+                'total' => $this->total,
+                'shipping_cost' => $this->envio,
+            ],
+        ]);
         $this->dispatch('updatedCart');
         $this->isValid();
-
     }
 
     public function isValid(): void
     {
-
         if ($this->subtotal > 0 && $this->shipping_method) {
             $this->disabled = false;
         } else {
@@ -83,28 +103,27 @@ class PageCartComponent extends Component
 
     public function removeItem($id): void
     {
-        Cart::removeItem($id);
+        Cart::remove($id);
         $this->refreshCart();
         $this->dispatch('showAlert', type: 'success', title: 'Producto eliminado',
             message: 'Se ha eliminado el producto del carrito.');
 
         $this->updateTotals();
-
     }
 
     #[On('updateQuantity')]
     public function updateQuantity(int $quantity, Product $product): void
     {
-        Cart::updateItemQuantity($product, $quantity);
+        Cart::update($product->id, $quantity);
         $this->refreshCart();
         $this->updateTotals();
-
     }
 
     public function submit(): void
     {
         $this->validate();
-        if ($this->disabled) {
+        // Validar inline para evitar dependencia de estado previo
+        if ($this->subtotal <= 0 || ! $this->shipping_method) {
             $this->dispatch('showAlert', type: 'error', title: 'Carrito vacío',
                 message: 'No hay productos en el carrito');
 
@@ -116,13 +135,14 @@ class PageCartComponent extends Component
 
     private function updateCart(): void
     {
-        Cart::setTotals(
-            subtotal: $this->subtotal,
-            taxes: $this->taxes,
-            total: $this->total,
-            shipping_cost: $this->envio
-        );
-
+        session([
+            'cart_totals' => [
+                'subtotal' => $this->subtotal,
+                'taxes' => $this->taxes,
+                'total' => $this->total,
+                'shipping_cost' => $this->envio,
+            ],
+        ]);
     }
 
     public function clearCart(): void
@@ -135,10 +155,11 @@ class PageCartComponent extends Component
         $this->subtotal = 0;
         $this->total = 0;
         $this->envio = 0;
-        Cart::resetCart();
+
+        Cart::clear();
+        session()->forget(['cart_shipping_method_id', 'cart_shipping_cost', 'cart_totals']);
 
         $this->dispatch('updatedCart');
-
     }
 
     public function updatedShippingMethod($value): void
@@ -147,7 +168,14 @@ class PageCartComponent extends Component
         $metodo = ShippingMethod::find($value);
         $this->envio = $metodo ? $metodo->price : 0;
         $this->shipping_method = $value;
-        Cart::setShippingMethod($metodo);
+
+        // Guardar método de envío en session
+        session([
+            'cart_shipping_method_id' => $metodo->id,
+            'cart_shipping_cost' => $metodo->price,
+            'cart_shipping_name' => $metodo->name,
+        ]);
+
         $this->updateTotals();
     }
 

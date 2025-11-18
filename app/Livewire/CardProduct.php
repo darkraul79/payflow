@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
-use App\Services\Cart;
+use Darkraul79\Cartify\Facades\Cart;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -21,9 +21,17 @@ class CardProduct extends Component
         if ($this->checkStock()) {
             $this->dispatch('showAlert', type: 'error', title: 'No se puede agregar el producto',
                 message: 'No hay suficiente stock');
-
         } else {
-            Cart::addItem($this->product);
+            Cart::add(
+                id: $this->product->id,
+                name: $this->product->name,
+                quantity: 1,
+                price: $this->product->getPrice(),
+                options: [
+                    'image' => $this->product->getFirstMediaUrl('product_images', 'thumb'),
+                    'price_formated' => $this->product->getFormatedPriceWithDiscount(),
+                ]
+            );
             $this->dispatch('updatedCart');
             $this->dispatch('showAlert', type: 'success', title: 'Producto agregado',
                 message: 'El producto ha sido agregado al carrito.');
@@ -32,8 +40,9 @@ class CardProduct extends Component
 
     public function checkStock(): bool
     {
-        if ((Cart::getQuantityProduct($this->product->id) + 1) <= $this->product->stock) {
+        $currentQty = Cart::has($this->product->id) ? Cart::get($this->product->id)['quantity'] : 0;
 
+        if (($currentQty + 1) <= $this->product->stock) {
             return false;
         }
 
