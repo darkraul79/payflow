@@ -61,6 +61,7 @@ class RedsysGateway implements GatewayInterface
 
         $this->setParameter('DS_MERCHANT_AMOUNT', $this->convertAmountToRedsys($amount));
         $this->setParameter('DS_MERCHANT_ORDER', $orderId);
+        $this->setParameter('Ds_Order', $orderId); // duplicado para callbacks y firma
 
         // Optional parameters
         if (isset($options['url_ok'])) {

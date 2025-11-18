@@ -1,9 +1,9 @@
 @php
-    use App\Helpers\RedsysAPI;
+    $actionUrl = $data['form_url'] ?? '';
 @endphp
 
 <form
-    action="{{ RedsysAPI::getRedsysUrl() }}"
+    action="{{ $actionUrl }}"
     id="redsys_form"
     method="post"
     name="redsys_form"
@@ -29,6 +29,5 @@
     />
 </form>
 <script>
-    const form = document.getElementById('redsys_form');
-    form.submit();
+    document.getElementById('redsys_form').submit();
 </script>

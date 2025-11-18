@@ -41,7 +41,7 @@ test('al crear pedido por método se llama al evento CreateOrder', function () {
     ]);
 
     $pedido = creaPedido();
-    $this->get(route('pedido.response', getResponseOrder($pedido, true)));
+    $this->get(route('pedido.response', getResponseOrder($pedido)));
 
     Event::assertDispatched(CreateOrderEvent::class);
     Event::assertListening(
@@ -62,7 +62,7 @@ test('al crear pedido se manda un email a los administradores', function ($envir
     Notification::assertNothingSent();
 
     $pedido = creaPedido();
-    $this->get(route('pedido.response', getResponseOrder($pedido, true)));
+    $this->get(route('pedido.response', getResponseOrder($pedido)));
 
     if (app()->environment('production')) {
         Notification::assertSentTo(
@@ -84,7 +84,7 @@ test('al crear pedido se manda un email al email de la dirección de facturació
     Mail::assertNothingSent();
 
     $pedido = creaPedido();
-    $this->get(route('pedido.response', getResponseOrder($pedido, true)));
+    $this->get(route('pedido.response', getResponseOrder($pedido)));
 
     Mail::assertQueued(OrderNew::class, $pedido->billing_address()->email);
 });
@@ -286,11 +286,11 @@ test('al crear donación sin dirección no envío email', function ($state, $typ
         ],
         [
             'state' => false,
-            'type' => Donation::UNICA,
+            'type' => DonationType::UNICA,
         ],
         [
             'state' => true,
-            'type' => Donation::UNICA,
+            'type' => DonationType::UNICA,
         ],
     ]);
 
@@ -340,7 +340,7 @@ test('al crear donación se manda un email a los administradores', function ($en
 
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => 1.56,
-        'type' => Donation::UNICA,
+        'type' => DonationType::UNICA,
     ]);
     $donacion = $paymentProcess->modelo;
 

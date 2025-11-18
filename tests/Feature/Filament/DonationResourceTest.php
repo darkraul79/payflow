@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\DonationType;
 use App\Filament\Resources\DonationResource;
 use App\Filament\Resources\DonationResource\Pages\Listdonations;
 use App\Models\Donation;
@@ -48,7 +49,7 @@ it('Listdonations muestra registros y permite buscar por número y ordenar por i
 it('La acción cancelar es visible solo para donación recurrente activa', function () {
     asUser();
 
-    $unica = Donation::factory()->create(['type' => Donation::UNICA]);
+    $unica = Donation::factory()->create(['type' => DonationType::UNICA]);
     $recurrenteActiva = Donation::factory()->recurrente()->activa()->create();
 
     // En la tabla, la acción "cancelar" debería ser visible para la recurrente activa

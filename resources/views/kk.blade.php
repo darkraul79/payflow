@@ -1,11 +1,11 @@
 @php
-    use App\Helpers\RedsysAPI;
+    $actionUrl = $form['form_url'] ?? '';
 @endphp
 
-@dump($form['Raw'])
+@dump($form['Raw'] ?? [])
 
 <form
-    action="{{ RedsysAPI::getRedsysUrl() }}"
+    action="{{ $actionUrl }}"
     id="redsys_form_donacion"
     method="post"
     name="redsys_form"

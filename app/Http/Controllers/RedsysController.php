@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
+use RuntimeException;
 
 class RedsysController extends Controller
 {
@@ -37,7 +38,7 @@ class RedsysController extends Controller
             // Procesar callback usando Payflow Gateway
             $result = Gateway::withRedsys()->processCallback($request->all());
             $decodedData = $result['decoded_data'];
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException) {
             abort(404, 'Datos de Redsys no recibidos');
         }
 
@@ -73,7 +74,7 @@ class RedsysController extends Controller
             // Procesar callback usando Payflow Gateway
             $result = Gateway::withRedsys()->processCallback($request->all());
             $decodedData = $result['decoded_data'];
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException) {
             abort(404, 'Datos de Redsys no recibidos');
         }
 

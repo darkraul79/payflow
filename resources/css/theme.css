@@ -1,4 +1,6 @@
+/*noinspection ALL*/
 @theme {
+    /*noinspection CssUnresolvedCustomProperty*/
     --color-zinc-50: var(--color-slate-50);
     --color-zinc-100: var(--color-slate-100);
     --color-zinc-200: var(--color-slate-200);
@@ -125,12 +127,14 @@
 
 }
 
+/*noinspection ALL*/
 @theme {
     --color-accent: var(--color-sky-600);
     --color-accent-content: var(--color-sky-600);
     --color-accent-foreground: var(--color-white);
 }
 
+/*noinspection ALL*/
 @layer theme {
     .dark {
         --color-accent: var(--color-sky-600);

@@ -77,16 +77,10 @@ if (! function_exists('convertPriceNumber')) {
     }
 }
 if (! function_exists('convertNumberToRedSys')) {
+    /** @deprecated Use convert_amount_to_redsys(float $amount) instead. */
     function convertNumberToRedSys($price): int
     {
-        // Reemplaza la coma por un punto para convertirlo a un formato numérico válido
-        $price = str_replace(',', '.', $price);
-
-        // Asegúrate de que sea un número flotante con dos decimales
-        $price = number_format((float) $price, 2, '.', '');
-
-        // Elimina el punto decimal y devuelve el número como entero
-        return (int) str_replace('.', '', $price);
+        return (int) convert_amount_to_redsys((float) str_replace(',', '.', $price));
     }
 }
 

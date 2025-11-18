@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Invoice;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -33,17 +32,15 @@ return new class extends Migration
                     ->delete();
             }
 
-            // Add unique index if not exists (DB driver aware)
+            // Add a unique index if not exists (DB driver-aware)
             $driver = Schema::getConnection()->getDriverName();
 
-            $hasIndex = false;
             if ($driver === 'sqlite') {
                 $indexes = collect(DB::select("PRAGMA index_list('invoices')"))->pluck('name')->all();
-                $hasIndex = in_array('invoices_invoiceable_unique', $indexes, true);
             } else {
                 $indexes = collect(DB::select('SHOW INDEX FROM invoices'))->pluck('Key_name')->all();
-                $hasIndex = in_array('invoices_invoiceable_unique', $indexes, true);
             }
+            $hasIndex = in_array('invoices_invoiceable_unique', $indexes, true);
 
             if (! $hasIndex) {
                 Schema::table('invoices', function (Blueprint $table) {

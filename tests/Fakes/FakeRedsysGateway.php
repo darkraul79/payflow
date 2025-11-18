@@ -19,6 +19,8 @@ class FakeRedsysGateway extends RedsysGateway
         $this->version = 'HMAC_SHA256_V1';
     }
 
+    public function __call(string $name, array $arguments) {}
+
     public function sendRestPayment(): array
     {
         // Usa los parámetros ya cargados en createPayment() para construir una respuesta Redsys válida.

@@ -7,7 +7,6 @@ use App\Enums\DonationFrequency;
 use App\Enums\DonationType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
-use App\Helpers\RedsysAPI;
 use App\Jobs\ProcessDonationPaymentJob;
 use App\Livewire\DonacionBanner;
 use App\Models\Address;
@@ -698,7 +697,7 @@ test('si selecciono bizum agrego campo z a formulario redsys', function () {
         ->call('submit');
 
     /** @noinspection PhpUndefinedFieldInspection */
-    $params = json_decode((new RedsysAPI)->decodeMerchantParameters($comp->MerchantParameters), true);
+    $params = json_decode(base64_decode(strtr($comp->MerchantParameters, '-_', '+/')), true);
 
     expect($params['Ds_Merchant_Paymethods'])->toBe('z');
 

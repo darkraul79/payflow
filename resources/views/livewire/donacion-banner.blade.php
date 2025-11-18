@@ -1,5 +1,5 @@
 @php
-    use App\Helpers\RedsysAPI;
+    // Eliminado RedsysAPI; los datos de pago se generan vía Payflow (RedsysGateway)
     use App\Models\Donation;
 @endphp
 

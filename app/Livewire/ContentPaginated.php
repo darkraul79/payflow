@@ -12,13 +12,13 @@ class ContentPaginated extends Component
 {
     use WithPagination;
 
-    public $filter;
+    public string $filter;
 
-    public $type;
+    public string $type;
 
-    public $ids;
+    public int $ids;
 
-    public $perPage;
+    public int $perPage;
 
     public string $sortBy;
 

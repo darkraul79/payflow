@@ -6,7 +6,6 @@ use App\Enums\DonationType;
 use App\Enums\OrderStatus;
 use App\Filament\Fabricator\PageBlocks\Reusable;
 use App\Filament\Resources\DonationResource\Pages;
-use App\Filament\Resources\DonationResource\RelationManagers\InvoicesRelationManager;
 use App\Filament\Resources\DonationResource\RelationManagers\PaymentsRelationManager;
 use App\Models\Donation;
 use App\Services\InvoiceService;
@@ -258,7 +257,6 @@ class DonationResource extends Resource
     {
         return [
             PaymentsRelationManager::class,
-            InvoicesRelationManager::class,
         ];
     }
 }

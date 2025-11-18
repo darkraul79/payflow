@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Donation;
+use App\Enums\DonationType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +14,7 @@ return new class extends Migration
             $table->float('amount')->default(0.00);
             $table->string('number', 8)->unique();
             $table->string('frequency')->nullable();
-            $table->string('type')->default(Donation::UNICA);
+            $table->string('type')->default(DonationType::UNICA);
             $table->string('identifier')->nullable();
             $table->json('info')->nullable();
             $table->timestamps();

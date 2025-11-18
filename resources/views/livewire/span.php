@@ -1,6 +1,5 @@
 @php
-    use App\Helpers\RedsysAPI;
-    use App\Models\Donation;
+use App\Models\Donation;
 @endphp
 
 <div
@@ -23,15 +22,14 @@
                     'text' => 'Hazte Socio',
                     'value' => \App\Enums\DonationType::RECURRENTE->value,
                 ],
-            ]"
-        />
+            ]"></x-radiobutton-donacion>
     </div>
     @if ($type === \App\Enums\DonationType::RECURRENTE->value)
-        <div class="my-6 flex w-full" wire:model="frequency">
-            <x-radiobutton-donacion
-                name="frequency"
-                :default="$frequency"
-                :options="[
+    <div class="my-6 flex w-full" wire:model="frequency">
+        <x-radiobutton-donacion
+            name="frequency"
+            :default="$frequency"
+            :options="[
                     [
                         'text' => 'Mensual',
                         'value' => \App\Enums\DonationFrequency::MENSUAL->value,
@@ -44,9 +42,8 @@
                         'text' => 'Anual',
                         'value' => \App\Enums\DonationFrequency::ANUAL->value,
                     ],
-                ]"
-            />
-        </div>
+                ]"></x-radiobutton-donacion>
+    </div>
     @endif
 
     <div class="my-6 flex w-full" wire:model="amount_select">
@@ -66,8 +63,7 @@
                     'text' => '100',
                     'value' => 100,
                 ],
-            ]"
-        />
+            ]"></x-radiobutton-donacion>
     </div>
 
     <div>

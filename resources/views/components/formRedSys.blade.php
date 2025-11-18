@@ -1,9 +1,10 @@
 @php
-    use App\Helpers\RedsysAPI;
+    // Eliminado uso de RedsysAPI. La URL del formulario debe ser proporcionada por el Gateway (RedsysGateway)
+    $actionUrl = $form_url ?? ($data['form_url'] ?? '') ?? '';
 @endphp
 
 <form
-    action="{{ RedsysAPI::getRedsysUrl() }}"
+    action="{{ $actionUrl }}"
     id="redsys_form"
     method="post"
     name="redsys_form"
@@ -33,13 +34,13 @@
     <button type="submit" id="redsys_submit_donacion">Enviar</button>
 </form>
 @script
-    <script>
-        $wire.on('submit-redsys-form', () => {
-            Livewire.hook('morph.updated', ({ el, component }) => {
-                if (el.id === 'redsys_form') {
-                    el.submit();
-                }
-            });
+<script>
+    $wire.on('submit-redsys-form', () => {
+        Livewire.hook('morph.updated', ({ el }) => {
+            if (el.id === 'redsys_form') {
+                el.submit();
+            }
         });
-    </script>
+    });
+</script>
 @endscript

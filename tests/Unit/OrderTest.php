@@ -3,7 +3,6 @@
 use App\Enums\AddressType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
-use App\Helpers\RedsysAPI;
 use App\Livewire\FinishOrderComponent;
 use App\Models\Address;
 use App\Models\Order;
@@ -161,7 +160,7 @@ test('cuando realizo pedido resto del stock de producto', function () {
 
     $dataOk = [
         'Ds_Order' => $pedido->number,
-        'Ds_Amount' => convertNumberToRedSys($pedido->amount),
+        'Ds_Amount' => convert_amount_to_redsys($pedido->amount),
     ];
 
     $pedido->payed($dataOk);
@@ -192,7 +191,7 @@ test('al crear pedido solo creo un estado pendiente de pago', function () {
     ]);
     $pedido = creaPedido($producto);
 
-    $this->get(route('pedido.response', getResponseOrder($pedido, true)));
+    $this->get(route('pedido.response', getResponseOrder($pedido)));
 
     $pedido->refresh();
 
@@ -209,7 +208,7 @@ test('al procesar pedido envío email a todos los usuarios', function ($envirome
     User::factory()->count(3)->create();
 
     $pedido = creaPedido();
-    $this->get(route('pedido.response', getResponseOrder($pedido, true)));
+    $this->get(route('pedido.response', getResponseOrder($pedido)));
 
     if (app()->environment('production')) {
         Notification::assertSentTo(
@@ -330,7 +329,7 @@ test('si selecciono bizum agrego campo z a formulario redsys', function () {
         ])->call('submit');
 
     /** @noinspection PhpUndefinedFieldInspection */
-    $params = json_decode((new RedsysAPI)->decodeMerchantParameters($comp->MerchantParameters), true);
+    $params = json_decode(base64_decode(strtr($comp->MerchantParameters, '-_', '+/')), true);
 
     expect($params['Ds_Merchant_Paymethods'])->toBe('z');
 

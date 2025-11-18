@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpCaseWithValueNotFoundInEnumInspection */
+
 use App\Enums\AddressType;
 use App\Enums\DonationFrequency;
 use App\Enums\DonationType;
@@ -11,43 +13,43 @@ describe('OrderStatus Enum', function () {
     });
 
     it('devuelve el icono correcto para cada estado', function () {
-        expect(OrderStatus::PENDIENTE->icon())->toBe('bi-clock-history');
-        expect(OrderStatus::PAGADO->icon())->toBe('bi-check-circle');
-        expect(OrderStatus::ENVIADO->icon())->toBe('bi-truck');
-        expect(OrderStatus::FINALIZADO->icon())->toBe('bi-check-all');
-        expect(OrderStatus::ERROR->icon())->toBe('bi-exclamation-triangle');
-        expect(OrderStatus::CANCELADO->icon())->toBe('bi-x-circle');
-        expect(OrderStatus::ACEPTADO->icon())->toBe('bi-check');
-        expect(OrderStatus::ACTIVA->icon())->toBe('bi-play-circle');
+        expect(OrderStatus::PENDIENTE->icon())->toBe('bi-clock-history')
+            ->and(OrderStatus::PAGADO->icon())->toBe('bi-check-circle')
+            ->and(OrderStatus::ENVIADO->icon())->toBe('bi-truck')
+            ->and(OrderStatus::FINALIZADO->icon())->toBe('bi-check-all')
+            ->and(OrderStatus::ERROR->icon())->toBe('bi-exclamation-triangle')
+            ->and(OrderStatus::CANCELADO->icon())->toBe('bi-x-circle')
+            ->and(OrderStatus::ACEPTADO->icon())->toBe('bi-check')
+            ->and(OrderStatus::ACTIVA->icon())->toBe('bi-play-circle');
     });
 
     it('devuelve el color correcto para cada estado', function () {
-        expect(OrderStatus::PENDIENTE->color())->toBe('warning');
-        expect(OrderStatus::PAGADO->color())->toBe('success');
-        expect(OrderStatus::ENVIADO->color())->toBe('secondary');
-        expect(OrderStatus::FINALIZADO->color())->toBe('info');
-        expect(OrderStatus::ERROR->color())->toBe('danger');
-        expect(OrderStatus::CANCELADO->color())->toBe('danger');
-        expect(OrderStatus::ACEPTADO->color())->toBe('success');
-        expect(OrderStatus::ACTIVA->color())->toBe('green');
+        expect(OrderStatus::PENDIENTE->color())->toBe('warning')
+            ->and(OrderStatus::PAGADO->color())->toBe('success')
+            ->and(OrderStatus::ENVIADO->color())->toBe('secondary')
+            ->and(OrderStatus::FINALIZADO->color())->toBe('info')
+            ->and(OrderStatus::ERROR->color())->toBe('danger')
+            ->and(OrderStatus::CANCELADO->color())->toBe('danger')
+            ->and(OrderStatus::ACEPTADO->color())->toBe('success')
+            ->and(OrderStatus::ACTIVA->color())->toBe('green');
     });
 
     it('devuelve el subject de email correcto', function () {
-        expect(OrderStatus::PENDIENTE->emailSubject())->toContain('pendiente de pago');
-        expect(OrderStatus::PAGADO->emailSubject())->toContain('preparación');
-        expect(OrderStatus::ENVIADO->emailSubject())->toContain('en camino');
-        expect(OrderStatus::FINALIZADO->emailSubject())->toContain('ola solidaria');
-        expect(OrderStatus::ERROR->emailSubject())->toContain('problema');
-        expect(OrderStatus::CANCELADO->emailSubject())->toContain('cancelado');
+        expect(OrderStatus::PENDIENTE->emailSubject())->toContain('pendiente de pago')
+            ->and(OrderStatus::PAGADO->emailSubject())->toContain('preparación')
+            ->and(OrderStatus::ENVIADO->emailSubject())->toContain('en camino')
+            ->and(OrderStatus::FINALIZADO->emailSubject())->toContain('ola solidaria')
+            ->and(OrderStatus::ERROR->emailSubject())->toContain('problema')
+            ->and(OrderStatus::CANCELADO->emailSubject())->toContain('cancelado');
     });
 
     it('devuelve la vista de email correcta', function () {
-        expect(OrderStatus::PENDIENTE->emailView())->toBe('emails.order-pending');
-        expect(OrderStatus::PAGADO->emailView())->toBe('emails.order-paid');
-        expect(OrderStatus::ENVIADO->emailView())->toBe('emails.order-shipped');
-        expect(OrderStatus::FINALIZADO->emailView())->toBe('emails.order-completed');
-        expect(OrderStatus::ERROR->emailView())->toBe('emails.order-error');
-        expect(OrderStatus::CANCELADO->emailView())->toBe('emails.order-cancel');
+        expect(OrderStatus::PENDIENTE->emailView())->toBe('emails.order-pending')
+            ->and(OrderStatus::PAGADO->emailView())->toBe('emails.order-paid')
+            ->and(OrderStatus::ENVIADO->emailView())->toBe('emails.order-shipped')
+            ->and(OrderStatus::FINALIZADO->emailView())->toBe('emails.order-completed')
+            ->and(OrderStatus::ERROR->emailView())->toBe('emails.order-error')
+            ->and(OrderStatus::CANCELADO->emailView())->toBe('emails.order-cancel');
     });
 
     it('devuelve todos los valores como array', function () {
@@ -100,15 +102,15 @@ describe('AddressType Enum', function () {
     });
 
     it('devuelve el icono correcto para cada tipo', function () {
-        expect(AddressType::BILLING->icon())->toBe('bi-receipt');
-        expect(AddressType::SHIPPING->icon())->toBe('bi-truck');
-        expect(AddressType::CERTIFICATE->icon())->toBe('bi-file-earmark-text');
+        expect(AddressType::BILLING->icon())->toBe('bi-receipt')
+            ->and(AddressType::SHIPPING->icon())->toBe('bi-truck')
+            ->and(AddressType::CERTIFICATE->icon())->toBe('bi-file-earmark-text');
     });
 
     it('devuelve el color correcto para cada tipo', function () {
-        expect(AddressType::BILLING->color())->toBe('primary');
-        expect(AddressType::SHIPPING->color())->toBe('success');
-        expect(AddressType::CERTIFICATE->color())->toBe('info');
+        expect(AddressType::BILLING->color())->toBe('primary')
+            ->and(AddressType::SHIPPING->color())->toBe('success')
+            ->and(AddressType::CERTIFICATE->color())->toBe('info');
     });
 
     it('devuelve todos los valores como array', function () {
@@ -122,10 +124,10 @@ describe('AddressType Enum', function () {
     });
 
     it('puede obtener enum desde valor string', function () {
-        expect(AddressType::tryFrom('Facturación'))->toBe(AddressType::BILLING);
-        expect(AddressType::tryFrom('Envío'))->toBe(AddressType::SHIPPING);
-        expect(AddressType::tryFrom('Certificado'))->toBe(AddressType::CERTIFICATE);
-        expect(AddressType::tryFrom('Invalid'))->toBeNull();
+        expect(AddressType::tryFrom('Facturación'))->toBe(AddressType::BILLING)
+            ->and(AddressType::tryFrom('Envío'))->toBe(AddressType::SHIPPING)
+            ->and(AddressType::tryFrom('Certificado'))->toBe(AddressType::CERTIFICATE)
+            ->and(AddressType::tryFrom('Invalid'))->toBeNull();
     });
 });
 
@@ -135,18 +137,18 @@ describe('DonationType Enum', function () {
     });
 
     it('devuelve el icono correcto para cada tipo', function () {
-        expect(DonationType::UNICA->icon())->toBe('bi-heart');
-        expect(DonationType::RECURRENTE->icon())->toBe('bi-arrow-repeat');
+        expect(DonationType::UNICA->icon())->toBe('bi-heart')
+            ->and(DonationType::RECURRENTE->icon())->toBe('bi-arrow-repeat');
     });
 
     it('devuelve el color correcto para cada tipo', function () {
-        expect(DonationType::UNICA->color())->toBe('primary');
-        expect(DonationType::RECURRENTE->color())->toBe('success');
+        expect(DonationType::UNICA->color())->toBe('primary')
+            ->and(DonationType::RECURRENTE->color())->toBe('success');
     });
 
     it('devuelve la descripción correcta', function () {
-        expect(DonationType::UNICA->description())->toBe('Donación única');
-        expect(DonationType::RECURRENTE->description())->toBe('Donación recurrente');
+        expect(DonationType::UNICA->description())->toBe('Donación única')
+            ->and(DonationType::RECURRENTE->description())->toBe('Donación recurrente');
     });
 
     it('devuelve todos los valores como array', function () {
@@ -159,9 +161,9 @@ describe('DonationType Enum', function () {
     });
 
     it('puede obtener enum desde valor string', function () {
-        expect(DonationType::tryFrom('Simple'))->toBe(DonationType::UNICA);
-        expect(DonationType::tryFrom('Recurrente'))->toBe(DonationType::RECURRENTE);
-        expect(DonationType::tryFrom('Invalid'))->toBeNull();
+        expect(DonationType::tryFrom('Simple'))->toBe(DonationType::UNICA)
+            ->and(DonationType::tryFrom('Recurrente'))->toBe(DonationType::RECURRENTE)
+            ->and(DonationType::tryFrom('Invalid'))->toBeNull();
     });
 });
 
@@ -171,27 +173,27 @@ describe('DonationFrequency Enum', function () {
     });
 
     it('devuelve el icono correcto para cada frecuencia', function () {
-        expect(DonationFrequency::MENSUAL->icon())->toBe('bi-calendar-month');
-        expect(DonationFrequency::TRIMESTRAL->icon())->toBe('bi-calendar3');
-        expect(DonationFrequency::ANUAL->icon())->toBe('bi-calendar-year');
+        expect(DonationFrequency::MENSUAL->icon())->toBe('bi-calendar-month')
+            ->and(DonationFrequency::TRIMESTRAL->icon())->toBe('bi-calendar3')
+            ->and(DonationFrequency::ANUAL->icon())->toBe('bi-calendar-year');
     });
 
     it('devuelve el color correcto para cada frecuencia', function () {
-        expect(DonationFrequency::MENSUAL->color())->toBe('primary');
-        expect(DonationFrequency::TRIMESTRAL->color())->toBe('success');
-        expect(DonationFrequency::ANUAL->color())->toBe('warning');
+        expect(DonationFrequency::MENSUAL->color())->toBe('primary')
+            ->and(DonationFrequency::TRIMESTRAL->color())->toBe('success')
+            ->and(DonationFrequency::ANUAL->color())->toBe('warning');
     });
 
     it('devuelve la descripción correcta', function () {
-        expect(DonationFrequency::MENSUAL->description())->toBe('Donación mensual');
-        expect(DonationFrequency::TRIMESTRAL->description())->toBe('Donación trimestral');
-        expect(DonationFrequency::ANUAL->description())->toBe('Donación anual');
+        expect(DonationFrequency::MENSUAL->description())->toBe('Donación mensual')
+            ->and(DonationFrequency::TRIMESTRAL->description())->toBe('Donación trimestral')
+            ->and(DonationFrequency::ANUAL->description())->toBe('Donación anual');
     });
 
     it('devuelve el número de meses correcto', function () {
-        expect(DonationFrequency::MENSUAL->months())->toBe(1);
-        expect(DonationFrequency::TRIMESTRAL->months())->toBe(3);
-        expect(DonationFrequency::ANUAL->months())->toBe(12);
+        expect(DonationFrequency::MENSUAL->months())->toBe(1)
+            ->and(DonationFrequency::TRIMESTRAL->months())->toBe(3)
+            ->and(DonationFrequency::ANUAL->months())->toBe(12);
     });
 
     it('devuelve todos los valores como array', function () {
@@ -215,9 +217,9 @@ describe('DonationFrequency Enum', function () {
     });
 
     it('puede obtener enum desde valor string', function () {
-        expect(DonationFrequency::tryFrom('Mensual'))->toBe(DonationFrequency::MENSUAL);
-        expect(DonationFrequency::tryFrom('Trimestral'))->toBe(DonationFrequency::TRIMESTRAL);
-        expect(DonationFrequency::tryFrom('Anual'))->toBe(DonationFrequency::ANUAL);
-        expect(DonationFrequency::tryFrom('Invalid'))->toBeNull();
+        expect(DonationFrequency::tryFrom('Mensual'))->toBe(DonationFrequency::MENSUAL)
+            ->and(DonationFrequency::tryFrom('Trimestral'))->toBe(DonationFrequency::TRIMESTRAL)
+            ->and(DonationFrequency::tryFrom('Anual'))->toBe(DonationFrequency::ANUAL)
+            ->and(DonationFrequency::tryFrom('Invalid'))->toBeNull();
     });
 });

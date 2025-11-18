@@ -34,7 +34,7 @@ it('crea un pago inicial y genera datos Redsys para pedido (pago directo)', func
 it('crea un pago inicial y genera datos Redsys para donación única (pago directo)', function () {
     $pp = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::UNICA,
+        'type' => DonationType::UNICA,
     ]);
 
     $modelo = $pp->modelo;
