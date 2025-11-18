@@ -66,6 +66,8 @@ class DonacionBanner extends Component
 
     public array $payments_methods = [];
 
+    public string $form_url = '';
+
     public function render(): View
     {
 
@@ -190,6 +192,7 @@ class DonacionBanner extends Component
         $this->MerchantParameters = $formData['Ds_MerchantParameters'];
         $this->MerchantSignature = $formData['Ds_Signature'];
         $this->SignatureVersion = $formData['Ds_SignatureVersion'];
+        $this->form_url = $formData['form_url'] ?? '';
 
         $this->dispatch('submit-redsys-form');
 

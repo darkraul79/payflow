@@ -782,3 +782,169 @@ test('puedo moverme entre pasos de la donación', function () {
         ->call('submit')
         ->assertHasNoErrors();
 });
+
+test('donacionBanner recurrente genera form_url correcto según entorno', function () {
+    config(['redsys.enviroment' => 'test']);
+
+    $compTest = livewire(DonacionBanner::class, ['prefix' => 'modal'])
+        ->set('type', DonationType::RECURRENTE->value)
+        ->set('frequency', DonationFrequency::MENSUAL->value)
+        ->set('payment_method', PaymentMethod::TARJETA->value)
+        ->set('amount', '5,00')
+        ->call('toStep', 4)
+        ->call('submit');
+
+    expect($compTest->get('form_url'))->toContain('sis-t.redsys.es')
+        ->and($compTest->get('MerchantParameters'))->not->toBeEmpty();
+
+    config(['redsys.enviroment' => 'production']);
+
+    $compProd = livewire(DonacionBanner::class, ['prefix' => 'modal'])
+        ->set('type', DonationType::RECURRENTE->value)
+        ->set('frequency', DonationFrequency::MENSUAL->value)
+        ->set('payment_method', PaymentMethod::TARJETA->value)
+        ->set('amount', '7,50')
+        ->call('toStep', 4)
+        ->call('submit');
+
+    expect($compProd->get('form_url'))->toContain('sis.redsys.es')
+        ->and($compProd->get('MerchantParameters'))->not->toBeEmpty();
+});
+
+test('donacionBanner unica genera form_url correcto según entorno', function () {
+    config(['redsys.enviroment' => 'test']);
+    $compTest = livewire(DonacionBanner::class, ['prefix' => 'modal'])
+        ->set('type', DonationType::UNICA->value)
+        ->set('payment_method', PaymentMethod::TARJETA->value)
+        ->set('amount', '6,00')
+        ->call('toStep', 4)
+        ->call('submit');
+    expect($compTest->get('form_url'))->toContain('sis-t.redsys.es')
+        ->and($compTest->get('MerchantParameters'))->not->toBeEmpty();
+
+    config(['redsys.enviroment' => 'production']);
+    $compProd = livewire(DonacionBanner::class, ['prefix' => 'modal'])
+        ->set('type', DonationType::UNICA->value)
+        ->set('payment_method', PaymentMethod::TARJETA->value)
+        ->set('amount', '8,00')
+        ->call('toStep', 4)
+        ->call('submit');
+    expect($compProd->get('form_url'))->toContain('sis.redsys.es')
+        ->and($compProd->get('MerchantParameters'))->not->toBeEmpty();
+});
+
+test('donacionBanner recurrente incluye COF_INI y COF_TYPE en MerchantParameters decodificados', function () {
+    config(['redsys.enviroment' => 'test']);
+    $comp = livewire(DonacionBanner::class, ['prefix' => 'modal'])
+        ->set('type', DonationType::RECURRENTE->value)
+        ->set('frequency', DonationFrequency::MENSUAL->value)
+        ->set('payment_method', PaymentMethod::TARJETA->value)
+        ->set('amount', '5,50')
+        ->call('toStep', 4)
+        ->call('submit');
+    $decoded = json_decode(base64_decode(strtr($comp->get('MerchantParameters'), '-_', '+/')), true);
+    expect($decoded)->toHaveKeys([
+        'DS_MERCHANT_ORDER', 'DS_MERCHANT_AMOUNT', 'DS_MERCHANT_COF_INI', 'DS_MERCHANT_COF_TYPE',
+    ])
+        ->and($decoded['DS_MERCHANT_COF_INI'])->toBe('S')
+        ->and($decoded['DS_MERCHANT_COF_TYPE'])->toBe('R');
+});
+
+test('donacionBanner única NO incluye campos COF en MerchantParameters', function () {
+    $comp = livewire(DonacionBanner::class, ['prefix' => 'modal'])
+        ->set('type', DonationType::UNICA->value)
+        ->set('payment_method', PaymentMethod::TARJETA->value)
+        ->set('amount', '12,00')
+        ->call('toStep', 4)
+        ->call('submit');
+    $decoded = json_decode(base64_decode(strtr($comp->get('MerchantParameters'), '-_', '+/')), true);
+    expect($decoded)->toHaveKeys(['DS_MERCHANT_ORDER', 'DS_MERCHANT_AMOUNT'])
+        ->and($decoded)->not->toHaveKeys(['DS_MERCHANT_COF_INI', 'DS_MERCHANT_COF_TYPE']);
+});
+
+test('MerchantParameters codifica correctamente número y amount de donación única', function () {
+    $amount = '9,99';
+    $comp = livewire(DonacionBanner::class, ['prefix' => 'modal'])
+        ->set('type', DonationType::UNICA->value)
+        ->set('payment_method', PaymentMethod::TARJETA->value)
+        ->set('amount', $amount)
+        ->call('toStep', 4)
+        ->call('submit');
+    $decoded = json_decode(base64_decode(strtr($comp->get('MerchantParameters'), '-_', '+/')), true);
+    $donacion = Donation::where('number', $decoded['DS_MERCHANT_ORDER'])->first();
+    expect($donacion)->toBeInstanceOf(Donation::class)
+        ->and($decoded['DS_MERCHANT_AMOUNT'])->toBe(convert_amount_to_redsys($donacion->amount));
+});
+
+test('Signature y SignatureVersion presentes en donación recurrente', function () {
+    $comp = livewire(DonacionBanner::class, ['prefix' => 'modal'])
+        ->set('type', DonationType::RECURRENTE->value)
+        ->set('frequency', DonationFrequency::MENSUAL->value)
+        ->set('payment_method', PaymentMethod::TARJETA->value)
+        ->set('amount', '6,75')
+        ->call('toStep', 4)
+        ->call('submit');
+    expect($comp->get('MerchantSignature'))->not->toBeEmpty()
+        ->and($comp->get('SignatureVersion'))->toBe('HMAC_SHA256_V1');
+});
+
+test('donacion callback con firma inválida marca ERROR', function () {
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('10,35'),
+        'type' => DonationType::UNICA->value,
+    ]);
+    $donacion = $paymentProcess->modelo;
+
+    // Simular callback Redsys con firma alterada
+    $okData = getResponseDonation($donacion, true);
+    $okData['Ds_Signature'] = 'firma-alterada';
+
+    $this->post(route('donation.response', $okData))
+        ->assertRedirect(route('donacion.finalizada', [
+            'donacion' => $donacion->number,
+        ]));
+
+    $donacion->refresh();
+
+    expect($donacion->state->name)->toBe(OrderStatus::ERROR->value)
+        ->and($donacion->state->info['Error'])->toBe('Firma no válida');
+});
+
+test('donacion recurrente producción incluye url_notification en parámetros crudos', function () {
+    config(['app.env' => 'production']);
+    config(['redsys.enviroment' => 'production']);
+
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('11,00'),
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
+    ]);
+
+    $formData = $paymentProcess->getFormRedSysData();
+    $raw = $paymentProcess->redSysAttributes;
+
+    expect($formData['form_url'])->toContain('sis.redsys.es')
+        ->and($raw)->toHaveKey('DS_MERCHANT_MERCHANTURL');
+});
+
+test('donacion KO por helper genera estado ERROR y mantiene pago inicial', function () {
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('9,00'),
+        'type' => DonationType::UNICA->value,
+    ]);
+    $donacion = $paymentProcess->modelo;
+
+    // Respuesta KO (Ds_Response 9928)
+    $koData = getResponseDonation($donacion, false);
+
+    $this->post(route('donation.response'), $koData)
+        ->assertRedirect(route('donacion.finalizada', [
+            'donacion' => $donacion->number,
+        ]));
+
+    $donacion->refresh();
+    expect($donacion->state->name)->toBe(OrderStatus::ERROR->value)
+        ->and($donacion->payments)->toHaveCount(1)
+        ->and($donacion->payments->first()->amount)->toBe(0.0)
+        ->and($donacion->state->info['Ds_Response'])->toBe('9928');
+});

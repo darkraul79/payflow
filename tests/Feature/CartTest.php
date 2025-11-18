@@ -285,3 +285,15 @@ test('calculo bien los impuestos en el proceso del carrito', function () {
         ]);
 
 });
+
+test('POST a checkout vacio redirige a cart', function () {
+    $this->post(route('checkout'))
+        ->assertRedirect(route('cart'));
+});
+
+test('POST a checkout con items muestra formulario', function () {
+    addProductToCart();
+    setShippingMethod();
+    $this->post(route('checkout'))
+        ->assertOk();
+});

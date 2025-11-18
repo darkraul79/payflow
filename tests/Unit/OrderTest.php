@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Notifications\OrderCreated;
 use App\Services\CartNormalizer;
+use App\Services\PaymentProcess;
 use Darkraul79\Cartify\Facades\Cart as Cartify;
 use Illuminate\Support\Facades\Notification;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -127,7 +128,10 @@ test('vacio cesta después de crear pedido', function () {
 
     creaPedido();
     expect(Cartify::count())->toBe(0)
-        ->and(CartNormalizer::items())->toHaveCount(0);
+        ->and(CartNormalizer::items())->toHaveCount(0)
+        ->and(session()->has('cart.totals.subtotal'))->toBeFalse()
+        ->and(session()->has('cart.shipping_method.price'))->toBeFalse()
+        ->and(session()->has('cart.items'))->toBeFalse();
     $this->get(route('cart'))
         ->assertSee('No hay productos en el carrito');
 });
@@ -329,6 +333,108 @@ test('si selecciono bizum agrego campo z a formulario redsys', function () {
     /** @noinspection PhpUndefinedFieldInspection */
     $params = json_decode(base64_decode(strtr($comp->MerchantParameters, '-_', '+/')), true);
 
-    expect($params['Ds_Merchant_Paymethods'])->toBe('z');
+    expect($params['Ds_Merchant_Paymethods'])->toBe('z')
+        ->and($comp->get('form_url'))->not->toBeEmpty();
 
+});
+
+test('al crear pedido se limpian claves de sesión del carrito', function () {
+    $pedido = creaPedido();
+
+    expect($pedido)->toBeInstanceOf(Order::class)
+        ->and(session()->has('cart.totals.total'))->toBeFalse()
+        ->and(session()->has('cart.shipping_method.id'))->toBeFalse()
+        ->and(session()->all())->not->toHaveKey('cart.items');
+});
+
+test('order form_url correcto según entorno', function () {
+    config(['redsys.enviroment' => 'test']);
+    $ppTest = new PaymentProcess(Order::class, [
+        'amount' => '15,00',
+        'shipping' => 'Envío',
+        'shipping_cost' => 2.50,
+        'subtotal' => 12.50,
+        'payment_method' => PaymentMethod::TARJETA->value,
+    ]);
+    $dataTest = $ppTest->getFormRedSysData();
+    expect($dataTest['form_url'])->toContain('sis-t.redsys.es')
+        ->and($dataTest['Ds_MerchantParameters'])->not->toBeEmpty();
+
+    config(['redsys.enviroment' => 'production']);
+    config(['app.env' => 'production']);
+    $ppProd = new PaymentProcess(Order::class, [
+        'amount' => '22,00',
+        'shipping' => 'Envío',
+        'shipping_cost' => 2.00,
+        'subtotal' => 20.00,
+        'payment_method' => PaymentMethod::TARJETA->value,
+    ]);
+    $dataProd = $ppProd->getFormRedSysData();
+    expect($dataProd['form_url'])->toContain('sis.redsys.es')
+        ->and($dataProd['Ds_MerchantParameters'])->not->toBeEmpty();
+});
+
+test('order producción incluye url_notification en parámetros crudos', function () {
+    config(['app.env' => 'production']);
+    config(['redsys.enviroment' => 'production']);
+    $pp = new PaymentProcess(Order::class, [
+        'amount' => '30,00',
+        'shipping' => 'Envío',
+        'shipping_cost' => 5.00,
+        'subtotal' => 25.00,
+        'payment_method' => PaymentMethod::TARJETA->value,
+    ]);
+    $pp->getFormRedSysData();
+    expect($pp->redSysAttributes)->toHaveKey('DS_MERCHANT_MERCHANTURL');
+});
+
+test('order callback firma inválida marca ERROR', function () {
+    $pedido = creaPedido();
+    $callbackOk = getResponseOrder($pedido);
+    $callbackOk['Ds_Signature'] = 'firma-alterada';
+    $this->post(route('pedido.response'), $callbackOk)
+        ->assertRedirect(route('pedido.finalizado', ['pedido' => $pedido->number]));
+    $pedido->refresh();
+    expect($pedido->state->name)->toBe(OrderStatus::ERROR->value)
+        ->and($pedido->state->info['Error'])->toBe('Firma no válida');
+});
+
+test('order callback KO marca ERROR y mantiene pago inicial', function () {
+    $pedido = creaPedido();
+    $paramsKo = buildRedsysParams(
+        amount: convert_amount_to_redsys($pedido->amount),
+        order: $pedido->number,
+        response: '9928'
+    );
+    $paramsKo['Ds_ProcessedPayMethod'] = '78';
+    $callbackKo = generateRedsysResponse($paramsKo, $pedido->number);
+
+    $this->post(route('pedido.response'), $callbackKo)
+        ->assertRedirect(route('pedido.finalizado', ['pedido' => $pedido->number]));
+    $pedido->refresh();
+    expect($pedido->state->name)->toBe(OrderStatus::ERROR->value)
+        ->and($pedido->payments)->toHaveCount(1)
+        ->and($pedido->payments->first()->amount)->toBe(0.0)
+        ->and($pedido->state->info['Ds_Response'])->toBe('9928');
+});
+
+test('order MerchantParameters codifica correctamente número y amount', function () {
+    $pedido = creaPedido();
+    $callbackOk = getResponseOrder($pedido);
+    $decoded = json_decode(base64_decode(strtr($callbackOk['Ds_MerchantParameters'], '-_', '+/')), true);
+    expect($decoded['Ds_Order'])->toBe($pedido->number)
+        ->and($decoded['Ds_Amount'])->toBe(convert_amount_to_redsys($pedido->amount));
+});
+
+test('order NO incluye campos COF en MerchantParameters', function () {
+    $pp = new PaymentProcess(Order::class, [
+        'amount' => '10,00',
+        'shipping' => 'Envío',
+        'shipping_cost' => 0.00,
+        'subtotal' => 10.00,
+        'payment_method' => PaymentMethod::TARJETA->value,
+    ]);
+    $data = $pp->getFormRedSysData();
+    $decoded = json_decode(base64_decode(strtr($data['Ds_MerchantParameters'], '-_', '+/')), true);
+    expect($decoded)->not->toHaveKeys(['DS_MERCHANT_COF_INI', 'DS_MERCHANT_COF_TYPE']);
 });

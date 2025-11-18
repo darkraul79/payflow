@@ -114,3 +114,27 @@ it('gateway incluye url de notificación cuando se proporciona', function () {
     expect($payment['raw_parameters'])->toHaveKey('DS_MERCHANT_MERCHANTURL')
         ->and($payment['raw_parameters']['DS_MERCHANT_MERCHANTURL'])->toBe('https://example.com/notification');
 });
+
+it('paymentProcess donacion usa url correcta segun entorno', function () {
+    // Entorno test
+    config(['redsys.enviroment' => 'test']);
+    $ppTest = new PaymentProcess(Donation::class, [
+        'amount' => '5,00',
+        'type' => DonationType::UNICA->value,
+        'payment_method' => PaymentMethod::TARJETA->value,
+    ]);
+    $dataTest = $ppTest->getFormRedSysData();
+    expect($dataTest['form_url'])->toContain('sis-t.redsys.es')
+        ->and($dataTest['Ds_MerchantParameters'])->not->toBeEmpty();
+
+    // Entorno producción
+    config(['redsys.enviroment' => 'production']);
+    $ppProd = new PaymentProcess(Donation::class, [
+        'amount' => '7,50',
+        'type' => DonationType::UNICA->value,
+        'payment_method' => PaymentMethod::TARJETA->value,
+    ]);
+    $dataProd = $ppProd->getFormRedSysData();
+    expect($dataProd['form_url'])->toContain('sis.redsys.es')
+        ->and($dataProd['Ds_MerchantParameters'])->not->toBeEmpty();
+});

@@ -13,8 +13,6 @@ use Darkraul79\Cartify\Facades\Cart;
 use Illuminate\View\View;
 use Livewire\Attributes\Session;
 use Livewire\Component;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 
 class FinishOrderComponent extends Component
 {
@@ -97,10 +95,8 @@ class FinishOrderComponent extends Component
 
     public mixed $SignatureVersion;
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
+    public string $form_url = '';
+
     public function mount(): void
     {
         if (app()->isLocal()) {
@@ -175,6 +171,7 @@ class FinishOrderComponent extends Component
         $this->MerchantParameters = $formData['Ds_MerchantParameters'];
         $this->MerchantSignature = $formData['Ds_Signature'];
         $this->SignatureVersion = $formData['Ds_SignatureVersion'];
+        $this->form_url = $formData['form_url'] ?? '';
 
         // Disparar evento para enviar el formulario
         $this->isValid = true;

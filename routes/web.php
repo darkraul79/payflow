@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [FrontEndController::class, 'index'])->name('home');
 
 Route::get('/tienda-solidaria/cesta', [CartController::class, 'index'])->name('cart');
-Route::get('/tienda-solidaria/cesta/pedido', [CartController::class, 'create'])->name('checkout');
+Route::match(['GET', 'POST'], '/tienda-solidaria/cesta/pedido', [CartController::class, 'create'])->name('checkout');
 
 Route::any('/pedido/response', [RedsysController::class, 'store'])->defaults('type', 'order')->name('pedido.response');
 Route::any('/donacion/response', [RedsysController::class, 'store'])->defaults('type',
