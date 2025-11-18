@@ -220,9 +220,19 @@ class RedsysGateway implements GatewayInterface
 
     protected function decodeMerchantParameters(string $merchantParameters): array
     {
-        $decoded = base64_decode(strtr($merchantParameters, '-_', '+/'));
+        $decoded = base64_decode(strtr($merchantParameters, '-_', '+/'), strict: true);
 
-        return json_decode($decoded, true);
+        if ($decoded === false) {
+            throw new RuntimeException('Parámetros MerchantParameters con formato base64 inválido');
+        }
+
+        $params = json_decode($decoded, true);
+
+        if (! is_array($params)) {
+            throw new RuntimeException('Parámetros MerchantParameters con JSON inválido');
+        }
+
+        return $params;
     }
 
     protected function createMerchantSignatureNotification(string $merchantParameters): string

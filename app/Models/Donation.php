@@ -38,25 +38,6 @@ class Donation extends Model implements HasMedia
 {
     use HasAddresses, HasFactory, HasPayments, HasStates, InteractsWithMedia, SoftDeletes;
 
-    /**
-     * @deprecated Use DonationType enum instead
-     */
-    public const string UNICA = 'Simple';
-
-    /**
-     * @deprecated Use DonationType enum instead
-     */
-    public const string RECURRENTE = 'Recurrente';
-
-    /**
-     * @deprecated Use DonationFrequency enum instead
-     */
-    public const array FREQUENCY = [
-        'MENSUAL' => 'Mensual',
-        'TRIMESTRAL' => 'Trimestral',
-        'ANUAL' => 'Anual',
-    ];
-
     protected $fillable = [
         'amount',
         'number',
@@ -130,7 +111,7 @@ class Donation extends Model implements HasMedia
     {
 
         $this->update([
-            'identifier' => $this->type == DonationType::RECURRENTE->value ? $redSysResponse['Ds_Merchant_Identifier'] : null,
+            'identifier' => $this->type == DonationType::RECURRENTE->value ? ($redSysResponse['Ds_Merchant_Identifier'] ?? null) : null,
             'info' => $redSysResponse,
             'next_payment' => $this->type === DonationType::RECURRENTE->value ? $this->updateNextPaymentDate() : null,
         ]);
@@ -377,17 +358,12 @@ class Donation extends Model implements HasMedia
     public function getNextPayDateFormated(): string
     {
 
-        return Carbon::parse($this->next_payment)->format('d-m-Y');
+        return $this->next_payment ? Carbon::parse($this->next_payment)->format('d-m-Y') : 'No definido';
     }
 
     public function getFormatedAmount(): string
     {
         return convertPrice($this->amount);
-    }
-
-    public function getNextPaymentFormated(): string
-    {
-        return Carbon::parse($this->next_payment)->format('d-m-Y');
     }
 
     public function isRecurrente(): bool

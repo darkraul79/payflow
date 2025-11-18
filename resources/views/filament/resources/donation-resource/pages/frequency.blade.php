@@ -1,8 +1,8 @@
 @php
-    use App\Models\Donation;
+    use App\Enums\DonationType;use App\Models\Donation;
 @endphp
 
-@if ($record->type == \App\Enums\DonationType::RECURRENTE->value)
+@if ($record->type == DonationType::RECURRENTE->value)
     <x-filament::section
         :compact="true"
         heading="Frecuencia"

@@ -247,7 +247,16 @@ test('puedo crear donación con fecha de próximo cobro en factory', function ()
     $donacion = Donation::factory()->withNextPayment('15-08-2031')->recurrente()->create();
 
     expect($donacion->next_payment)->toBe('2031-08-15')
-        ->and($donacion->getNextPaymentFormated())->toBe('15-08-2031');
+        ->and($donacion->getNextPayDateFormated())->toBe('15-08-2031');
+});
+
+test('si no existe la fecha de proximo cobro devuelve No definido', function () {
+
+    $donacion = Donation::factory()->withNextPayment('15-08-2031')->recurrente()->create();
+    $donacion->cancel();
+
+    expect($donacion->next_payment)->toBeNull()
+        ->and($donacion->getNextPayDateFormated())->toBe('No definido');
 });
 
 test('puedo actualizar la fecha de siguiente cobro según la frecuencia', function ($frecuencia, $date) {
@@ -947,4 +956,136 @@ test('donacion KO por helper genera estado ERROR y mantiene pago inicial', funct
         ->and($donacion->payments)->toHaveCount(1)
         ->and($donacion->payments->first()->amount)->toBe(0.0)
         ->and($donacion->state->info['Ds_Response'])->toBe('9928');
+});
+
+test('donacion única callback OK repetido no duplica estado PAGADO (idempotencia)', function () {
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('12,00'),
+        'type' => DonationType::UNICA->value,
+    ]);
+    $donacion = $paymentProcess->modelo;
+    $callbackOk = getResponseDonation($donacion, true);
+
+    // Primera llamada OK
+    $this->post(route('donation.response'), $callbackOk)
+        ->assertRedirect(route('donacion.finalizada', ['donacion' => $donacion->number]));
+    $donacion->refresh();
+    expect($donacion->state->name)->toBe(OrderStatus::PAGADO->value)
+        ->and($donacion->states)->toHaveCount(2); // PENDIENTE + PAGADO
+
+    // Segunda llamada OK (duplicada)
+    $this->post(route('donation.response'), $callbackOk)
+        ->assertRedirect(route('donacion.finalizada', ['donacion' => $donacion->number]));
+    $donacion->refresh();
+    expect($donacion->state->name)->toBe(OrderStatus::PAGADO->value)
+        ->and($donacion->states)->toHaveCount(2); // No debe crear estado duplicado
+});
+
+test('donacion recurrente callback OK repetido no duplica estado ACTIVA (idempotencia)', function () {
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('15,00'),
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
+    ]);
+    $donacion = $paymentProcess->modelo;
+    $callbackOk = getResponseDonation($donacion, true);
+
+    // Primera llamada OK
+    $this->post(route('donation.response'), $callbackOk)
+        ->assertRedirect(route('donacion.finalizada', ['donacion' => $donacion->number]));
+    $donacion->refresh();
+    expect($donacion->state->name)->toBe(OrderStatus::ACTIVA->value)
+        ->and($donacion->states)->toHaveCount(2); // PENDIENTE + ACTIVA
+
+    // Segunda llamada OK (duplicada)
+    $this->post(route('donation.response'), $callbackOk)
+        ->assertRedirect(route('donacion.finalizada', ['donacion' => $donacion->number]));
+    $donacion->refresh();
+    expect($donacion->state->name)->toBe(OrderStatus::ACTIVA->value)
+        ->and($donacion->states)->toHaveCount(2); // No debe crear estado duplicado
+});
+
+test('donacion callback sin Ds_MerchantParameters retorna 404', function () {
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('8,00'),
+        'type' => DonationType::UNICA->value,
+    ]);
+    $donacion = $paymentProcess->modelo;
+
+    $this->post(route('donation.response'), [
+        'Ds_Signature' => 'firma-cualquiera',
+        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
+    ])->assertNotFound();
+
+    $donacion->refresh();
+    expect($donacion->state->name)->toBe(OrderStatus::PENDIENTE->value);
+});
+
+test('donacion callback con MerchantParameters corrupto retorna 404', function () {
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('7,00'),
+        'type' => DonationType::UNICA->value,
+    ]);
+    $donacion = $paymentProcess->modelo;
+
+    $this->post(route('donation.response'), [
+        'Ds_MerchantParameters' => 'datos-corruptos-no-base64',
+        'Ds_Signature' => 'firma-cualquiera',
+        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
+    ])->assertNotFound();
+
+    $donacion->refresh();
+    expect($donacion->state->name)->toBe(OrderStatus::PENDIENTE->value);
+});
+
+test('donacion callback con MerchantParameters JSON inválido retorna 404', function () {
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('6,00'),
+        'type' => DonationType::UNICA->value,
+    ]);
+    $donacion = $paymentProcess->modelo;
+
+    // Base64 válido pero JSON inválido
+    $invalidJson = base64_encode('esto no es json válido');
+
+    $this->post(route('donation.response'), [
+        'Ds_MerchantParameters' => $invalidJson,
+        'Ds_Signature' => 'firma-cualquiera',
+        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
+    ])->assertNotFound();
+
+    $donacion->refresh();
+    expect($donacion->state->name)->toBe(OrderStatus::PENDIENTE->value);
+});
+
+test('donacion callback vacío retorna 404', function () {
+    $this->post(route('donation.response'), [])
+        ->assertNotFound();
+});
+
+test('donacion recurrente sin Ds_Merchant_Identifier se procesa correctamente', function () {
+    $paymentProcess = new PaymentProcess(Donation::class, [
+        'amount' => convertPriceNumber('10,00'),
+        'type' => DonationType::RECURRENTE->value,
+        'frequency' => DonationFrequency::MENSUAL->value,
+    ]);
+    $donacion = $paymentProcess->modelo;
+
+    // Crear respuesta Redsys SIN Ds_Merchant_Identifier (escenario test Redsys)
+    $paramsOk = buildRedsysParams(
+        amount: convert_amount_to_redsys($donacion->amount),
+        order: $donacion->number,
+        response: '0000'
+    );
+    // NO incluir Ds_Merchant_Identifier
+    $callbackOk = generateRedsysResponse($paramsOk, $donacion->number);
+
+    $this->post(route('donation.response'), $callbackOk)
+        ->assertRedirect(route('donacion.finalizada', ['donacion' => $donacion->number]));
+
+    $donacion->refresh();
+    expect($donacion->state->name)->toBe(OrderStatus::ACTIVA->value)
+        ->and($donacion->identifier)->toBeNull() // Identifier es null cuando no viene en respuesta
+        ->and($donacion->next_payment)->not->toBeNull()
+        ->and($donacion->payments->first()->amount)->toBe(10.00);
 });

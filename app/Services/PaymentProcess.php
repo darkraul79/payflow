@@ -25,7 +25,7 @@ class PaymentProcess
     /**
      * @param  class-string<Order|Donation>  $clase
      */
-    public function __construct($clase, array|PaymentData $data = [], ?RedsysGateway $gateway = null)
+    public function __construct(string $clase, array|PaymentData $data = [], ?RedsysGateway $gateway = null)
     {
         $this->modelo = new $clase;
         $this->data = $data instanceof PaymentData ? $data->toArray() : $data;
@@ -34,6 +34,12 @@ class PaymentProcess
 
         $this->createModel();
         $this->createInitialPayment();
+
+        // Solo crear estado PENDIENTE para Donations
+        // Orders lo crean automáticamente vía CreateOrderStateAfterCreateListener cuando se dispara CreateOrderEvent
+        if ($this->modelo instanceof Donation) {
+            $this->createState();
+        }
     }
 
     /**
@@ -105,13 +111,16 @@ class PaymentProcess
     }
 
     /**
-     * Crea el estado inicial (opcional si se llama externamente).
+     * Crea el estado inicial PENDIENTE si no existe.
      */
     public function createState(): void
     {
-        $this->modelo->states()->create([
-            'name' => OrderStatus::PENDIENTE->value,
-        ]);
+        // Solo crear si no existe ya un estado PENDIENTE
+        if (! $this->modelo->states()->where('name', OrderStatus::PENDIENTE->value)->exists()) {
+            $this->modelo->states()->create([
+                'name' => OrderStatus::PENDIENTE->value,
+            ]);
+        }
     }
 
     /**

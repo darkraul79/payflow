@@ -438,3 +438,71 @@ test('order NO incluye campos COF en MerchantParameters', function () {
     $decoded = json_decode(base64_decode(strtr($data['Ds_MerchantParameters'], '-_', '+/')), true);
     expect($decoded)->not->toHaveKeys(['DS_MERCHANT_COF_INI', 'DS_MERCHANT_COF_TYPE']);
 });
+
+test('order callback OK repetido no duplica estado PAGADO (idempotencia)', function () {
+    Event::fake();  // Bloquea todos los listeners incluyendo SendEmailsOrderListener
+
+    $pp = new PaymentProcess(Order::class, [
+        'amount' => '25,00',
+        'shipping' => 'Envío',
+        'shipping_cost' => 3.00,
+        'subtotal' => 22.00,
+        'payment_method' => PaymentMethod::TARJETA->value,
+    ]);
+    $pedido = $pp->modelo;
+
+    // Crear estado PENDIENTE manualmente ya que Event::fake bloquea el listener
+    $pedido->states()->create(['name' => OrderStatus::PENDIENTE->value]);
+
+    $callbackOk = getResponseOrder($pedido);
+
+    // Primera llamada OK
+    $this->post(route('pedido.response'), $callbackOk)
+        ->assertRedirect(route('pedido.finalizado', ['pedido' => $pedido->number]));
+    $pedido->refresh();
+    expect($pedido->state->name)->toBe(OrderStatus::PAGADO->value)
+        ->and($pedido->states)->toHaveCount(2); // PENDIENTE + PAGADO
+
+    // Segunda llamada OK (duplicada)
+    $this->post(route('pedido.response'), $callbackOk)
+        ->assertRedirect(route('pedido.finalizado', ['pedido' => $pedido->number]));
+    $pedido->refresh();
+    expect($pedido->state->name)->toBe(OrderStatus::PAGADO->value)
+        ->and($pedido->states)->toHaveCount(2); // No debe crear estado duplicado
+});
+
+test('order callback sin Ds_MerchantParameters retorna 404', function () {
+    creaPedido();
+
+    $this->post(route('pedido.response'), [
+        'Ds_Signature' => 'firma-cualquiera',
+        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
+    ])->assertNotFound();
+});
+
+test('order callback con MerchantParameters corrupto retorna 404', function () {
+    creaPedido();
+
+    $this->post(route('pedido.response'), [
+        'Ds_MerchantParameters' => 'datos-corruptos-no-base64',
+        'Ds_Signature' => 'firma-cualquiera',
+        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
+    ])->assertNotFound();
+});
+
+test('order callback con MerchantParameters JSON inválido retorna 404', function () {
+
+    // Base64 válido pero JSON inválido
+    $invalidJson = base64_encode('esto no es json válido');
+
+    $this->post(route('pedido.response'), [
+        'Ds_MerchantParameters' => $invalidJson,
+        'Ds_Signature' => 'firma-cualquiera',
+        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
+    ])->assertNotFound();
+});
+
+test('order callback vacío retorna 404', function () {
+    $this->post(route('pedido.response'), [])
+        ->assertNotFound();
+});
