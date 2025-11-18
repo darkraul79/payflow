@@ -160,6 +160,24 @@ php artisan test --coverage
 Si descubres algún problema de seguridad, por favor envía un email a **info@raulsebastian.es** en lugar de usar el issue
 tracker.
 
+### Auditoría de Seguridad
+
+Este repositorio ha sido auditado y es **seguro para publicación**.
+Ver [Reporte de Auditoría](docs/SECURITY_AUDIT_REPORT.md).
+
+```bash
+# Ejecutar verificación de seguridad antes de cada commit importante
+./security-check.sh
+```
+
+### Guías de Seguridad
+
+- **[Guía de Seguridad para Documentación](docs/SECURITY_DOCUMENTATION.md)** - Qué es seguro incluir en el repositorio
+- **[Reporte de Auditoría](docs/SECURITY_AUDIT_REPORT.md)** - Última auditoría realizada
+
+⚠️ **Importante:** Las credenciales reales deben estar SOLO en `.env` (nunca en Git)
+
+
 ---
 
 ## 📝 Licencia

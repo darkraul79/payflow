@@ -40,9 +40,9 @@ Actualiza tu `.env` con las nuevas variables:
 # Gateway Configuration
 PAYMENT_GATEWAY_DEFAULT=redsys
 
-# Redsys (mantén los valores actuales)
-REDSYS_KEY=sq7HjrUOBfKmC576ILgskD5srU870gJ7
-REDSYS_MERCHANT_CODE=357328590
+# Redsys (usa tus valores reales aquí)
+REDSYS_KEY=your_merchant_key_here
+REDSYS_MERCHANT_CODE=999999999
 REDSYS_TERMINAL=1
 REDSYS_CURRENCY=978
 REDSYS_ENVIRONMENT=test

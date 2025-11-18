@@ -94,7 +94,7 @@ DATABASE_URL=mysql://user:password@host:3306/database
 
 ```php
 // ❌ MAL
-$merchant_code = '357328590'; // Código real de Redsys
+$merchant_code = '999999999'; // Código real de Redsys
 
 // ✅ BIEN
 $merchant_code = config('redsys.merchant_code'); // Usa configuración
