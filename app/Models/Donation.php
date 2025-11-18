@@ -7,10 +7,10 @@ namespace App\Models;
 use App\Enums\DonationFrequency;
 use App\Enums\DonationType;
 use App\Enums\OrderStatus;
-use App\Helpers\RedsysAPI;
 use App\Models\Traits\HasAddresses;
 use App\Models\Traits\HasPayments;
 use App\Models\Traits\HasStates;
+use Darkraul79\Payflow\Gateways\RedsysGateway;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -136,7 +137,7 @@ class Donation extends Model implements HasMedia
 
         $this->payments->where('number', $redSysResponse['Ds_Order'])->firstOrFail()->update(
             [
-                'amount' => convertPriceFromRedsys($redSysResponse['Ds_Amount']),
+                'amount' => convert_amount_from_redsys($redSysResponse['Ds_Amount']),
                 'info' => $redSysResponse,
 
             ]);
@@ -230,57 +231,90 @@ class Donation extends Model implements HasMedia
         abort(403, 'La donación ya NO está activa y no se puede volver a pagar');
     }
 
+    /**
+     * Procesa un cobro automático (recurrente) vía Redsys.
+     *
+     * Crea registro Payment con amount=0, solicita el pago (REST),
+     * valida firma y actualiza estado / siguiente cobro.
+     *
+     * En éxito: actualiza amount y deja info completa.
+     * En error: marca estado ERROR y añade mensaje en info['error'].
+     */
     public function processPay(): Payment
     {
-        $number = generatePaymentNumber($this);
+        if ($this->type !== DonationType::RECURRENTE->value) {
+            throw new RuntimeException('processPay solo aplicable a donaciones recurrentes.');
+        }
 
-        $pago = $this->payments()->create([
-            'number' => $number,
+        if (empty($this->identifier)) {
+            // No se puede hacer cobro directo sin identificador inicial (alta previa OK).
+            throw new RuntimeException('Donación recurrente sin identifier para cobro automático.');
+        }
+
+        $paymentNumber = generatePaymentNumber($this);
+
+        $payment = $this->payments()->create([
+            'number' => $paymentNumber,
             'amount' => 0,
             'info' => [],
         ]);
 
-        $redsys = new RedsysAPI;
+        $gateway = app(RedsysGateway::class);
 
-        $redsys->getFormPagoAutomatico($this, $number);
-        $response = $redsys->send();
-
-        $response = json_decode($response, true);
-        $datos = $response['Ds_MerchantParameters'];
-        $signatureRecibida = $response['Ds_Signature'];
-
-        if (empty($datos) || empty($signatureRecibida)) {
-            abort(404, 'Datos de Redsys no recibidos');
-        }
-
-        $decodec = json_decode($redsys->decodeMerchantParameters($datos), true);
-        $firma = $redsys->createMerchantSignatureNotif(config('redsys.key'), $datos);
-
-        $cantidad = 0;
-        $info = $decodec;
-
-        if ($redsys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
-
-            $cantidad = convertPriceFromRedsys($decodec['Ds_Amount']);
-
-        } else {
-            $error = hash_equals($firma, $signatureRecibida)
-                ? estado_redsys($decodec['Ds_Response'])
-                : 'Firma no válida';
-            $info['error'] = $error;
-
-            // ESTABLEZCO ESTADO DE ERROR
-            $this->error_pago($info, $error);
-
-        }
-        $pago->update([
-            'info' => $info,
-            'amount' => $cantidad,
+        // Preparar parámetros (direct payment recurrente)
+        $gateway->createPayment($this->amount, $paymentNumber, [
+            'recurring' => [
+                'identifier' => $this->identifier,
+                'direct_payment' => 'true', // DS_MERCHANT_DIRECTPAYMENT
+            ],
+            'payment_method' => 'tarjeta',
         ]);
 
+        // Enviar petición REST (throws si falla HTTP)
+        $response = $gateway->sendRestPayment(); // Redsys devuelve estructura con parámetros / firma
+
+        if (! isset($response['Ds_MerchantParameters'], $response['Ds_Signature'])) {
+            throw new RuntimeException('Respuesta Redsys inválida en cobro recurrente.');
+        }
+
+        $merchantParameters = $response['Ds_MerchantParameters'];
+        $signatureReceived = $response['Ds_Signature'];
+
+        // Validación y decodificación unificadas
+        $decodedData = $gateway->processCallback([
+            'Ds_MerchantParameters' => $merchantParameters,
+            'Ds_Signature' => $signatureReceived,
+        ]);
+
+        $decoded = $decodedData['decoded_data'] ?? [];
+        $isValid = $decodedData['is_valid'] ?? false;
+
+        $amount = 0.0;
+        $info = $decoded;
+
+        if ($isValid && $gateway->isSuccessful([
+            'Ds_MerchantParameters' => $merchantParameters,
+            'Ds_Signature' => $signatureReceived,
+        ])) {
+            $amount = RedsysGateway::convertAmountFromRedsys($decoded['Ds_Amount'] ?? '0');
+        } else {
+            $errorMessage = $gateway->getErrorMessage([
+                'Ds_MerchantParameters' => $merchantParameters,
+                'Ds_Signature' => $signatureReceived,
+            ]);
+            $info['error'] = $errorMessage;
+            $this->error_pago($info, $errorMessage);
+        }
+
+        $payment->update([
+            'info' => $info,
+            'amount' => $amount,
+        ]);
+
+        // Mantengo lógica actual: se reprograma incluso en KO (tests lo esperan)
         $this->updateNextPaymentDate();
 
-        return $pago;
+        return $payment;
     }
 
     public function error_pago($redSysResponse, $mensaje = null): void

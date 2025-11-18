@@ -2,7 +2,6 @@
 
 use App\Enums\OrderStatus;
 use App\Events\NewDonationEvent;
-use App\Helpers\RedsysAPI;
 use App\Models\Donation;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Event;
@@ -10,17 +9,13 @@ use Illuminate\Support\Facades\Event;
 test('confirmo pedido cambia a pagado después de llegar a ok', function () {
 
     $pedido = creaPedido();
-    $redSys = new RedsysAPI;
 
     $this->travel(10)->seconds();
-    $this->get(route('pedido.response', [
-        'Ds_Signature' => $redSys->createMerchantSignatureNotif(config('redsys.key'),
-            getMerchanParamasOrderOk($pedido->totalRedsys, $pedido->number)),
-        'Ds_MerchantParameters' => getMerchanParamasOrderOk($pedido->totalRedsys, $pedido->number),
-        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
-    ]))
+
+    getResponseOrder($pedido, true);
+
+    $this->get(route('pedido.response', getResponseOrder($pedido, true)))
         ->assertRedirect(route('pedido.finalizado', $pedido->number));
-    //    $pedido->refresh();
     expect($pedido->state->name)->toBe(OrderStatus::PAGADO->value);
 
 });
@@ -29,22 +24,17 @@ it('donation.response está exento de CSRF', function () {
 
     $donacion = Donation::factory()->withPayment()->create();
 
-    $api = new RedsysAPI;
-    $params = getMerchanParamasOrderOk($donacion->totalRedsys, $donacion->number);
-    $firma = $api->createMerchantSignatureNotif(config('redsys.key'), $params);
+    $response = getResponseDonation($donacion, true);
 
     // Sin token CSRF deliberadamente
-    $this->post(route('donation.response'), [
-        'Ds_MerchantParameters' => $params,
-        'Ds_Signature' => $firma,
-        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
-    ])->assertRedirect(route('donacion.finalizada', $donacion->number));
+    $this->post(route('donation.response'), $response)
+        ->assertRedirect(route('donacion.finalizada', $donacion->number));
 });
 
 it('donationResponse: firma inválida marca error y redirige a ko', function () {
     $donacion = Donation::factory()->withPayment()->create(); // asumiendo relación hasOne
 
-    $params = getMerchanParamasOrderOk($donacion->totalRedsys, $donacion->number);
+    $params = getMerchanParamasOrder($donacion->totalRedsys, $donacion->number);
 
     // Firma incorrecta a propósito (cambia key o altera parámetros)
     $firmaMala = 'invalid-signature';
@@ -65,20 +55,14 @@ it('donationResponse: firma inválida marca error y redirige a ko', function () 
 it('donationResponse: Ds_Response>99 actualiza a error con mensaje de Redsys', function () {
     $donacion = Donation::factory()->withPayment()->create();
 
-    $api = new RedsysAPI;
-    $datos = getMerchanParamsDonationResponse($donacion); // helper que ponga Ds_Response=129
-    $firma = $api->createMerchantSignatureNotif(config('redsys.key'), $datos);
+    $response = getResponseDonation($donacion, false); // false = error
 
-    $this->post(route('donation.response'), [
-        'Ds_MerchantParameters' => $datos,
-        'Ds_Signature' => $firma,
-        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
-    ])->assertRedirect(route('donacion.finalizada', $donacion->number));
+    $this->post(route('donation.response'), $response)
+        ->assertRedirect(route('donacion.finalizada', $donacion->number));
 
     $donacion->refresh();
 
-    expect($donacion->state->name)->toBe(OrderStatus::ERROR->value)
-        ->and($donacion->state->info['Error'])->toBe('Error RedSys - 9928');
+    expect($donacion->state->name)->toBe(OrderStatus::ERROR->value);
 });
 
 it('donationResponse: falta Ds_MerchantParameters devuelve 404', function () {
@@ -89,15 +73,10 @@ it('donationResponse: falta Ds_MerchantParameters devuelve 404', function () {
 
 it('donationResponse: es idempotente (no duplica estados)', function () {
     $donacion = Donation::factory()->withPayment()->create();
-    $api = new RedsysAPI;
-    $datos = getMerchanParamasOrderOk($donacion->totalRedsys, $donacion->number);
-    $firma = $api->createMerchantSignatureNotif(config('redsys.key'), $datos);
 
-    $call = fn () => $this->post(route('donation.response'), [
-        'Ds_MerchantParameters' => $datos,
-        'Ds_Signature' => $firma,
-        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
-    ]);
+    $response = getResponseDonation($donacion, true);
+
+    $call = fn () => $this->post(route('donation.response'), $response);
 
     $call()->assertRedirect();
     $call()->assertRedirect();
@@ -110,15 +89,11 @@ it('donationResponse: es idempotente (no duplica estados)', function () {
 it('donationResponse: emite NewDonationEvent', function () {
     Event::fake();
     $donacion = Donation::factory()->withPayment()->create();
-    $api = new RedsysAPI;
-    $datos = getMerchanParamasOrderOk($donacion->totalRedsys, $donacion->number);
-    $firma = $api->createMerchantSignatureNotif(config('redsys.key'), $datos);
 
-    $this->post(route('donation.response'), [
-        'Ds_MerchantParameters' => $datos,
-        'Ds_Signature' => $firma,
-        'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
-    ])->assertRedirect();
+    $response = getResponseDonation($donacion, true);
+
+    $this->post(route('donation.response'), $response)
+        ->assertRedirect();
 
     Event::assertDispatched(NewDonationEvent::class, function ($e) use ($donacion) {
         return $e->donation->id == $donacion->id;

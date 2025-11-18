@@ -14,10 +14,13 @@ class SendNewDonationEmailListener
     {
         $this->notificoATodosLosUsuariosQueHayNuevaDonacion($event);
 
-        if ($event->donation->certificate() && $event->donation->certificate()->email) {
+        // Cargar la relación y obtener el certificado
+        $certificate = $event->donation->certificate();
 
-            Mail::to($event->donation->certificate()->email)
-                ->send(new DonationNewMail($event->donation));
+        // certificate() retorna false si no encuentra, no null
+        if ($certificate !== false && $certificate->email) {
+            Mail::to($certificate->email)
+                ->queue(new DonationNewMail($event->donation));
         }
     }
 

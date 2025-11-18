@@ -1,6 +1,5 @@
 <?php
 
-use App\Helpers\RedsysAPI;
 use App\Livewire\CardProduct;
 use App\Livewire\FinishOrderComponent;
 use App\Livewire\PageCartComponent;
@@ -71,7 +70,7 @@ test('si selecciono bizum se crea un parametro en redsys Ds_Merchant_Paymethods 
         ->assertHasNoErrors();
 
     /** @noinspection PhpUndefinedFieldInspection */
-    $params = json_decode((new RedsysAPI)->decodeMerchantParameters($p->MerchantParameters), true);
+    $params = json_decode(base64_decode($p->MerchantParameters), true);
 
     expect($params['Ds_Merchant_Paymethods'])->toBe('z');
 
@@ -99,7 +98,7 @@ test('si selecciono tarjeta NO se crea un parametro en redsys Ds_Merchant_Paymet
         ->assertHasNoErrors();
 
     /** @noinspection PhpUndefinedFieldInspection */
-    $params = json_decode((new RedsysAPI)->decodeMerchantParameters($p->MerchantParameters), true);
+    $params = json_decode(base64_decode($p->MerchantParameters), true);
 
     expect($params)->not->toHaveKey('Ds_Merchant_Paymethods');
 

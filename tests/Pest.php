@@ -12,7 +12,6 @@
 */
 
 use App\Enums\DonationType;
-use App\Helpers\RedsysAPI;
 use App\Livewire\CardProduct;
 use App\Livewire\FinishOrderComponent;
 use App\Livewire\PageCartComponent;
@@ -140,40 +139,13 @@ function addProductToCart(?Product $producto = null): void
 
 }
 
-function getMerchanParamasOrderOk($amount, $order_number): string
-{
-
-    $data = [
-        'Ds_Date' => '27%2F05%2F2025',
-        'Ds_Hour' => '14%3A18',
-        'Ds_SecurePayment' => '1',
-        'Ds_Amount' => $amount,
-        'Ds_Currency' => '978',
-        'Ds_Order' => $order_number,
-        'Ds_MerchantCode' => config('redsys.merchant_code'),
-        'Ds_Terminal' => config('redsys.terminal'),
-        'Ds_Response' => '0000',
-        'Ds_TransactionType' => config('redsys.transaction_type'),
-        'Ds_MerchantData' => '',
-        'Ds_AuthorisationCode' => '025172',
-        'Ds_ConsumerLanguage' => '1',
-        'Ds_Card_Country' => '724',
-        'Ds_Card_Brand' => '1',
-        'Ds_ProcessedPayMethod' => '78',
-        'Ds_Control_1748348283917' => '1748348283917',
-    ];
-    $redSys = new RedsysAPI;
-
-    return $redSys->encodeBase64(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-}
-
 function getMerchanParamsDonationReccurente(Donation $donacion, $ok = false): string
 {
     $data = [
         'Ds_Date' => Carbon::now()->format('d%2m%2Y'),
         'Ds_Hour' => '17%3A47',
         'Ds_SecurePayment' => '1',
-        'Ds_Amount' => convertNumberToRedSys($donacion->amount),
+        'Ds_Amount' => convert_amount_to_redsys($donacion->amount),
         'Ds_Currency' => '978',
         'Ds_Order' => $donacion->number,
         'Ds_MerchantCode' => '357328590',
@@ -192,36 +164,8 @@ function getMerchanParamsDonationReccurente(Donation $donacion, $ok = false): st
         'Ds_Control_1748965667893' => '1748965667893',
 
     ];
-    $redSys = new RedsysAPI;
 
-    return $redSys->encodeBase64(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-}
-
-function getMerchanParamsDonationResponse(Donation $donacion, $ok = false): string
-{
-    $data = [
-        'Ds_Amount' => convertNumberToRedSys($donacion->amount),
-        'Ds_Date' => Carbon::now()->format('d%2m%2Y'),
-        'Ds_Hour' => Carbon::now()->format('h%3Ali'),
-        'Ds_Order' => $donacion->number,
-        'Ds_MerchantCode' => '357328590',
-        'Ds_Terminal' => '1',
-        'Ds_Response' => $ok ? '0000' : '9928',
-        'Ds_AuthorisationCode' => '191312',
-        'Ds_TransactionType' => '0',
-        'Ds_SecurePayment' => '0',
-        'Ds_Language' => '1',
-        'Ds_Merchant_Identifier' => '625d3d2506fefefb9e79990f192fc3de74c08317',
-        'Ds_MerchantData' => '',
-        'Ds_Card_Country' => '724',
-        'Ds_Card_Brand' => '1',
-        'Ds_ProcessedPayMethod' => '3',
-        'Ds_Control_1748965667893' => '1748965667893',
-
-    ];
-    $redSys = new RedsysAPI;
-
-    return $redSys->encodeBase64(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    return base64_encode(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 }
 
 function getMerchanParamsDonationUnica(Donation $donacion, $ok = false): string
@@ -230,7 +174,7 @@ function getMerchanParamsDonationUnica(Donation $donacion, $ok = false): string
         'Ds_Date' => Carbon::now()->format('d%2m%2Y'),
         'Ds_Hour' => '17%3A47',
         'Ds_SecurePayment' => '1',
-        'Ds_Amount' => convertNumberToRedSys($donacion->amount),
+        'Ds_Amount' => convert_amount_to_redsys($donacion->amount),
         'Ds_Currency' => '978',
         'Ds_Order' => $donacion->number,
         'Ds_MerchantCode' => '357328590',
@@ -244,62 +188,128 @@ function getMerchanParamsDonationUnica(Donation $donacion, $ok = false): string
         'Ds_Card_Brand' => '1',
         'Ds_Control_1748965667893' => '1748965667893',
     ];
-    $redSys = new RedsysAPI;
 
-    return $redSys->encodeBase64(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    return base64_encode(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 }
 
-function getMerchanParamsOrder(Order $order, $ok = false): string
+function getResponseDonation(Donation $donacion, $state = true): array
 {
-    $data = [
-        'Ds_Date' => Carbon::now()->format('d%20m%20Y'),
-        'Ds_Hour' => Carbon::now()->format('H:i'),
+    $amount = convert_amount_to_redsys($donacion->amount);
+    $order = $donacion->number;
+
+    $params = [
+        'Ds_Date' => now()->format('d/m/Y'),
+        'Ds_Hour' => now()->format('H:i'),
         'Ds_SecurePayment' => '1',
-        'Ds_Amount' => convertNumberToRedSys($order->amount).'',
+        'Ds_Amount' => $amount,
         'Ds_Currency' => '978',
-        'Ds_Order' => $order->number,
-        'Ds_MerchantCode' => '357328590',
+        'Ds_Order' => $order,
+        'Ds_MerchantCode' => config('redsys.merchantcode'),
         'Ds_Terminal' => '001',
-        'Ds_Response' => $ok ? '0000' : '9928',
+        'Ds_Response' => $state ? '0000' : '9928',
         'Ds_TransactionType' => '0',
         'Ds_MerchantData' => '',
         'Ds_AuthorisationCode' => '191312',
         'Ds_ConsumerLanguage' => '1',
         'Ds_Card_Country' => '724',
         'Ds_Card_Brand' => '1',
-        'Ds_Control_1748965667893' => '1748965667893',
+        'Ds_Control_'.time() => (string) time(),
     ];
-    $redSys = new RedsysAPI;
 
-    return $redSys->encodeBase64(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-}
-
-function getResponseDonation(Donation $donacion, $ok = false): array
-{
-    $redSys = new RedsysAPI;
-    if ($donacion->type === DonationType::RECURRENTE->value) {
-        $merchantParams = getMerchanParamsDonationReccurente($donacion, $ok);
-    } else {
-
-        $merchantParams = getMerchanParamsDonationUnica($donacion, $ok);
+    if ($donacion->type === DonationType::RECURRENTE->value && $state) {
+        $params['Ds_Merchant_Identifier'] = 'IDENTIFIER_'.Str::random(10);
+        $params['Ds_Merchant_Cof_Txnid'] = Str::random(10);
+        $params['Ds_Currency'] = '978';
+        $params['Ds_SecurePayment'] = '1';
+        $params['Ds_Terminal'] = '001';
+        $params['Ds_ExpiryDate'] = '4912';
+        $params['Ds_ConsumerLanguage'] = '1';
     }
 
+    $merchantParams = getBase64_encode($params);
+    $encryptedOrder = generateEncryptedData($order);
+
+    $signatureBase64 = generateSignature($merchantParams, $encryptedOrder);
+
     return [
         'Ds_MerchantParameters' => $merchantParams,
-        'Ds_Signature' => $redSys->createMerchantSignatureNotif(config('redsys.key'), $merchantParams),
+        'Ds_Signature' => $signatureBase64,
         'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
     ];
 }
 
-function getResponseOrder(Order $order, $ok = false): array
+function getBase64_encode(array $params): string
 {
-    $redSys = new RedsysAPI;
+    return base64_encode(json_encode($params, JSON_UNESCAPED_SLASHES));
+}
 
-    $merchantParams = getMerchanParamsOrder($order, $ok);
+function generateEncryptedData(string $order): string
+{
+    // ✅ Encriptación EXACTA como en RedsysGateway
+    $decodedKey = base64_decode(config('redsys.key'));
+    $iv = "\0\0\0\0\0\0\0\0";
+
+    $length = ceil(strlen($order) / 8) * 8;
+
+    return substr(
+        openssl_encrypt(
+            $order.str_repeat("\0", $length - strlen($order)), // ✅ Padding manual
+            'des-ede3-cbc',
+            $decodedKey,
+            OPENSSL_RAW_DATA,
+            $iv
+        ),
+        0,
+        $length
+    );
+}
+
+function generateSignature(string $merchantParams, string $encryptedOrder): string
+{
+    $signature = hash_hmac('sha256', $merchantParams, $encryptedOrder, true);
+
+    return strtr(base64_encode($signature), '+/', '-_');
+}
+
+function getResponseOrder(Order $order): array
+{
+    $amount = convert_amount_to_redsys($order->amount);
+    $orderNumber = $order->number;
+    // Usar el método interno de Redsys para crear firma
+    $merchantParams = getMerchanParamasOrder($amount, $orderNumber);
+    $encryptedOrder = generateEncryptedData($orderNumber);
+
+    $signatureBase64 = generateSignature($merchantParams, $encryptedOrder);
 
     return [
         'Ds_MerchantParameters' => $merchantParams,
-        'Ds_Signature' => $redSys->createMerchantSignatureNotif(config('redsys.key'), $merchantParams),
+        'Ds_Signature' => $signatureBase64,
         'Ds_SignatureVersion' => 'HMAC_SHA256_V1',
     ];
+}
+
+function getMerchanParamasOrder($amount, $order_number): string
+{
+
+    $data = [
+        'Ds_Date' => now()->format('d/m/Y'),
+        'Ds_Hour' => now()->format('H:i'),
+        'Ds_SecurePayment' => '1',
+        'Ds_Amount' => $amount,
+        'Ds_Currency' => '978',
+        'Ds_Order' => $order_number,
+        'Ds_MerchantCode' => config('redsys.merchant_code'),
+        'Ds_Terminal' => config('redsys.terminal'),
+        'Ds_Response' => '0000',
+        'Ds_TransactionType' => config('redsys.transaction_type'),
+        'Ds_MerchantData' => '',
+        'Ds_AuthorisationCode' => '025172',
+        'Ds_ConsumerLanguage' => '1',
+        'Ds_Card_Country' => '724',
+        'Ds_Card_Brand' => '1',
+        'Ds_ProcessedPayMethod' => '78',
+        'Ds_Control_'.time() => (string) time(),
+    ];
+
+    return getBase64_encode($data);
 }

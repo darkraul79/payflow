@@ -218,7 +218,7 @@ test('al crear donación única envío email al donante', function ($state, $sub
     Mail::fake();
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
-        'type' => Donation::UNICA,
+        'type' => DonationType::UNICA->value,
     ]);
     $donacion = $paymentProcess->modelo;
     $donacion->addresses()->create([

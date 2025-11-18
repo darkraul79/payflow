@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
-use App\Helpers\RedsysAPI;
 use App\Models\Order;
 use App\Models\Page;
+use Darkraul79\Payflow\Facades\Gateway;
 
 class CartController extends Controller
 {
@@ -22,7 +22,8 @@ class CartController extends Controller
     /**
      * Get common parameters for cart pages
      *
-     * @noinspection PhpDynamicAsStaticMethodCallInspection*/
+     * @noinspection PhpDynamicAsStaticMethodCallInspection
+     */
     private function getParams(string $title): array
     {
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
@@ -58,8 +59,23 @@ class CartController extends Controller
             abort(404);
         }
 
-        $redSys = new RedsysAPI;
-        $data = $redSys->getFormDirectPay($pedido);
+        // Usar Payflow Gateway en lugar de RedsysAPI
+        $payment = Gateway::withRedsys()->createPayment(
+            amount: $pedido->amount,
+            orderId: $pedido->number,
+            options: [
+                'url_ok' => route('pedido.response'),
+                'url_ko' => route('pedido.response'),
+                'url_notification' => route('pedido.response'),
+            ]
+        );
+
+        // La estructura de $payment ahora incluye:
+        // - Ds_MerchantParameters
+        // - Ds_Signature
+        // - Ds_SignatureVersion
+        // - form_url (URL del formulario de Redsys)
+        $data = $payment;
 
         return view('frontend.pagar-pedido', compact('data'));
     }

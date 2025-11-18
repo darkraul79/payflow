@@ -133,7 +133,7 @@ class Order extends Model implements HasMedia
 
         $this->payments->where('number', $redSysResponse['Ds_Order'])->firstOrFail()->update(
             [
-                'amount' => convertPriceFromRedsys($redSysResponse['Ds_Amount']),
+                'amount' => convert_amount_from_redsys($redSysResponse['Ds_Amount']),
                 'info' => $redSysResponse,
 
             ]);

@@ -27,14 +27,24 @@ class RedsysGateway implements GatewayInterface
 
     public function __construct()
     {
-        $this->merchantKey = config('payflow.gateways.redsys.key', '');
-        $this->merchantCode = config('payflow.gateways.redsys.merchant_code', '');
-        $this->terminal = config('payflow.gateways.redsys.terminal', '1');
-        $this->currency = config('payflow.gateways.redsys.currency', '978'); // EUR
-        $this->transactionType = config('payflow.gateways.redsys.transaction_type', '0');
-        $this->tradeName = config('payflow.gateways.redsys.trade_name', 'Laravel App');
-        $this->environment = config('payflow.gateways.redsys.environment', 'test');
-        $this->version = config('payflow.gateways.redsys.version', 'HMAC_SHA256_V1');
+        // Usar la configuración del proyecto principal, no del paquete
+        $this->merchantKey = config('redsys.key') ?? config('payflow.gateways.redsys.key') ?? '';
+        $this->merchantCode = config('redsys.merchantcode') ?? config('payflow.gateways.redsys.merchant_code') ?? '';
+        $this->terminal = config('redsys.terminal') ?? config('payflow.gateways.redsys.terminal') ?? '1';
+        $this->currency = config('redsys.currency') ?? config('payflow.gateways.redsys.currency') ?? '978'; // EUR
+        $this->transactionType = config('redsys.transactiontype') ?? config('payflow.gateways.redsys.transaction_type') ?? '0';
+        $this->tradeName = config('redsys.tradename') ?? config('payflow.gateways.redsys.trade_name') ?? 'Laravel App';
+        $this->environment = config('redsys.enviroment') ?? config('payflow.gateways.redsys.environment') ?? 'test';
+        $this->version = 'HMAC_SHA256_V1';
+
+        // Validar configuración crítica
+        if (empty($this->merchantKey)) {
+            throw new RuntimeException('Redsys merchant key is not configured. Please set REDSYS_KEY in your .env file.');
+        }
+
+        if (empty($this->merchantCode)) {
+            throw new RuntimeException('Redsys merchant code is not configured. Please set REDSYS_MERCHANT_CODE in your .env file.');
+        }
     }
 
     /**
@@ -233,6 +243,8 @@ class RedsysGateway implements GatewayInterface
 
         $merchantParameters = $data['Ds_MerchantParameters'];
         $signatureReceived = $data['Ds_Signature'];
+
+        // createMerchantSignatureNotification() YA devuelve URL-safe base64
         $signature = $this->createMerchantSignatureNotification($merchantParameters);
 
         return hash_equals($signature, $signatureReceived);
@@ -253,7 +265,7 @@ class RedsysGateway implements GatewayInterface
     public function getErrorMessage(array $data): string
     {
         if (! $this->verifySignature($data)) {
-            return 'Invalid signature';
+            return 'Firma no válida';
         }
 
         $decodedData = $this->decodeMerchantParameters($data['Ds_MerchantParameters']);
@@ -301,7 +313,7 @@ class RedsysGateway implements GatewayInterface
             '9929' => 'Anulación de autorización en diferido realizada por el comercio',
         ];
 
-        return $errors[$code] ?? "Error desconocido ({$code})";
+        return $errors[$code] ?? "Error desconocido ($code)";
     }
 
     public function refund(string $transactionId, float $amount): bool
@@ -347,7 +359,7 @@ class RedsysGateway implements GatewayInterface
         curl_close($ch);
 
         if ($response === false || $httpCode !== 200) {
-            throw new RuntimeException("Redsys REST API error: {$error} (HTTP {$httpCode})");
+            throw new RuntimeException("Redsys REST API error: $error (HTTP $httpCode)");
         }
 
         return json_decode($response, true);

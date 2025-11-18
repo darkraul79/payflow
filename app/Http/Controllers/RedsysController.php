@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Events\CreateOrderEvent;
 use App\Events\NewDonationEvent;
-use App\Helpers\RedsysAPI;
 use App\Models\Order;
 use App\Models\Payment;
+use Darkraul79\Payflow\Facades\Gateway;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -33,18 +33,27 @@ class RedsysController extends Controller
      */
     private function handleDonationResponse(Request $request): RedirectResponse
     {
-        $redSys = new RedsysAPI;
-        [$decodec, $firma] = $this->validateRedsysRequest($request, $redSys);
+        try {
+            // Procesar callback usando Payflow Gateway
+            $result = Gateway::withRedsys()->processCallback($request->all());
+            $decodedData = $result['decoded_data'];
+        } catch (\RuntimeException $e) {
+            abort(404, 'Datos de Redsys no recibidos');
+        }
 
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-        $donacion = Payment::where('number', $decodec['Ds_Order'])->firstOrFail()->payable;
+        $donacion = Payment::where('number', $decodedData['Ds_Order'])->firstOrFail()->payable;
 
-        if ($this->isSuccessfulPayment($redSys, $firma, $decodec)) {
-            $donacion->payed($decodec);
+        // Verificar si el pago fue exitoso
+        if (Gateway::withRedsys()->isSuccessful($request->all())) {
+            $donacion->payed($decodedData);
         } else {
-            $error = $this->getPaymentError($firma, $decodec);
-            $donacion->error_pago($decodec, $error);
+            $error = Gateway::withRedsys()->getErrorMessage($request->all());
+            $donacion->error_pago($decodedData, $error);
         }
+
+        // Cargar relaciones antes de disparar el evento
+        $donacion->load('addresses');
 
         NewDonationEvent::dispatch($donacion);
 
@@ -54,65 +63,31 @@ class RedsysController extends Controller
     }
 
     /**
-     * Validate and decode Redsys request parameters
-     */
-    private function validateRedsysRequest(Request $request, RedsysAPI $redSys): array
-    {
-        $datos = $request->input('Ds_MerchantParameters');
-        $signatureRecibida = $request->input('Ds_Signature');
-
-        if (empty($datos) || empty($signatureRecibida)) {
-            abort(404, 'Datos de Redsys no recibidos');
-        }
-
-        $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
-        $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
-
-        return [$decodec, $firma];
-    }
-
-    /**
-     * Check if payment was successful
-     */
-    private function isSuccessfulPayment(RedsysAPI $redSys, string $firma, array $decodec): bool
-    {
-        $signatureRecibida = request('Ds_Signature');
-
-        return $redSys->checkSignature($firma, $signatureRecibida)
-            && intval($decodec['Ds_Response']) <= 99;
-    }
-
-    /**
-     * Get payment error message
-     */
-    private function getPaymentError(string $firma, array $decodec, ?string $signatureRecibida = null): string
-    {
-        $signatureRecibida = $signatureRecibida ?? request('Ds_Signature');
-
-        return hash_equals($firma, $signatureRecibida)
-            ? estado_redsys($decodec['Ds_Response'])
-            : 'Firma no válida';
-    }
-
-    /**
      * Handle order response from Redsys
      */
     private function handleOrderResponse(Request $request): RedirectResponse
     {
         Session::forget('cart');
-        $redSys = new RedsysAPI;
-        [$decodec, $firma] = $this->validateRedsysRequest($request, $redSys);
+
+        try {
+            // Procesar callback usando Payflow Gateway
+            $result = Gateway::withRedsys()->processCallback($request->all());
+            $decodedData = $result['decoded_data'];
+        } catch (\RuntimeException $e) {
+            abort(404, 'Datos de Redsys no recibidos');
+        }
 
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-        $pedido = Order::where('number', $decodec['Ds_Order'])->firstOrFail();
+        $pedido = Order::where('number', $decodedData['Ds_Order'])->firstOrFail();
 
         CreateOrderEvent::dispatch($pedido);
 
-        if ($this->isSuccessfulPayment($redSys, $firma, $decodec)) {
-            $pedido->payed($decodec);
+        // Verificar si el pago fue exitoso
+        if (Gateway::withRedsys()->isSuccessful($request->all())) {
+            $pedido->payed($decodedData);
         } else {
-            $error = $this->getPaymentError($firma, $decodec);
-            $pedido->error($error, $decodec);
+            $error = Gateway::withRedsys()->getErrorMessage($request->all());
+            $pedido->error($error, $decodedData);
         }
 
         return redirect()->route('pedido.finalizado', [
@@ -126,27 +101,27 @@ class RedsysController extends Controller
     private function handlePaymentResponse(Request $request): RedirectResponse
     {
         $response = json_decode($request->input('response'), true);
-        $redSys = new RedsysAPI;
 
-        $datos = $response['Ds_MerchantParameters'];
-        $signatureRecibida = $response['Ds_Signature'];
-
-        if (empty($datos) || empty($signatureRecibida)) {
+        // Validar que existan los datos necesarios
+        if (! isset($response['Ds_MerchantParameters']) || ! isset($response['Ds_Signature'])) {
             abort(404, 'Datos de Redsys no recibidos');
         }
 
-        $decodec = json_decode($redSys->decodeMerchantParameters($datos), true);
-        $firma = $redSys->createMerchantSignatureNotif(config('redsys.key'), $datos);
+        // Procesar callback usando Payflow Gateway
+        $result = Gateway::withRedsys()->processCallback($response);
+        $decodedData = $result['decoded_data'];
 
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-        $pago = Payment::where('number', $decodec['Ds_Order'])->firstOrFail();
-        $cantidad = 0;
-        $info = $decodec;
+        $pago = Payment::where('number', $decodedData['Ds_Order'])->firstOrFail();
 
-        if ($redSys->checkSignature($firma, $signatureRecibida) && intval($decodec['Ds_Response']) <= 99) {
-            $cantidad = convertPriceFromRedsys($decodec['Ds_Amount']);
+        $cantidad = 0;
+        $info = $decodedData;
+
+        // Verificar si el pago fue exitoso
+        if (Gateway::withRedsys()->isSuccessful($response)) {
+            $cantidad = convert_amount_from_redsys($decodedData['Ds_Amount']);
         } else {
-            $error = $this->getPaymentError($firma, $decodec, $signatureRecibida);
+            $error = Gateway::withRedsys()->getErrorMessage($response);
             $info['error'] = $error;
         }
 
@@ -168,7 +143,8 @@ class RedsysController extends Controller
     /**
      * Show payment result page
      *
-     * @noinspection PhpDynamicAsStaticMethodCallInspection*/
+     * @noinspection PhpDynamicAsStaticMethodCallInspection
+     */
     public function show(string $number): View|RedirectResponse
     {
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */

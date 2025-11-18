@@ -18,9 +18,11 @@ use App\Models\User;
 use App\Notifications\DonationCreatedNotification;
 use App\Services\PaymentProcess;
 use Carbon\Carbon;
+use Darkraul79\Payflow\Gateways\RedsysGateway;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Tests\Fakes\FakeRedsysGateway;
 
 use function Pest\Livewire\livewire;
 
@@ -105,10 +107,11 @@ test('puedo crear donacion recurrente', function () {
     ]);
     $donacion = $paymentProcess->modelo;
 
-    $this->get(route('donation.response', getResponseDonation($donacion, true)))
+    $this->post(route('donation.response', getResponseDonation($donacion, true)))
         ->assertRedirect(route('donacion.finalizada', [
             'donacion' => $donacion->number,
         ]));
+
     $this->get(route('donacion.finalizada', [
         'donacion' => $donacion->number,
     ]))->assertSee('Gracias');
@@ -132,6 +135,7 @@ test('puedo crear donacion unica', function () {
         ->assertRedirect(route('donacion.finalizada', [
             'donacion' => $donacion->number,
         ]));
+
     $this->get(route('donacion.finalizada', [
         'donacion' => $donacion->number,
     ]))->assertSee('Gracias');
@@ -166,6 +170,7 @@ test('NO puedo crear pago a donacion cancelada', function () {
 
 test('puedo crear pago a KO donacion recurrente', function () {
 
+    app()->instance(RedsysGateway::class, new FakeRedsysGateway(ok: true));
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
         'type' => DonationType::RECURRENTE->value,
@@ -296,6 +301,7 @@ it('processPay KO en donación recurrente marca ERROR y reprograma next_payment'
 
 test('puedo procesar job ProcessDonationPaymentJob', function () {
 
+    app()->instance(RedsysGateway::class, new FakeRedsysGateway(ok: true));
     $paymentProcess = new PaymentProcess(Donation::class, [
         'amount' => convertPriceNumber('10,35'),
         'type' => DonationType::RECURRENTE->value,
@@ -710,7 +716,7 @@ test('si selecciono tarjeta no existe campo z en formulario redsys', function ()
         ->call('submit');
 
     /** @noinspection PhpUndefinedFieldInspection */
-    $params = json_decode((new RedsysAPI)->decodeMerchantParameters($comp->MerchantParameters), true);
+    $params = json_decode(base64_decode($comp->MerchantParameters), true);
 
     expect($params)->not->toHaveKey('Ds_Merchant_Paymethods');
 
