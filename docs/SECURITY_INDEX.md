@@ -9,7 +9,7 @@ Si es tu primera vez revisando la seguridad del repositorio, lee en este orden:
     - Verificaciones realizadas
     - Comandos útiles
 
-2. **[../SECURITY_ACTION_REQUIRED.md](../SECURITY_ACTION_REQUIRED.md)**
+2. **[../SECURITY_ACTION_REQUIRED.md](SECURITY_ACTION_REQUIRED.md)**
     - Acción inmediata requerida
     - Configuración del archivo .env local
     - Primeros pasos
@@ -28,16 +28,16 @@ Si es tu primera vez revisando la seguridad del repositorio, lee en este orden:
 | Archivo                                                              | Descripción                                       |
 |----------------------------------------------------------------------|---------------------------------------------------|
 | [COMO_ASEGURAR_NO_HAY_RASTROS.md](./COMO_ASEGURAR_NO_HAY_RASTROS.md) | ⭐ **Empieza aquí** - Verificación rápida y simple |
-| [../SECURITY_ACTION_REQUIRED.md](../SECURITY_ACTION_REQUIRED.md)     | Acción inmediata: configurar .env local           |
+| [../SECURITY_ACTION_REQUIRED.md](SECURITY_ACTION_REQUIRED.md)        | Acción inmediata: configurar .env local           |
 | [../scripts/README.md](../scripts/README.md)                         | Cómo usar scripts de verificación                 |
 
 ### Nivel 2: Documentación Técnica (15 minutos)
 
-| Archivo                                                                    | Descripción                                    |
-|----------------------------------------------------------------------------|------------------------------------------------|
-| [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md)                     | Auditoría detallada de seguridad implementada  |
-| [SECURITY_DOCUMENTATION.md](./SECURITY_DOCUMENTATION.md)                   | Documentación completa de medidas de seguridad |
-| [../SECURITY_VERIFICATION_SUMMARY.md](../SECURITY_VERIFICATION_SUMMARY.md) | Resumen ejecutivo de verificación de seguridad |
+| Archivo                                                                 | Descripción                                    |
+|-------------------------------------------------------------------------|------------------------------------------------|
+| [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md)                  | Auditoría detallada de seguridad implementada  |
+| [SECURITY_DOCUMENTATION.md](./SECURITY_DOCUMENTATION.md)                | Documentación completa de medidas de seguridad |
+| [../SECURITY_VERIFICATION_SUMMARY.md](SECURITY_VERIFICATION_SUMMARY.md) | Resumen ejecutivo de verificación de seguridad |
 
 ### Nivel 3: Referencias Exhaustivas (30+ minutos)
 
@@ -121,7 +121,7 @@ cat .env.example
 
 ### Para Desarrolladores
 
-- [ ] He leído [SECURITY_ACTION_REQUIRED.md](../SECURITY_ACTION_REQUIRED.md)
+- [ ] He leído [SECURITY_ACTION_REQUIRED.md](SECURITY_ACTION_REQUIRED.md)
 - [ ] He configurado mi `.env` local
 - [ ] Ejecuto `./scripts/verify-security.sh` antes de push
 - [ ] Conozco qué archivos NO debo commitear
@@ -146,7 +146,7 @@ cat .env.example
 
 ### ¿Cómo configuro mi entorno local?
 
-→ [SECURITY_ACTION_REQUIRED.md](../SECURITY_ACTION_REQUIRED.md)
+→ [SECURITY_ACTION_REQUIRED.md](SECURITY_ACTION_REQUIRED.md)
 
 ### ¿Cómo verifico que no hay credenciales?
 

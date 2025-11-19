@@ -175,13 +175,13 @@ chmod +x .git/hooks/pre-commit
 
 ## 📖 Documentación Creada
 
-1. **[docs/SECURITY_AUDIT_REPORT.md](docs/SECURITY_AUDIT_REPORT.md)**  
+1. **[docs/SECURITY_AUDIT_REPORT.md](SECURITY_AUDIT_REPORT.md)**  
    Reporte completo de la auditoría realizada
 
-2. **[docs/SECURITY_DOCUMENTATION.md](docs/SECURITY_DOCUMENTATION.md)**  
+2. **[docs/SECURITY_DOCUMENTATION.md](SECURITY_DOCUMENTATION.md)**  
    Guía de qué es seguro incluir en el repositorio
 
-3. **[security-check.sh](security-check.sh)**  
+3. **[security-check.sh](../security-check.sh)**  
    Script para verificar seguridad antes de commits
 
 4. **README.md**  
@@ -227,7 +227,7 @@ chmod +x .git/hooks/pre-commit
 Si tienes dudas sobre seguridad:
 
 - **Email:** info@raulsebastian.es
-- **Documentación:** [docs/SECURITY_DOCUMENTATION.md](docs/SECURITY_DOCUMENTATION.md)
+- **Documentación:** [docs/SECURITY_DOCUMENTATION.md](SECURITY_DOCUMENTATION.md)
 
 ---
 
