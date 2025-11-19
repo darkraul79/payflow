@@ -1,5 +1,5 @@
 @php
-    use App\Models\Donation;
+    use App\Enums\DonationFrequency;use App\Enums\DonationType;use App\Models\Donation;
 @endphp
 
 <div class="{{ $step === 1 ? 'block' : 'hidden' }}">
@@ -15,19 +15,19 @@
             :options="[
                 [
                     'text' => 'Donación única',
-                    'value' => \App\Enums\DonationType::UNICA->value,
+                    'value' => DonationType::UNICA->value,
                 ],
                 [
                     'text' => 'Hazte Socio',
-                    'value' => \App\Enums\DonationType::RECURRENTE->value,
+                    'value' => DonationType::RECURRENTE->value,
                 ],
             ]"
         />
 
         <x-error class="form-error" field="type" />
     </div>
-    @if ($type === \App\Enums\DonationType::RECURRENTE->value)
-        <div class="my-6 flex flex-col w-full" wire:model="frequency">
+    @if ($type === DonationType::RECURRENTE->value)
+        <div class="my-6 flex flex-col w-full">
             <x-radiobutton-donacion
                 name="frequency"
                 :prefix="$prefix"
@@ -36,15 +36,15 @@
                 :options="[
                     [
                         'text' => 'Mensual',
-                        'value' => \App\Enums\DonationFrequency::MENSUAL->value,
+                        'value' => DonationFrequency::MENSUAL->value,
                     ],
                     [
                         'text' => 'Trimestral',
-                        'value' => \App\Enums\DonationFrequency::TRIMESTRAL->value,
+                        'value' => DonationFrequency::TRIMESTRAL->value,
                     ],
                     [
                         'text' => 'Anual',
-                        'value' => \App\Enums\DonationFrequency::ANUAL->value,
+                        'value' => DonationFrequency::ANUAL->value,
                     ],
                 ]"
             />
@@ -56,7 +56,7 @@
         </div>
     @endif
 
-    <div class="my-6 flex flex-col w-full" wire:model="amount_select">
+    <div class="my-6 flex flex-col w-full">
         <x-radiobutton-donacion
             name="amount_select"
             :prefix="$prefix"

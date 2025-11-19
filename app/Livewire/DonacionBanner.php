@@ -133,6 +133,39 @@ class DonacionBanner extends Component
         $this->amount = $value;
     }
 
+    public function updatedAmountSelect10($value): void
+    {
+        if ($value) {
+            $this->amount = '10';
+            $this->amount_select_50 = false;
+            $this->amount_select_100 = false;
+        }
+    }
+
+    public function updatedAmountSelect50($value): void
+    {
+        if ($value) {
+            $this->amount = '50';
+            $this->amount_select_10 = false;
+            $this->amount_select_100 = false;
+        }
+    }
+
+    public function updatedAmountSelect100($value): void
+    {
+        if ($value) {
+            $this->amount = '100';
+            $this->amount_select_10 = false;
+            $this->amount_select_50 = false;
+        }
+    }
+
+    public function updatedFrequency($value): void
+    {
+        // No hacer nada con amount cuando cambia frequency
+        // Este hook previene que Livewire interfiera con otros campos
+    }
+
     /**
      * @throws Exception
      */
