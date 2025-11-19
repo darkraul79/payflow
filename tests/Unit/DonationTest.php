@@ -333,15 +333,28 @@ test('puedo procesar job ProcessDonationPaymentJob', function () {
 
     $donacion->refresh();
 
-    $tomorrow = Carbon::now()->addDay()->format('Y-m-d');
+    // Verificar que tiene 1 pago inicial
+    expect($donacion->payments)->toHaveCount(1)
+        ->and($donacion->identifier)->not->toBeNull();
 
+    // Viajar en el tiempo
     $this->travel(1)->days();
+    $expectedDate = Carbon::now()->format('Y-m-d');
 
-    ProcessDonationPaymentJob::dispatch($donacion);
+    // Actualizar next_payment para que sea hoy (para que el job lo procese)
+    $donacion->update(['next_payment' => $expectedDate]);
+    $donacion->refresh();
 
-    expect($donacion->payments)->toHaveCount(2)
+    // Ejecutar el job sincrónicamente
+    $job = new ProcessDonationPaymentJob($donacion);
+    $job->handle();
+
+    // Refrescar la donación después de ejecutar el job
+    $donacion->refresh();
+
+    expect($donacion->payments)->toHaveCount(2) // 1 pago inicial + 1 nuevo pago recurrente
         ->and($donacion->payments->last()->amount)->toBe(10.35)
-        ->and($donacion->payments->last()->created_at->format('Y-m-d'))->toBe($tomorrow)
+        ->and($donacion->payments->last()->created_at->format('Y-m-d'))->toBe($expectedDate)
         ->and($donacion->state->name)->toBe(OrderStatus::ACTIVA->value);
 
 });
@@ -1511,3 +1524,9 @@ test('observabilidad: log contiene todos los campos requeridos para donation', f
             return true;
         });
 })->group('observability');
+
+test('cuando selecciono frecuencia en banner no cambia amount', function () {
+    livewire(DonacionBanner::class, ['prefix' => 'modal'])
+        ->set('frequency', DonationFrequency::TRIMESTRAL->value)
+        ->assertSet('amount', 0);
+});
