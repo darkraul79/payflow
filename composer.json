@@ -1,0 +1,71 @@
+{
+    "name": "darkraul79/payflow",
+    "description": "A flexible multi-gateway payment package for Laravel (Redsys, Stripe, PayPal, etc.)",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "payment",
+        "gateway",
+        "redsys",
+        "stripe",
+        "paypal",
+        "payment-gateway",
+        "payflow"
+    ],
+    "authors": [
+        {
+            "name": "Raul Sebastian",
+            "email": "darkraul79@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/darkraul79/payflow/issues",
+        "source": "https://github.com/darkraul79/payflow"
+    },
+    "require": {
+        "php": "^8.2 || ^8.3",
+        "illuminate/support": "^12.0",
+        "illuminate/contracts": "^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0",
+        "laravel/pint": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Darkraul79\\Payflow\\": "src/"
+        },
+        "files": [
+            "src/Helpers/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Darkraul79\\Payflow\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Darkraul79\\Payflow\\PayflowServiceProvider"
+            ],
+            "aliases": {
+                "Gateway": "Darkraul79\\Payflow\\Facades\\Gateway"
+            }
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "prefer-stable": true
+}
