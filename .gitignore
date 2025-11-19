@@ -29,6 +29,9 @@ php_errorlog
 storage/media-library/
 .DS_Store
 */.DS_Store
+*/*/.DS_Store
+*/*/*.DS_Store
+
 
 # MCP y configuraciones de IA (pueden contener información sensible)
 /.mcp.json
