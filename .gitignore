@@ -55,9 +55,7 @@ storage/media-library/
 /packages/
 
 # Scripts de gestión de paquetes locales (solo uso local del desarrollador)
-/subtree-manager.sh
-/setup-subtree-workflow.sh
-/remove-packages-from-git.sh
-/SETUP_COMPLETE.md
-/FINAL_STEP.md
+/*.sh
+/*.md
+!/README.md
 
