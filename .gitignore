@@ -59,3 +59,6 @@ storage/media-library/
 /*.md
 !/README.md
 
+
+# Archivos de log de php en servidor
+/public/php_errorlog
