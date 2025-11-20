@@ -27,10 +27,10 @@ yarn-error.log
 /storage/debugbar/
 php_errorlog
 storage/media-library/
+
+# macOS system files
 .DS_Store
-*/.DS_Store
-*/*/.DS_Store
-*/*/*.DS_Store
+**/.DS_Store
 
 
 # MCP y configuraciones de IA (pueden contener información sensible)
