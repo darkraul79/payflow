@@ -50,3 +50,13 @@ storage/media-library/
 #   - API keys de producción
 #   - Información confidencial de clientes
 #   - Archivos .env con valores reales
+
+# Paquetes de desarrollo local - se consumen desde Packagist
+/packages/
+
+# Scripts de gestión de paquetes locales (solo uso local del desarrollador)
+/subtree-manager.sh
+/setup-subtree-workflow.sh
+/remove-packages-from-git.sh
+/SETUP_COMPLETE.md
+
