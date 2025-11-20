@@ -8,19 +8,8 @@
         "framework"
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "./packages/cartify"
-        },
-        {
-            "type": "path",
-            "url": "./packages/payflow"
-        }
-    ],
     "require": {
-        "darkraul79/cartify": "@dev",
-        "darkraul79/payflow": "@dev",
+        "darkraul79/simple-cart-payflow": "^0.1",
         "php": "^8.2",
         "ext-curl": "*",
         "ext-openssl": "*",
