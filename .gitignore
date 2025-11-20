@@ -59,4 +59,5 @@ storage/media-library/
 /setup-subtree-workflow.sh
 /remove-packages-from-git.sh
 /SETUP_COMPLETE.md
+/FINAL_STEP.md
 

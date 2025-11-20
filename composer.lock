@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0037fdf6ea5a1a0770a4760a8eb82403",
+    "content-hash": "0e92ef9361e1a31680f3d42526fc47e0",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -614,52 +614,50 @@
         },
         {
             "name": "darkraul79/cartify",
-            "version": "dev-packages",
+            "version": "v0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/darkraul79/cartify.git",
+                "reference": "6877d2509c4ad181183b65408a263552676afb6c"
+            },
             "dist": {
-                "type": "path",
-                "url": "./packages/cartify",
-                "reference": "c059e66ec777c65bd1503684d34f89f8debb8307"
+                "type": "zip",
+                "url": "https://api.github.com/repos/darkraul79/cartify/zipball/6877d2509c4ad181183b65408a263552676afb6c",
+                "reference": "6877d2509c4ad181183b65408a263552676afb6c",
+                "shasum": ""
             },
             "require": {
                 "illuminate/contracts": "^12.0",
                 "illuminate/database": "^12.0",
                 "illuminate/support": "^12.0",
-                "php": "^8.3"
+                "php": "^8.2 || ^8.3"
             },
             "require-dev": {
-                "orchestra/testbench": "^9.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^10.0",
                 "pestphp/pest": "^4.0",
                 "pestphp/pest-plugin-laravel": "^4.0"
             },
             "type": "library",
             "extra": {
                 "laravel": {
-                    "providers": [
-                        "Darkraul79\\Cartify\\CartifyServiceProvider"
-                    ],
                     "aliases": {
                         "Cart": "Darkraul79\\Cartify\\Facades\\Cart"
-                    }
+                    },
+                    "providers": [
+                        "Darkraul79\\Cartify\\CartifyServiceProvider"
+                    ]
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Darkraul79\\Cartify\\": "src/"
-                },
                 "files": [
                     "src/Helpers/helpers.php"
-                ]
-            },
-            "autoload-dev": {
+                ],
                 "psr-4": {
-                    "Darkraul79\\Cartify\\Tests\\": "tests/"
+                    "Darkraul79\\Cartify\\": "src/"
                 }
             },
-            "scripts": {
-                "test": [
-                    "vendor/bin/pest"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -679,57 +677,57 @@
                 "orders",
                 "shopping-cart"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/darkraul79/cartify/issues",
+                "source": "https://github.com/darkraul79/cartify"
+            },
+            "time": "2025-11-19T18:19:25+00:00"
         },
         {
             "name": "darkraul79/payflow",
-            "version": "dev-packages",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/darkraul79/payflow.git",
+                "reference": "1b46b71c92e55e6d90cd41cee5d65bc46bee4913"
+            },
             "dist": {
-                "type": "path",
-                "url": "./packages/payflow",
-                "reference": "ded2f4e02ca8c29b9c2ed6028af6c6bf60f5de4a"
+                "type": "zip",
+                "url": "https://api.github.com/repos/darkraul79/payflow/zipball/1b46b71c92e55e6d90cd41cee5d65bc46bee4913",
+                "reference": "1b46b71c92e55e6d90cd41cee5d65bc46bee4913",
+                "shasum": ""
             },
             "require": {
                 "illuminate/contracts": "^12.0",
                 "illuminate/support": "^12.0",
-                "php": "^8.3"
+                "php": "^8.2 || ^8.3"
             },
             "require-dev": {
-                "orchestra/testbench": "^9.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^10.0",
                 "pestphp/pest": "^4.0",
                 "pestphp/pest-plugin-laravel": "^4.0"
             },
             "type": "library",
             "extra": {
                 "laravel": {
-                    "providers": [
-                        "Darkraul79\\Payflow\\PayflowServiceProvider"
-                    ],
                     "aliases": {
                         "Gateway": "Darkraul79\\Payflow\\Facades\\Gateway"
-                    }
+                    },
+                    "providers": [
+                        "Darkraul79\\Payflow\\PayflowServiceProvider"
+                    ]
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Darkraul79\\Payflow\\": "src/"
-                },
                 "files": [
                     "src/Helpers/helpers.php"
-                ]
-            },
-            "autoload-dev": {
+                ],
                 "psr-4": {
-                    "Darkraul79\\Payflow\\Tests\\": "tests/"
+                    "Darkraul79\\Payflow\\": "src/"
                 }
             },
-            "scripts": {
-                "test": [
-                    "vendor/bin/pest"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -750,9 +748,80 @@
                 "redsys",
                 "stripe"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/darkraul79/payflow/issues",
+                "source": "https://github.com/darkraul79/payflow"
+            },
+            "time": "2025-11-19T18:19:33+00:00"
+        },
+        {
+            "name": "darkraul79/simple-cart-payflow",
+            "version": "v0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/darkraul79/simple-cart-payflow.git",
+                "reference": "54a8a550bd6fa5536da6391cfc27c8cf9d9847b8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/darkraul79/simple-cart-payflow/zipball/54a8a550bd6fa5536da6391cfc27c8cf9d9847b8",
+                "reference": "54a8a550bd6fa5536da6391cfc27c8cf9d9847b8",
+                "shasum": ""
+            },
+            "require": {
+                "darkraul79/cartify": "^0.1",
+                "darkraul79/payflow": "^0.1",
+                "php": "^8.2 || ^8.3"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^10.0",
+                "pestphp/pest": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Cart": "Darkraul79\\Cartify\\Facades\\Cart",
+                        "Gateway": "Darkraul79\\Payflow\\Facades\\Gateway"
+                    },
+                    "providers": [
+                        "Darkraul79\\SimpleCartPayFlow\\SimpleCartPayFlowServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Darkraul79\\SimpleCartPayFlow\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Raul Sebastian",
+                    "email": "darkraul79@gmail.com"
+                }
+            ],
+            "description": "Unified installation of Cartify + Payflow for Laravel e-commerce projects",
+            "keywords": [
+                "cart",
+                "checkout",
+                "e-commerce",
+                "gateway",
+                "laravel",
+                "payment",
+                "redsys",
+                "shopping-cart"
+            ],
+            "support": {
+                "issues": "https://github.com/darkraul79/simple-cart-payflow/issues",
+                "source": "https://github.com/darkraul79/simple-cart-payflow"
+            },
+            "time": "2025-11-19T19:03:17+00:00"
         },
         {
             "name": "datlechin/filament-menu-builder",
@@ -14866,10 +14935,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "darkraul79/cartify": 20,
-        "darkraul79/payflow": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
