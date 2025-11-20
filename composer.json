@@ -10,7 +10,7 @@
     "license": "MIT",
     "require": {
         "darkraul79/simple-cart-payflow": "^0.1",
-        "php": "^8.2",
+        "php": "^8.3",
         "ext-curl": "*",
         "ext-openssl": "*",
         "blade-ui-kit/blade-ui-kit": "^0.7.0",
@@ -89,6 +89,9 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "platform": {
+            "php": "8.3.0"
         }
     },
     "minimum-stability": "stable",
