@@ -118,9 +118,58 @@ test('cada vez que abro ventana de donación se resetea el componente', function
 
 })->group('lentos');
 
-function assertDonationProcesed(
-    TestCase|\PHPUnit\Framework\TestCase $testcase
-): ?Donation {
+test('puedo hacer donación única en banner con certificado', function ($paymentMethod) {
+
+    $pageBasic = Page::factory()->basica()->withDonacion()->create();
+
+    $page = visit($pageBasic->getUrl());
+
+    $page->assertSee('Dona a la FUNDACIÓN Elena Tertre')
+        ->assertSee('Página de prueba para donación en banner')
+        ->press('@banner-type-donacion-unica');
+
+    assertStep1($page, 'banner');
+    assertStep2($page, true, 'banner');
+    assertStep4($page, $paymentMethod, 'banner');
+
+    $donacion = assertDonationProcesed($this);
+
+    expect($donacion->state->name)->toBe(OrderStatus::PAGADO->value)
+        ->and($donacion->payments->first()->amount)->toBe(10.0)
+        ->and($donacion->type)->toBe(DonationType::UNICA->value);
+
+})->with([
+    PaymentMethod::BIZUM->value,
+    PaymentMethod::TARJETA->value,
+])->group('lentos');
+
+test('puedo hacer donación recurrente en banner con certificado', function ($paymentMethod) {
+
+    $pageBasic = Page::factory()->basica()->withDonacion()->create();
+
+    $page = visit($pageBasic->getUrl());
+
+    $page->assertSee('Dona a la FUNDACIÓN Elena Tertre')
+        ->assertSee('Página de prueba para donación en banner')
+        ->press('@banner-type-hazte-socio')
+        ->press('@banner-frequency-mensual');
+
+    assertStep1($page, 'banner');
+    assertStep2($page, true, 'banner');
+    assertStep4($page, $paymentMethod, 'banner');
+
+    $donacion = assertDonationProcesed($this);
+
+    expect($donacion->state->name)->toBe(OrderStatus::ACTIVA->value)
+        ->and($donacion->payments->first()->amount)->toBe(10.0)
+        ->and($donacion->type)->toBe(DonationType::RECURRENTE->value);
+
+})->with([
+    PaymentMethod::TARJETA->value, // SOLO ADMITE TARJETA
+])->group('lentos');
+
+function assertDonationProcesed(TestCase|\PHPUnit\Framework\TestCase $testcase): ?Donation
+{
     $donacion = Donation::first();
 
     expect(Donation::count())->toBe(1);
@@ -142,57 +191,69 @@ function assertDonationProcesed(
     return $donacion;
 }
 
-function assertStep1(ArrayablePendingAwaitablePage|PendingAwaitablePage $page
+function assertStep1(
+    ArrayablePendingAwaitablePage|PendingAwaitablePage $page,
+    string $layout = 'modal'
 ): void {
     $page
-        ->press('@modal-amount_select-10-eur')
-        ->press('@modal-donation-step-1-next-button')
+        ->press('@'.$layout.'-amount_select-10-eur')
+        ->press('@'.$layout.'-donation-step-1-next-button')
         ->assertSee('¿Necesitas un certificado de donaciones?');
 }
 
-function assertStep2(ArrayablePendingAwaitablePage|PendingAwaitablePage $page, bool $certificate = false): void
-{
+function assertStep2(
+    ArrayablePendingAwaitablePage|PendingAwaitablePage $page,
+    bool $certificate = false,
+    string $layout = 'modal'
+): void {
 
     if ($certificate) {
         $page
-            ->press('@modal-needsCertificate-si')
-            ->press('@modal-donation-step-2-next-button')
+            ->press('@'.$layout.'-needsCertificate-si')
+            ->press('@'.$layout.'-donation-step-2-next-button')
             ->assertSee('Datos para certificado de donaciones')
-            ->type('modal_certificate_name', 'Juan')
-            ->type('modal_certificate_last_name', 'Sebastian')
-            ->type('modal_certificate_last_name2', 'Pérez')
-            ->type('modal_certificate_company', 'Empresa')
-            ->type('modal_certificate_nif', '123456789A')
-            ->type('modal_certificate_address', 'Calle Falsa 123')
-            ->type('modal_certificate_cp', '28001')
-            ->select('modal_certificate_province', 'Madrid')
-            ->type('modal_certificate_city', 'Madrid')
-            ->type('modal_certificate_email', 'example@emaple.com')
-            ->type('modal_certificate_phone', '666666666')
-            ->press('@modal-donation-step-3-next-button');
+            ->type($layout.'_certificate_name', 'Juan')
+            ->type($layout.'_certificate_last_name', 'Sebastian')
+            ->type($layout.'_certificate_last_name2', 'Pérez')
+            ->type($layout.'_certificate_company', 'Empresa')
+            ->type($layout.'_certificate_nif', '123456789A')
+            ->type($layout.'_certificate_address', 'Calle Falsa 123')
+            ->type($layout.'_certificate_cp', '28001')
+            ->select($layout.'_certificate_province', 'Madrid')
+            ->type($layout.'_certificate_city', 'Madrid')
+            ->type($layout.'_certificate_email', 'example@emaple.com')
+            ->type($layout.'_certificate_phone', '666666666')
+            ->press('@'.$layout.'-donation-step-3-next-button');
 
     } else {
         $page
-            ->press('@modal-needsCertificate-no')
-            ->press('@modal-donation-step-2-next-button');
+            ->press('@'.$layout.'-needsCertificate-no')
+            ->press('@'.$layout.'-donation-step-2-next-button');
     }
 
 }
 
-function assertStep4(ArrayablePendingAwaitablePage|PendingAwaitablePage $page, string $paymentMethod): void
-{
+function assertStep4(
+    ArrayablePendingAwaitablePage|PendingAwaitablePage $page,
+    string $paymentMethod,
+    string $layout = 'modal'
+): void {
     $page
         ->assertSee('Método de pago')
-        ->press('@modal-payment-method-'.$paymentMethod)
-        ->pressAndWaitFor('@modal-button-pay', 5)
+        ->press('@'.$layout.'-payment-method-'.$paymentMethod)
+        ->pressAndWaitFor('@'.$layout.'-button-pay', 5)
         ->assertSourceMissing('<div class="text-error/80 w-full text-[11px]">');
 }
 
-function preparePage(): PendingAwaitablePage|ArrayablePendingAwaitablePage
+function preparePage(string $layout = 'modal'): PendingAwaitablePage|ArrayablePendingAwaitablePage
 {
     $page = visit('/');
-    $page->click('@DonacionButtonModal')
-        ->assertSee('Dona a la FUNDACIÓN Elena Tertre');
+    if ($layout === 'modal') {
+        $home = Page::first();
+        $home->update(['layout' => 'donacion']);
+        $page->press('@DonacionButtonModal');
+    }
+    $page->assertSee('Dona a la FUNDACIÓN Elena Tertre');
 
     return $page;
 }

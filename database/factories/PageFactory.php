@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Models\Page;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
+use Str;
 
 class PageFactory extends Factory
 {
@@ -35,6 +35,29 @@ class PageFactory extends Factory
     {
         return $this->state([
             'is_home' => true,
+        ]);
+    }
+
+    public function basica(): static
+    {
+        return $this->state([
+            'blocks' => [
+                [
+                    'type' => 'basico',
+                    'data' => [
+                        'subtitle' => 'Somos transparentes',
+                        'title' => 'Transparencia',
+                        'text' => '<p>Página de prueba para donación en banner<p>',
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function withDonacion(): static
+    {
+        return $this->state([
+            'layout' => 'donacion',
         ]);
     }
 }
