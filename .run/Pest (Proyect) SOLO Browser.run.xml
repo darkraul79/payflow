@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Pest (Proyect) SOLO Browser" type="PestRunConfigurationType">
+    <PestRunner configuration_file="./phpunit.xml" directory="$PROJECT_DIR$/tests" method="" options="--group=browser" parallel_testing_enabled="true" />
+    <method v="2" />
+  </configuration>
+</component>

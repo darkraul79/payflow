@@ -21,6 +21,7 @@
             <label
                 for="payment_method_{{ $method['code'].$prefix ?? '' }}"
                 class="flex! capitalize m-0! cursor-pointer"
+                data-test="{{$prefix}}-payment-method-{{ $method['code'] }}"
             >
 
                 @if(isset($method['icon']) && $method['icon'])

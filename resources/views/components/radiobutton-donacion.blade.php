@@ -18,6 +18,7 @@
             <label
                 for="{{ $prefix . '-' . $id }}"
                 class="btn btn-primary-outline flex w-full flex-wrap sm:flex-nowrap cursor-pointer h-full  items-end justify-center text-sm {{ $isGrouped ? 'collapsed':'' }}"
+                data-test="{{ $prefix . '-' . $id }}"
             >
                 <input
                     class="hidden"

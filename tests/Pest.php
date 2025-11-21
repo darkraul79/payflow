@@ -21,7 +21,7 @@ use function Pest\Livewire\livewire;
 
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->in('Feature', 'Unit');
+    ->in('Feature', 'Unit', 'Browser');
 
 arch('globals')
     ->preset()

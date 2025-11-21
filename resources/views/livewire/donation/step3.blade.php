@@ -11,13 +11,14 @@
     </div>
 
     <div class="form-style group form-xs mt-6 grid grid-cols-6 gap-1.5 text-xs">
-        @include('frontend.elements.order.fields', ['prefix' => 'certificate.','suffix' => $prefix])
+        @include('frontend.elements.order.fields', ['prefix' => 'certificate','suffix' => $prefix])
     </div>
 
     <div class="my-6">
         <button
             class="btn bg-amarillo text-azul-mist! hover:bg-amarillo/70 flex w-full cursor-pointer font-semibold"
-            wire:click="submit()"
+            wire:click="toStep(4)"
+            data-test="{{$prefix}}-donation-step-3-next-button"
         >
             <span class="mx-auto flex items-center">
                 Realizar pago

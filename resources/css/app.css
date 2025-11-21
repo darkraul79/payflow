@@ -406,3 +406,7 @@ nav {
 
 }
 
+.form-error {
+    @apply text-error/80 text-[11px];
+}
+

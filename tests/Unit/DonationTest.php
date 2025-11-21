@@ -12,7 +12,6 @@ use App\Livewire\DonacionBanner;
 use App\Models\Address;
 use App\Models\Donation;
 use App\Models\Order;
-use App\Models\Page;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
@@ -208,7 +207,8 @@ test('puedo comprobar si tiene certificado', function () {
 
 test('puedo hacer donacion con certificado DonacionBanner', function () {
 
-    livewire(DonacionBanner::class, ['prefix' => 'donacion'])
+    $prefix = 'donacion';
+    livewire(DonacionBanner::class, ['prefix' => $prefix])
         ->set('amount', 10.35)
         ->set('type', DonationType::UNICA->value)
         ->set('needsCertificate', true)
@@ -356,28 +356,6 @@ test('puedo procesar job ProcessDonationPaymentJob', function () {
         ->and($donacion->payments->last()->amount)->toBe(10.35)
         ->and($donacion->payments->last()->created_at->format('Y-m-d'))->toBe($expectedDate)
         ->and($donacion->state->name)->toBe(OrderStatus::ACTIVA->value);
-
-});
-
-test('cada vez que abro ventana de donación se resetea el componente', function () {
-    $home = Page::factory()->create([
-        'title' => 'Home',
-        'slug' => '',
-        'is_home' => true,
-    ]);
-
-    $this->get(route('home', ['page' => $home->slug]))
-        ->assertSeeLivewire(DonacionBanner::class);
-
-    $page = visit(['/']);
-    $page->click('@DonacionButtonModal')
-        ->click('Hazte Socio')
-        ->assertRadioSelected('type', DonationType::RECURRENTE->value)
-        ->type('amount', '10,35')
-        ->click('@DonacionButtonModalClose')
-        ->click('@DonacionButtonModal')
-        ->assertRadioNotSelected('type', DonationType::RECURRENTE->value)
-        ->assertValue('amount', 0);
 
 });
 

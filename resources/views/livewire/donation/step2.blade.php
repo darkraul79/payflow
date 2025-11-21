@@ -41,6 +41,7 @@
         <button
             class="btn bg-amarillo text-azul-mist! hover:bg-amarillo/70 flex w-full cursor-pointer font-semibold"
             wire:click="toStep(3)"
+            data-test="{{$prefix}}-donation-step-2-next-button"
         >
             <span class="mx-auto flex items-center">
                 Seguir

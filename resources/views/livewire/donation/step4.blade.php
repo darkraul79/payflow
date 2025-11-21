@@ -22,6 +22,8 @@
         <button
             class="btn bg-amarillo text-azul-mist! hover:bg-amarillo/70 flex w-full cursor-pointer font-semibold"
             wire:click="submit()"
+
+            data-test="{{$prefix}}-button-pay"
         >
             <span class="mx-auto flex items-center">
 Pagar {{ convertPrice($amount) }}

@@ -87,6 +87,7 @@
                 type="text"
 
                 name="amount"
+                data-test="donation-step-1-amount-input"
                 id="{{ $prefix . '-amount' }}"
                 class="w-full border-0 p-1 text-end font-semibold shadow-none focus:border-0! focus:ring-0 focus:outline-0!"
                 wire:model.live="amount"
@@ -108,6 +109,7 @@
         <button
             class="btn bg-amarillo text-azul-mist! hover:bg-amarillo/70 flex w-full cursor-pointer font-semibold"
             wire:click="toStep(2)"
+            data-test="{{$prefix}}-donation-step-1-next-button"
         >
             <span class="mx-auto flex items-center">
                 Hacer una donacion

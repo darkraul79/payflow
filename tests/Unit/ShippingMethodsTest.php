@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PaymentMethod;
 use App\Livewire\FinishOrderComponent;
 use App\Livewire\PageCartComponent;
 use App\Mail\OrderNew;
@@ -137,7 +138,7 @@ test('Al terminar pedido se guardan los datos de envío correctamente', function
         ->call('submit');
 
     livewire(FinishOrderComponent::class)
-        ->set('payment_method', 'tarjeta')
+        ->set('payment_method', PaymentMethod::TARJETA->value)
         ->set('billing', [
             'name' => 'Juan',
             'last_name' => 'Pérez',

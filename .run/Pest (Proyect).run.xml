@@ -1,6 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Pest (Proyect)" type="PestRunConfigurationType">
-    <PestRunner directory="$PROJECT_DIR$/tests" method="" />
-    <method v="2" />
-  </configuration>
-</component>
