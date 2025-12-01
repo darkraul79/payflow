@@ -427,7 +427,7 @@ test('order MerchantParameters codifica correctamente número y amount', functio
         ->and($decoded['Ds_Amount'])->toBe(convert_amount_to_redsys($pedido->amount));
 });
 
-test('order NO incluye campos COF en MerchantParameters', function () {
+test('order NO incluye campos COF en los MerchantParameters', function () {
     $pp = new PaymentProcess(Order::class, [
         'amount' => '10,00',
         'shipping' => 'Envío',
@@ -693,3 +693,56 @@ test('carga masiva: memoria estable procesando 40 pedidos', function () {
     // El incremento de memoria no debe superar 40 MB para 40 transacciones
     expect($incrementoMB)->toBeLessThan(40);
 })->group('performance');
+
+test('puedo obtener el listado de estados correctamente', function () {
+    $pedido = creaPedido();
+    $states = $pedido->available_states();
+
+    expect($states)->toBeArray()
+        ->and($states)->toContain(OrderStatus::PAGADO->value)
+        ->and($states)->toContain(OrderStatus::ENVIADO->value)
+        ->and($states)->not->toContain(OrderStatus::ACTIVA->value)
+        ->and($states)->not->toContain(OrderStatus::ACEPTADO->value)
+        // Verificar que las claves son los valores, no índices numéricos
+        ->and($states)->toHaveKey(OrderStatus::PAGADO->value)
+        ->and($states)->toHaveKey(OrderStatus::ENVIADO->value)
+        // Verificar que el valor de una clave es igual a la clave misma
+        ->and($states[OrderStatus::PAGADO->value])->toBe(OrderStatus::PAGADO->value)
+        ->and($states[OrderStatus::ENVIADO->value])->toBe(OrderStatus::ENVIADO->value);
+});
+
+test('al procesar pedido los emails contienen número de pedido y total en el cuerpo', function () {
+
+    Notification::fake();
+
+    // Crear usuarios que deben recibir la notificación
+    User::factory()->count(3)->create();
+
+    // Crear pedido y procesar callback OK
+    $pedido = creaPedido();
+    $this->get(route('pedido.response', getResponseOrder($pedido)));
+
+    // Comprobar que se envió la notificación y validar su contenido
+    Notification::assertSentTo(
+        User::all(),
+        OrderCreated::class,
+        function ($notification) use ($pedido) {
+
+            // Obtener la representación MailMessage y convertir a array
+            $mailMessage = $notification->toMail(User::first());
+            $data = method_exists($mailMessage, 'toArray') ? $mailMessage->toArray() : [];
+
+            // Subject y líneas intro para validación
+            $subject = $data['subject'] ?? '';
+            $introLines = $data['intro_lines'] ?? $data['introLines'] ?? [];
+
+            // Buscar número de pedido y total formateado en las líneas
+            $containsOrderNumber = collect($introLines)->contains(fn ($line) => str_contains($line, $pedido->number));
+            $containsTotal = collect($introLines)->contains(fn ($line) => str_contains($line,
+                convertPrice($pedido->amount)));
+
+            return $containsOrderNumber && $containsTotal && str_contains($subject, 'Pedido');
+        }
+    );
+
+});

@@ -10,14 +10,14 @@ use App\Models\Traits\HasStates;
 use App\Observers\OrderObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Collection as BasicCollection;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -65,7 +65,10 @@ class Order extends Model implements HasMedia
         return $this->hasMany(OrderItem::class);
     }
 
-    public function images(): Collection
+    /**
+     * @return BasicCollection<int, mixed>
+     */
+    public function images(): BasicCollection
     {
         $data = collect();
         foreach ($this->items as $item) {
@@ -77,7 +80,10 @@ class Order extends Model implements HasMedia
         return $data;
     }
 
-    public function statesWithStateInitial(): Collection
+    /**
+     * @return EloquentCollection<int, State>
+     */
+    public function statesWithStateInitial(): EloquentCollection
     {
 
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
@@ -106,7 +112,8 @@ class Order extends Model implements HasMedia
         ];
 
         return collect(self::getStates())
-            ->reject(fn ($label, $key) => in_array($label, $excludedStates))
+            ->reject(fn ($label) => in_array($label, $excludedStates))
+            ->mapWithKeys(fn ($label) => [$label => $label])
             ->toArray();
     }
 
@@ -262,7 +269,7 @@ class Order extends Model implements HasMedia
 
     public function getUserName(): string
     {
-        return Str::title($this->address->name);
+        return str($this->address->name)->title();
     }
 
     public function getShippinCostFormated(): string
@@ -286,7 +293,7 @@ class Order extends Model implements HasMedia
     protected function totalRedsys(): Attribute
     {
         return Attribute::make(
-            get: fn () => Str::replace('.', '', number_format($this->attributes['amount'], 2)),
+            get: fn () => str_replace('.', '', number_format($this->attributes['amount'], 2)),
         );
     }
 
