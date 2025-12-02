@@ -36,7 +36,7 @@ foreach (OrderStatus::cases() as $status) {
 
 dataset('order states', $cases);
 
-it('sends the correct email (view and HTML) for a given order status', function (
+it('envía el email correct por cada estado de pedido', function (
     string $statusName,
     string $statusValue,
     string $viewPathDot,
