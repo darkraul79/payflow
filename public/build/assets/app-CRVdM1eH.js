@@ -1,1 +1,0 @@
-function u(){let a=document.querySelectorAll(".number-animation"),r=4e3;a.forEach(e=>{let t=0,n=parseInt(e.getAttribute("data-number")),l=Math.floor(r/n),o=setInterval(function(){t+=1,e.textContent=t,t===n&&clearInterval(o)},l)})}document.addEventListener("DOMContentLoaded",()=>{u()});

@@ -1,4 +1,0 @@
-resources/views/vendor/mail/hrml/*.*
-/resources/views/emails/*.*
-/resources/views/vendor/mail/html/layout.blade.php
-/resources/views/vendor/notifications/*.*
