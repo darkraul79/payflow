@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Support\SnapshotHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -33,13 +34,13 @@ class OrderStateUpdate extends Mailable implements ShouldQueue
     {
         $this->order = $order;
 
-        // Guardo también un snapshot ligero del nombre de usuario para usar en la vista
-        $this->orderId = $order->id;
-        $this->userName = $order->getUserName();
+        // Capturamos snapshot del usuario y estado
+        $userSnapshot = SnapshotHelper::orderUserSnapshot($order);
+        $this->orderId = $userSnapshot['id'];
+        $this->userName = $userSnapshot['name'];
 
         $this->stateName = $stateName;
         $this->stateInfo = $stateInfo;
-
     }
 
     /**
@@ -58,7 +59,7 @@ class OrderStateUpdate extends Mailable implements ShouldQueue
 
         if (! is_null($this->stateName)) {
             $status = OrderStatus::tryFrom($this->stateName);
-        } elseif (isset($this->order->state)) {
+        } elseif (isset($this->order?->state)) {
             $status = $this->order->state?->status();
         }
 
@@ -76,7 +77,6 @@ class OrderStateUpdate extends Mailable implements ShouldQueue
                 'name' => $this->userName,
             ]
         );
-
     }
 
     public function getView(): string
@@ -85,7 +85,7 @@ class OrderStateUpdate extends Mailable implements ShouldQueue
 
         if (! is_null($this->stateName)) {
             $status = OrderStatus::tryFrom($this->stateName);
-        } elseif (isset($this->order->state)) {
+        } elseif (isset($this->order?->state)) {
             $status = $this->order->state?->status();
         }
 

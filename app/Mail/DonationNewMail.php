@@ -4,21 +4,17 @@ namespace App\Mail;
 
 use App\Enums\DonationType;
 use App\Models\Donation;
+use App\Support\SnapshotHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Str;
 
 class DonationNewMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
-
-    private int $donationId;
-
-    private string $donationType;
 
     private string $certificateName;
 
@@ -28,22 +24,18 @@ class DonationNewMail extends Mailable implements ShouldQueue
 
     private bool $payed;
 
+    private string $donationType;
+
     public function __construct(Donation $donation)
     {
-        // Capturamos snapshots de los datos necesarios para evitar
-        // depender de relaciones que puedan cambiar mientras el mailable está en cola
-        $this->donationId = $donation->id;
+        // Capturamos snapshot de los datos de donación
+        $snapshot = SnapshotHelper::donationDataSnapshot($donation);
+
+        $this->certificateName = $snapshot['name'];
+        $this->frequency = $snapshot['frequency'];
+        $this->formattedAmount = $snapshot['amount'];
+        $this->payed = $snapshot['payed'];
         $this->donationType = $donation->type;
-        $this->payed = $donation->payment->amount > 0;
-
-        // Capturamos snapshot del certificado y otros datos
-        $certificate = $donation->certificate();
-        $this->certificateName = ($certificate !== false && isset($certificate->name))
-            ? $certificate->name
-            : 'Usuario';
-
-        $this->frequency = Str::lower($donation->frequency);
-        $this->formattedAmount = convertPrice($donation->amount);
     }
 
     public function content(): Content
@@ -64,7 +56,6 @@ class DonationNewMail extends Mailable implements ShouldQueue
         $type = $this->donationType === DonationType::RECURRENTE->value ? 'recurrente' : 'unica';
 
         return 'emails.donation-'.$new.'-'.$type;
-
     }
 
     public function envelope(): Envelope

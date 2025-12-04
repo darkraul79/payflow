@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Enums\DonationType;
 use App\Enums\OrderStatus;
 use App\Models\Donation;
+use App\Support\SnapshotHelper;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
@@ -32,17 +33,14 @@ class ProcessDonationPaymentJob implements ShouldQueue
 
     public function __construct(Donation $donation)
     {
-        // Capturamos una snapshot de los datos críticos en el momento del dispatch
-        // para evitar que cambios posteriores en la donación afecten la lógica del job
-        $this->donationId = $donation->id;
+        // Capturamos snapshot de los datos críticos en el momento del dispatch
+        $snapshot = SnapshotHelper::fromDonation($donation);
 
-        // Obtenemos el último estado desde la DB para asegurar que tenemos el estado actual
-        $lastState = $donation->states()->orderBy('id', 'desc')->first();
-        $this->stateName = $lastState?->name ?? OrderStatus::PENDIENTE->value;
-
-        $this->donationType = $donation->type;
-        $this->identifier = $donation->identifier;
-        $this->nextPayment = $donation->next_payment;
+        $this->donationId = $snapshot['id'];
+        $this->stateName = $snapshot['stateName'] ?? OrderStatus::PENDIENTE->value;
+        $this->donationType = $snapshot['type'];
+        $this->identifier = $snapshot['identifier'];
+        $this->nextPayment = $snapshot['nextPayment'];
 
         $this->onQueue('payments');
     }

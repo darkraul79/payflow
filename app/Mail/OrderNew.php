@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
+use App\Support\SnapshotHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -39,9 +40,10 @@ class OrderNew extends Mailable implements ShouldQueue
      */
     public function __construct(Order $order)
     {
-        // Capturamos snapshots de todos los datos necesarios para evitar
-        // depender del modelo que puede cambiar mientras el mailable está en cola
-        $this->orderId = $order->id;
+        // Capturamos snapshot de los datos del pedido
+        $userSnapshot = SnapshotHelper::orderUserSnapshot($order);
+
+        $this->orderId = $userSnapshot['id'];
         $this->orderNumber = $order->number;
         $this->orderUrl = OrderResource::getUrl('update', ['record' => $order->id]);
         $this->items = $order->itemsArray();
@@ -80,7 +82,6 @@ class OrderNew extends Mailable implements ShouldQueue
                 'shipping_cost' => $this->shippingCost,
             ],
         );
-
     }
 
     /**
