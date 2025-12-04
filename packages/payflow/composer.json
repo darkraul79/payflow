@@ -1,18 +1,18 @@
 {
-    "name": "darkraul79/simple-cart-payflow",
+    "name": "darkraul79/payflow",
     "version": "0.2.0",
-    "description": "Unified installation of Cartify + Payflow for Laravel e-commerce projects",
+    "description": "A flexible multi-gateway payment package for Laravel (Redsys, Stripe, PayPal, etc.)",
     "type": "library",
     "license": "MIT",
     "keywords": [
         "laravel",
-        "cart",
         "payment",
-        "e-commerce",
-        "shopping-cart",
         "gateway",
         "redsys",
-        "checkout"
+        "stripe",
+        "paypal",
+        "payment-gateway",
+        "payflow"
     ],
     "authors": [
         {
@@ -21,13 +21,13 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/darkraul79/simple-cart-payflow/issues",
-        "source": "https://github.com/darkraul79/simple-cart-payflow"
+        "issues": "https://github.com/darkraul79/payflow/issues",
+        "source": "https://github.com/darkraul79/payflow"
     },
     "require": {
         "php": "^8.2 || ^8.3",
-        "darkraul79/cartify": "^0.1",
-        "darkraul79/payflow": "^0.2"
+        "illuminate/support": "^12.0",
+        "illuminate/contracts": "^12.0"
     },
     "require-dev": {
         "orchestra/testbench": "^10.0",
@@ -37,21 +37,23 @@
     },
     "autoload": {
         "psr-4": {
-            "Darkraul79\\SimpleCartPayFlow\\": "src/"
-        }
+            "Darkraul79\\Payflow\\": "src/"
+        },
+        "files": [
+            "src/Helpers/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
-            "Darkraul79\\SimpleCartPayFlow\\Tests\\": "tests/"
+            "Darkraul79\\Payflow\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Darkraul79\\SimpleCartPayFlow\\SimpleCartPayFlowServiceProvider"
+                "Darkraul79\\Payflow\\PayflowServiceProvider"
             ],
             "aliases": {
-                "Cart": "Darkraul79\\Cartify\\Facades\\Cart",
                 "Gateway": "Darkraul79\\Payflow\\Facades\\Gateway"
             }
         }
