@@ -406,7 +406,7 @@ test('obtengo los jobs correctamente los pagos del mes', function () {
     $this->artisan('payments-of-month:process')->assertSuccessful();
 
     Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacion) {
-        return $job->donation->id === $donacion->id;
+        return $job->donationId === $donacion->id;
     });
 
     //    $d = $this->artisan('queue:work');

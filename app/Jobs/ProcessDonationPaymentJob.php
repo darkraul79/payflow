@@ -16,15 +16,34 @@ class ProcessDonationPaymentJob implements ShouldQueue
 {
     use Queueable;
 
-    public Donation $donation;
+    public int $donationId;
 
     public int $tries = 3;
 
     public int $timeout = 120;
 
+    public string $stateName;
+
+    public string $donationType;
+
+    public ?string $identifier;
+
+    public ?string $nextPayment;
+
     public function __construct(Donation $donation)
     {
-        $this->donation = $donation;
+        // Capturamos una snapshot de los datos críticos en el momento del dispatch
+        // para evitar que cambios posteriores en la donación afecten la lógica del job
+        $this->donationId = $donation->id;
+
+        // Obtenemos el último estado desde la DB para asegurar que tenemos el estado actual
+        $lastState = $donation->states()->orderBy('id', 'desc')->first();
+        $this->stateName = $lastState?->name ?? OrderStatus::PENDIENTE->value;
+
+        $this->donationType = $donation->type;
+        $this->identifier = $donation->identifier;
+        $this->nextPayment = $donation->next_payment;
+
         $this->onQueue('payments');
     }
 
@@ -35,43 +54,45 @@ class ProcessDonationPaymentJob implements ShouldQueue
 
     public function middleware(): array
     {
-        return [new WithoutOverlapping($this->donation->id)];
+        return [new WithoutOverlapping($this->donationId)];
     }
 
     public function handle(): void
     {
         try {
             Log::info('Iniciando procesamiento de pago recurrente', [
-                'donation_id' => $this->donation->id,
+                'donation_id' => $this->donationId,
                 'attempt' => $this->attempts(),
+                'state_snapshot' => $this->stateName,
             ]);
 
-            $this->donation->refresh();
+            // Recargamos la donación para procesar el pago con datos frescos
+            $donation = Donation::findOrFail($this->donationId);
 
             if (! $this->isDonationValid()) {
                 Log::warning('Donación no válida para procesar pago', [
-                    'donation_id' => $this->donation->id,
-                    'type' => $this->donation->type,
-                    'state' => $this->donation->state->name ?? 'unknown',
-                    'identifier' => $this->donation->identifier ?? 'null',
-                    'next_payment' => $this->donation->next_payment,
+                    'donation_id' => $this->donationId,
+                    'type_snapshot' => $this->donationType,
+                    'state_snapshot' => $this->stateName,
+                    'identifier_snapshot' => $this->identifier,
+                    'next_payment_snapshot' => $this->nextPayment,
                     'now' => now()->format('Y-m-d'),
                     'is_valid_check' => [
-                        'type_is_recurrente' => $this->donation->type === DonationType::RECURRENTE->value,
-                        'state_is_active_or_pending' => in_array($this->donation->state->name ?? '',
+                        'type_is_recurrente' => $this->donationType === DonationType::RECURRENTE->value,
+                        'state_is_active_or_pending' => in_array($this->stateName,
                             [OrderStatus::ACTIVA->value, OrderStatus::PENDIENTE->value]),
-                        'has_identifier' => ! empty($this->donation->identifier),
-                        'next_payment_is_due' => $this->donation->next_payment <= now()->format('Y-m-d'),
+                        'has_identifier' => ! empty($this->identifier),
+                        'next_payment_is_due' => $this->nextPayment <= now()->format('Y-m-d'),
                     ],
                 ]);
 
                 return;
             }
 
-            $payment = $this->donation->processPay();
+            $payment = $donation->processPay();
 
             Log::info('Pago recurrente procesado exitosamente', [
-                'donation_id' => $this->donation->id,
+                'donation_id' => $this->donationId,
                 'payment_id' => $payment->id,
                 'amount_processed' => $payment->amount,
                 'success' => $payment->amount > 0,
@@ -79,14 +100,14 @@ class ProcessDonationPaymentJob implements ShouldQueue
 
         } catch (RuntimeException $e) {
             Log::error('Error de lógica de negocio al procesar pago recurrente', [
-                'donation_id' => $this->donation->id,
+                'donation_id' => $this->donationId,
                 'error_message' => $e->getMessage(),
                 'attempt' => $this->attempts(),
             ]);
             throw $e;
         } catch (Throwable $e) {
             Log::error('Error inesperado al procesar pago recurrente', [
-                'donation_id' => $this->donation->id,
+                'donation_id' => $this->donationId,
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
             ]);
@@ -96,30 +117,45 @@ class ProcessDonationPaymentJob implements ShouldQueue
 
     private function isDonationValid(): bool
     {
-        return $this->donation->type === DonationType::RECURRENTE->value
-            && in_array($this->donation->state->name ?? '', [OrderStatus::ACTIVA->value, OrderStatus::PENDIENTE->value])
-            && ! empty($this->donation->identifier)
-            && $this->donation->next_payment <= now()->format('Y-m-d');
+        // Usamos la snapshot capturada en el constructor para validar
+        // Esto evita que cambios de estado posteriores al dispatch invaliden el job
+        return $this->donationType === DonationType::RECURRENTE->value
+            && in_array($this->stateName, [OrderStatus::ACTIVA->value, OrderStatus::PENDIENTE->value])
+            && ! empty($this->identifier)
+            && $this->nextPayment <= now()->format('Y-m-d');
     }
 
     public function failed(?Throwable $exception = null): void
     {
         Log::error('Job de pago recurrente falló definitivamente', [
-            'donation_id' => $this->donation->id,
+            'donation_id' => $this->donationId,
             'error_message' => $exception?->getMessage(),
         ]);
 
         try {
-            $this->donation->refresh();
-            if ($this->donation->state->name !== OrderStatus::ERROR->value) {
-                $this->donation->error_pago([
+            $donation = Donation::find($this->donationId);
+
+            if (! $donation) {
+                Log::error('No se pudo encontrar donación para marcar como error', [
+                    'donation_id' => $this->donationId,
+                ]);
+
+                return;
+            }
+
+            // Obtenemos el estado actual desde la DB
+            $currentState = $donation->states()->orderBy('id', 'desc')->first();
+
+            if ($currentState && $currentState->name !== OrderStatus::ERROR->value) {
+                $donation->error_pago([
                     'job_error' => true,
                     'failed_attempts' => $this->tries,
+                    'state_at_dispatch' => $this->stateName,
                 ], 'Error crítico en procesamiento automático de pago tras múltiples intentos');
             }
         } catch (Throwable $e) {
             Log::error('No se pudo marcar donación como error tras fallo del job', [
-                'donation_id' => $this->donation->id,
+                'donation_id' => $this->donationId,
                 'marking_error' => $e->getMessage(),
             ]);
         }

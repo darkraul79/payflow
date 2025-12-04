@@ -16,15 +16,40 @@ class OrderNew extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    private Order $order;
+    private int $orderId;
+
+    private string $orderNumber;
+
+    private string $orderUrl;
+
+    private array $items;
+
+    private string $total;
+
+    private string $subtotal;
+
+    private string $shipping;
+
+    private float $tax;
+
+    private string $shippingCost;
 
     /**
      * Create a new message instance.
      */
     public function __construct(Order $order)
     {
-        $this->order = $order;
-
+        // Capturamos snapshots de todos los datos necesarios para evitar
+        // depender del modelo que puede cambiar mientras el mailable está en cola
+        $this->orderId = $order->id;
+        $this->orderNumber = $order->number;
+        $this->orderUrl = OrderResource::getUrl('update', ['record' => $order->id]);
+        $this->items = $order->itemsArray();
+        $this->total = convertPrice($order->amount);
+        $this->subtotal = convertPrice($order->subtotal);
+        $this->shipping = $order->shipping;
+        $this->tax = $order->taxes;
+        $this->shippingCost = $order->getShippinCostFormated();
     }
 
     /**
@@ -45,14 +70,14 @@ class OrderNew extends Mailable implements ShouldQueue
         return new Content(
             markdown: 'emails.new-order',
             with: [
-                'number' => $this->order->number,
-                'url' => OrderResource::getUrl('update', ['record' => $this->order->id]),
-                'items' => $this->order->itemsArray(),
-                'total' => convertPrice($this->order->amount),
-                'subtotal' => convertPrice($this->order->subtotal),
-                'shipping' => $this->order->shipping,
-                'tax' => $this->order->taxes,
-                'shipping_cost' => $this->order->getShippinCostFormated(),
+                'number' => $this->orderNumber,
+                'url' => $this->orderUrl,
+                'items' => $this->items,
+                'total' => $this->total,
+                'subtotal' => $this->subtotal,
+                'shipping' => $this->shipping,
+                'tax' => $this->tax,
+                'shipping_cost' => $this->shippingCost,
             ],
         );
 

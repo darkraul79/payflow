@@ -37,7 +37,7 @@ describe('GetPaymentsOfMonthCommand - Ejecución Normal', function () {
 
         Queue::assertPushed(ProcessDonationPaymentJob::class, 1);
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacion) {
-            return $job->donation->id === $donacion->id;
+            return $job->donationId === $donacion->id;
         });
 
         Log::shouldHaveReceived('info')
@@ -71,15 +71,15 @@ describe('GetPaymentsOfMonthCommand - Ejecución Normal', function () {
         Queue::assertPushed(ProcessDonationPaymentJob::class, 3);
 
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacion1) {
-            return $job->donation->id === $donacion1->id;
+            return $job->donationId === $donacion1->id;
         });
 
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacion2) {
-            return $job->donation->id === $donacion2->id;
+            return $job->donationId === $donacion2->id;
         });
 
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacion3) {
-            return $job->donation->id === $donacion3->id;
+            return $job->donationId === $donacion3->id;
         });
     });
 
@@ -260,7 +260,7 @@ describe('GetPaymentsOfMonthCommand - Filtrado de Donaciones', function () {
 
         Queue::assertPushed(ProcessDonationPaymentJob::class, 1);
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacionValida) {
-            return $job->donation->id === $donacionValida->id;
+            return $job->donationId === $donacionValida->id;
         });
     });
 
@@ -398,7 +398,7 @@ describe('GetPaymentsOfMonthCommand - Casos Extremos', function () {
 
         Queue::assertPushed(ProcessDonationPaymentJob::class, 1);
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacion) {
-            return $job->donation->id === $donacion->id;
+            return $job->donationId === $donacion->id;
         });
 
         $this->travelBack();
@@ -419,7 +419,7 @@ describe('GetPaymentsOfMonthCommand - Casos Extremos', function () {
 
         Queue::assertPushed(ProcessDonationPaymentJob::class, 1);
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacionAtrasada) {
-            return $job->donation->id === $donacionAtrasada->id;
+            return $job->donationId === $donacionAtrasada->id;
         });
 
         $this->travelBack();
@@ -474,12 +474,9 @@ describe('GetPaymentsOfMonthCommand - Integración con Jobs', function () {
         artisan('payments-of-month:process')->assertSuccessful();
 
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacion) {
-            $jobDonation = $job->donation;
-
-            return $jobDonation->id === $donacion->id
-                && $jobDonation->amount === 25.50
-                && $jobDonation->identifier === 'TEST_IDENTIFIER_123'
-                && $jobDonation->type === DonationType::RECURRENTE->value;
+            return $job->donationId === $donacion->id
+                && $job->identifier === 'TEST_IDENTIFIER_123'
+                && $job->donationType === DonationType::RECURRENTE->value;
         });
     });
 
@@ -497,7 +494,7 @@ describe('GetPaymentsOfMonthCommand - Integración con Jobs', function () {
         Queue::assertPushed(ProcessDonationPaymentJob::class, function ($job) use ($donacion) {
             expect($job)->toBeInstanceOf(ShouldQueue::class);
 
-            return $job->donation->id === $donacion->id;
+            return $job->donationId === $donacion->id;
         });
     });
 });
@@ -528,7 +525,7 @@ describe('GetPaymentsOfMonthCommand - Validación Identifier', function () {
         // Solo se debe encolar la donación con identifier
         Queue::assertPushed(ProcessDonationPaymentJob::class, 1);
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacionValida) {
-            return $job->donation->id === $donacionValida->id;
+            return $job->donationId === $donacionValida->id;
         });
 
         Log::shouldHaveReceived('warning')
@@ -807,15 +804,13 @@ describe('GetPaymentsOfMonthCommand - Integración End-to-End', function () {
         Queue::assertPushed(ProcessDonationPaymentJob::class, 2);
 
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacionValida1) {
-            return $job->donation->id === $donacionValida1->id
-                && $job->donation->amount === 25.00
-                && $job->donation->identifier === 'ID_VALID_1';
+            return $job->donationId === $donacionValida1->id
+                && $job->identifier === 'ID_VALID_1';
         });
 
         Queue::assertPushed(function (ProcessDonationPaymentJob $job) use ($donacionValida2) {
-            return $job->donation->id === $donacionValida2->id
-                && $job->donation->amount === 75.00
-                && $job->donation->identifier === 'ID_VALID_2';
+            return $job->donationId === $donacionValida2->id
+                && $job->identifier === 'ID_VALID_2';
         });
 
         // Verificar que se registró el warning de donación sin identifier

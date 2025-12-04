@@ -16,15 +16,34 @@ class DonationNewMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public Donation $donation;
+    private int $donationId;
 
-    public bool $payed = false;
+    private string $donationType;
+
+    private string $certificateName;
+
+    private string $frequency;
+
+    private string $formattedAmount;
+
+    private bool $payed;
 
     public function __construct(Donation $donation)
     {
-
-        $this->donation = $donation;
+        // Capturamos snapshots de los datos necesarios para evitar
+        // depender de relaciones que puedan cambiar mientras el mailable está en cola
+        $this->donationId = $donation->id;
+        $this->donationType = $donation->type;
         $this->payed = $donation->payment->amount > 0;
+
+        // Capturamos snapshot del certificado y otros datos
+        $certificate = $donation->certificate();
+        $this->certificateName = ($certificate !== false && isset($certificate->name))
+            ? $certificate->name
+            : 'Usuario';
+
+        $this->frequency = Str::lower($donation->frequency);
+        $this->formattedAmount = convertPrice($donation->amount);
     }
 
     public function content(): Content
@@ -32,9 +51,9 @@ class DonationNewMail extends Mailable implements ShouldQueue
         return new Content(
             markdown: $this->getView(),
             with: [
-                'name' => $this->donation->certificate()->name,
-                'frequency' => Str::lower($this->donation->frequency),
-                'amount' => convertPrice($this->donation->amount),
+                'name' => $this->certificateName,
+                'frequency' => $this->frequency,
+                'amount' => $this->formattedAmount,
             ],
         );
     }
@@ -42,7 +61,7 @@ class DonationNewMail extends Mailable implements ShouldQueue
     public function getView(): string
     {
         $new = $this->payed ? 'new' : 'error';
-        $type = $this->donation->type === DonationType::RECURRENTE->value ? 'recurrente' : 'unica';
+        $type = $this->donationType === DonationType::RECURRENTE->value ? 'recurrente' : 'unica';
 
         return 'emails.donation-'.$new.'-'.$type;
 
@@ -58,13 +77,13 @@ class DonationNewMail extends Mailable implements ShouldQueue
     public function getSubject(): string
     {
         if ($this->payed) {
-            return match ($this->donation->type) {
+            return match ($this->donationType) {
                 DonationType::RECURRENTE->value => '¡Gracias por unirte como socio/amigo! 🌊',
                 default => '¡Gracias por tu donación solidaria! 💛',
             };
         }
 
-        return match ($this->donation->type) {
+        return match ($this->donationType) {
             DonationType::RECURRENTE->value => 'Problema con tu alta como socio/amigo',
             default => 'Problema con tu donación',
         };
