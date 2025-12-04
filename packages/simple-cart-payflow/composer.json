@@ -1,0 +1,69 @@
+{
+    "name": "darkraul79/simple-cart-payflow",
+    "description": "Unified installation of Cartify + Payflow for Laravel e-commerce projects",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "cart",
+        "payment",
+        "e-commerce",
+        "shopping-cart",
+        "gateway",
+        "redsys",
+        "checkout"
+    ],
+    "authors": [
+        {
+            "name": "Raul Sebastian",
+            "email": "darkraul79@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/darkraul79/simple-cart-payflow/issues",
+        "source": "https://github.com/darkraul79/simple-cart-payflow"
+    },
+    "require": {
+        "php": "^8.2 || ^8.3",
+        "darkraul79/cartify": "^0.1",
+        "darkraul79/payflow": "^0.2"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0",
+        "laravel/pint": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Darkraul79\\SimpleCartPayFlow\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Darkraul79\\SimpleCartPayFlow\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Darkraul79\\SimpleCartPayFlow\\SimpleCartPayFlowServiceProvider"
+            ],
+            "aliases": {
+                "Cart": "Darkraul79\\Cartify\\Facades\\Cart",
+                "Gateway": "Darkraul79\\Payflow\\Facades\\Gateway"
+            }
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "prefer-stable": true
+}
