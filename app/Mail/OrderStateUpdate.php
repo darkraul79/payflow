@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,12 +18,27 @@ class OrderStateUpdate extends Mailable implements ShouldQueue
 
     private Order $order;
 
+    private ?int $orderId;
+
+    private string $userName;
+
+    private ?string $stateName;
+
+    private ?array $stateInfo;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(Order $order)
+    public function __construct(Order $order, ?string $stateName = null, ?array $stateInfo = null)
     {
         $this->order = $order;
+
+        // Guardo también un snapshot ligero del nombre de usuario para usar en la vista
+        $this->orderId = $order->id;
+        $this->userName = $order->getUserName();
+
+        $this->stateName = $stateName;
+        $this->stateInfo = $stateInfo;
 
     }
 
@@ -38,7 +54,13 @@ class OrderStateUpdate extends Mailable implements ShouldQueue
 
     public function getSubject(): string
     {
-        $status = $this->order->state?->status();
+        $status = null;
+
+        if (! is_null($this->stateName)) {
+            $status = OrderStatus::tryFrom($this->stateName);
+        } elseif (isset($this->order->state)) {
+            $status = $this->order->state?->status();
+        }
 
         return $status?->emailSubject() ?? 'Actualización del estado de tu pedido';
     }
@@ -51,7 +73,7 @@ class OrderStateUpdate extends Mailable implements ShouldQueue
         return new Content(
             markdown: $this->getView(),
             with: [
-                'name' => $this->order->getUserName(),
+                'name' => $this->userName,
             ]
         );
 
@@ -59,7 +81,13 @@ class OrderStateUpdate extends Mailable implements ShouldQueue
 
     public function getView(): string
     {
-        $status = $this->order->state?->status();
+        $status = null;
+
+        if (! is_null($this->stateName)) {
+            $status = OrderStatus::tryFrom($this->stateName);
+        } elseif (isset($this->order->state)) {
+            $status = $this->order->state?->status();
+        }
 
         return $status?->emailView() ?? 'emails.order-pending';
     }
