@@ -9,7 +9,7 @@
     ],
     "license": "MIT",
     "require": {
-        "darkraul79/simple-cart-payflow": "^0.1",
+        "darkraul79/simple-cart-payflow": "^0.2",
         "php": "^8.3",
         "ext-curl": "*",
         "ext-openssl": "*",
